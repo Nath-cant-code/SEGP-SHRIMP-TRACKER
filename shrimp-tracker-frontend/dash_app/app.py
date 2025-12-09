@@ -2,102 +2,101 @@ import os
 import base64
 
 import dash
-from dash import html, dash_table
+from dash import html, dcc, dash_table
 import pandas as pd
 
-# Create the Dash app
+# --- Setup Dash ---
 app = dash.Dash(__name__)
-server = app.server  # for deployment later if needed
+server = app.server
 
-# Base directory of this file
+# --- Path Setup ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+VIDEO_FOLDER = os.path.abspath(
+    os.path.join(BASE_DIR, "../assets/video_samples")
+)
 
-# ---------- VIDEO COMPONENT (with sound) ----------
+# Automatically read all .mp4 files inside video_samples folder
+def get_available_videos():
+    if not os.path.exists(VIDEO_FOLDER):
+        return []
 
-def get_video_component():
-    """
-    Returns an HTML5 video component.
-    Looks for 'sample_video.mp4' in the same folder as this app.py.
-    If not found, shows a warning message instead of crashing.
-    """
-    video_path = os.path.join(BASE_DIR, "sample_video.mp4")
+    return [
+        f for f in os.listdir(VIDEO_FOLDER)
+        if f.lower().endswith(".mp4")
+    ]
 
-    if not os.path.exists(video_path):
+VIDEO_LIST = get_available_videos()
+
+
+# Encode video for playback
+def encode_video(video_filename):
+    path = os.path.join(VIDEO_FOLDER, video_filename)
+
+    if not os.path.exists(path):
+        return None
+
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+
+# Build video component from filename
+def build_video_player(video_filename):
+    encoded = encode_video(video_filename)
+
+    if encoded is None:
         return html.Div(
-            "⚠ sample_video.mp4 not found in dash_app folder. "
-            "Upload a video file named 'sample_video.mp4' to enable playback.",
-            style={"color": "red", "marginTop": "20px", "textAlign": "center"},
+            f"⚠ Video not found: {video_filename}",
+            style={"color": "red", "textAlign": "center", "marginTop": "20px"},
         )
 
-    # Read and base64-encode video so it can play with sound in the browser
-    with open(video_path, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
-
     return html.Video(
-        controls=True,           # shows play/pause/volume bar
+        controls=True,
         src="data:video/mp4;base64," + encoded,
         style={
             "width": "70%",
-            "borderRadius": "12px",
-            "marginTop": "20px",
-            "boxShadow": "0 4px 12px rgba(0,0,0,0.2)",
+            "margin": "20px auto",
             "display": "block",
-            "marginLeft": "auto",
-            "marginRight": "auto",
+            "borderRadius": "12px",
+            "boxShadow": "0 4px 12px rgba(0,0,0,0.25)",
         },
     )
 
 
-# ---------- TABLE / EXCEL COMPONENT ----------
+# --- Table / Excel Section ---
+EXCEL_PATH = os.path.join(BASE_DIR, "sample_data.xlsx")
 
-def get_table_component():
-    """
-    Tries to load 'sample_data.xlsx' from the same folder.
-    If it doesn't exist, shows a small dummy table instead.
-    """
-    excel_path = os.path.join(BASE_DIR, "sample_data.xlsx")
-
-    if os.path.exists(excel_path):
+def load_excel():
+    if os.path.exists(EXCEL_PATH):
         try:
-            df = pd.read_excel(excel_path)
+            return pd.read_excel(EXCEL_PATH)
         except Exception as e:
-            df = pd.DataFrame(
-                {"Error": [f"Could not read sample_data.xlsx: {e}"]}
-            )
-    else:
-        # Fallback dummy data if Excel file is missing
-        df = pd.DataFrame(
-            {
-                "Shrimp ID": [1, 2, 3],
-                "Speed (cm/s)": [1.2, 0.8, 1.6],
-                "Zone": ["Left", "Center", "Right"],
-            }
-        )
+            return pd.DataFrame({"Error": [str(e)]})
 
-    return dash_table.DataTable(
-        data=df.to_dict("records"),
-        columns=[{"name": c, "id": c} for c in df.columns],
-        style_table={"width": "80%", "margin": "20px auto"},
-        style_cell={"textAlign": "center", "padding": "6px"},
-        style_header={
-            "fontWeight": "bold",
-            "borderBottom": "1px solid #aaa",
-        },
-        page_size=10,
-    )
+    # Fallback if no Excel file exists
+    return pd.DataFrame({
+        "Shrimp ID": [1, 2, 3],
+        "Speed (cm/s)": [1.2, 0.8, 1.6],
+        "Zone": ["Left", "Center", "Right"],
+    })
 
 
-# ---------- BUILD COMPONENTS ----------
+df = load_excel()
 
-video_player = get_video_component()
-data_table = get_table_component()
+table_component = dash_table.DataTable(
+    data=df.to_dict("records"),
+    columns=[{"name": c, "id": c} for c in df.columns],
+    style_table={"width": "80%", "margin": "20px auto"},
+    style_cell={"textAlign": "center", "padding": "6px"},
+    style_header={"fontWeight": "bold", "borderBottom": "1px solid #aaa"},
+    page_size=10,
+)
 
 
-# ---------- PAGE LAYOUT ----------
-
+# --- Layout ---
 app.layout = html.Div(
-    [
+    style={"fontFamily": "Arial, sans-serif"},
+    children=[
         html.H1(
             "Shrimp Tracker – Dash Frontend Prototype",
             style={"textAlign": "center", "marginTop": "20px"},
@@ -105,34 +104,44 @@ app.layout = html.Div(
 
         html.Hr(),
 
-        html.H2(
-            "Video Playback (with sound)",
+        html.H2("Video Playback (with sound)", style={"textAlign": "center"}),
+
+        # Video dropdown
+        html.Div(
+            [
+                html.Label("Choose a video:", style={"fontSize": "16px"}),
+                dcc.Dropdown(
+                    id="video-dropdown",
+                    options=[{"label": v, "value": v} for v in VIDEO_LIST],
+                    value=VIDEO_LIST[0] if VIDEO_LIST else None,
+                    style={"width": "50%", "margin": "0 auto"},
+                ),
+            ],
             style={"textAlign": "center"},
         ),
-        html.P(
-            "This video will play with audio if your browser volume and system sound are on, "
-            "and the file contains an audio track.",
-            style={"textAlign": "center", "fontSize": "14px"},
-        ),
-        video_player,
+
+        html.Div(id="video-player-container"),
 
         html.Hr(style={"marginTop": "40px"}),
 
-        html.H2(
-            "Sample Behaviour Data (Excel / Table)",
-            style={"textAlign": "center"},
-        ),
-        html.P(
-            "If 'sample_data.xlsx' exists in this folder, it will be displayed below. "
-            "Otherwise, a small dummy table is shown.",
-            style={"textAlign": "center", "fontSize": "14px"},
-        ),
-        data_table,
+        html.H2("Sample Behaviour Data", style={"textAlign": "center"}),
+
+        table_component,
     ],
-    style={"fontFamily": "Arial, sans-serif"},
 )
 
 
+# --- Callbacks (update video when dropdown changes) ---
+@app.callback(
+    dash.Output("video-player-container", "children"),
+    dash.Input("video-dropdown", "value"),
+)
+def update_video(selected_video):
+    if selected_video is None:
+        return html.Div("No video files found.", style={"textAlign": "center"})
+    return build_video_player(selected_video)
+
+
+# --- Run App ---
 if __name__ == "__main__":
-    # When you run this locally: python app.py
     app.run(debug=True)
