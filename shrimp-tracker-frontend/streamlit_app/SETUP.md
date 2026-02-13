@@ -11,7 +11,7 @@ Follow the steps below according to your operating system.
 ### First-time setup
 ```bash
 # Navigate to the project folder
-cd shrimp-tracker-frontend
+cd shrimp-tracker-frontend/streamlit_app
 
 # Create a virtual environment
 python3 -m venv venv
@@ -24,7 +24,7 @@ pip install -r requirements.txt  # (or pip install streamlit if no requirements.
 ```
 ### Running the app on every new session
 ```bash
-cd shrimp-tracker-frontend
+cd shrimp-tracker-frontend/streamlit_app
 source venv/bin/activate
 streamlit run app.py
 ``` 
@@ -33,7 +33,7 @@ streamlit run app.py
 ### First-time Setup
 ```bash 
 # Navigate to the project folder
-cd shrimp-tracker-frontend
+cd shrimp-tracker-frontend/streamlit_app
 
 # Create a virtual environment
 python -m venv venv
@@ -46,7 +46,7 @@ pip install -r requirements.txt  # (or pip install streamlit if no requirements.
 ```
 ### Running the app on every new session
 ```bash
-cd shrimp-tracker-frontend
+cd shrimp-tracker-frontend/streamlit_app
 venv\Scripts\activate
 streamlit run app.py
 ```
