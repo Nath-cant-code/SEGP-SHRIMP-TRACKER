@@ -10,6 +10,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+*.log
 
 # IDE
 .idea/
@@ -21,14 +22,43 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+.Spotlight-V100
+.Trashes
 
-# Data
+# Video Files - IMPORTANT: Exclude all video files from git
 *.mp4
 *.avi
 *.mov
-data/video_samples/*
-!data/video_samples/.gitkeep
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.m4v
+assets/video_samples/*
+!assets/video_samples/.gitkeep
+
+# Data files
+*.xlsx
+*.xls
+*.csv
+data/
+*.db
+*.sqlite
 
 # Environment
 .env
-*.log
+*.env
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Node modules (if you add any JS dependencies later)
+node_modules/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Dash specific
+*.pickle

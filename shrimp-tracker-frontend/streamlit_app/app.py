@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import os
+from pathlib import Path
 
 # Page config
 st.set_page_config(
@@ -12,6 +13,14 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Get absolute path of project root
+BASE_DIR = Path(__file__).resolve().parents[1]
+VIDEO_DIR = BASE_DIR / "assets" / "video_samples"
+
+# Do NOT create automatically — only verify it exists
+if not VIDEO_DIR.exists():
+    st.error(f"Video directory not found at: {VIDEO_DIR}")
 
 # Custom CSS for better UI
 st.markdown("""
@@ -36,8 +45,39 @@ st.markdown("""
         height: 3rem;
         padding: 0 2rem;
     }
+    .upload-section {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border: 2px dashed #1f77b4;
+        margin-bottom: 1rem;
+    }
     </style>
 """, unsafe_allow_html=True)
+
+
+# Helper function to get available videos
+def get_video_list():
+    """Get list of available MP4 videos in the video_samples directory"""
+    try:
+        videos = [f.name for f in VIDEO_DIR.glob("*.mp4")]
+        return sorted(videos) if videos else []
+    except Exception as e:
+        st.error(f"Error reading video directory: {e}")
+        return []
+
+
+# Helper function to save uploaded video
+def save_uploaded_video(uploaded_file):
+    """Save uploaded video to the video_samples directory"""
+    try:
+        video_path = VIDEO_DIR / uploaded_file.name
+        with open(video_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        return True, f"✅ Video '{uploaded_file.name}' uploaded successfully!"
+    except Exception as e:
+        return False, f"❌ Error uploading video: {e}"
+
 
 # Header
 st.markdown('<p class="main-header">🦐 Shrimp Tracker Pro</p>', unsafe_allow_html=True)
@@ -47,9 +87,33 @@ with st.sidebar:
     st.image("https://via.placeholder.com/150x100/1f77b4/ffffff?text=Shrimp+Logo", use_container_width=True)
     st.markdown("### 📊 Dashboard Controls")
 
+    # Video upload section
+    st.markdown("### 📤 Upload Video")
+    uploaded_file = st.file_uploader(
+        "Upload MP4 video",
+        type=['mp4'],
+        help="Upload a shrimp activity video (MP4 format only)",
+        key="video_uploader"
+    )
+
+    if uploaded_file is not None:
+        if st.button("💾 Save Video", use_container_width=True):
+            success, message = save_uploaded_video(uploaded_file)
+            if success:
+                st.success(message)
+                st.rerun()  # Refresh to show new video in list
+            else:
+                st.error(message)
+
+    st.markdown("---")
+
     # Video selection
-    video_list = ["20_Oct_2025_9-06pm_1.mp4", "20_Oct_2025_9-06pm_2.mp4"]
-    video_choice = st.selectbox("🎥 Select Video", video_list, index=0)
+    video_list = get_video_list()
+    if video_list:
+        video_choice = st.selectbox("🎥 Select Video", video_list, index=0)
+    else:
+        st.warning("No videos found. Please upload a video first.")
+        video_choice = None
 
     # Date range filter
     st.markdown("### 📅 Date Range")
@@ -86,11 +150,18 @@ with tab1:
 
     with col1:
         st.markdown("### Current Video Feed")
-        video_source = f"assets/video_samples/{video_choice}"
-        if os.path.exists(video_source):
-            st.video(video_source)
+
+        if video_choice:
+            video_path = VIDEO_DIR / video_choice
+            if video_path.exists():
+                # Read video file and display
+                with open(video_path, 'rb') as video_file:
+                    video_bytes = video_file.read()
+                st.video(video_bytes)
+            else:
+                st.error(f"⚠️ Video file not found: {video_choice}")
         else:
-            st.warning("⚠️ Video file not found. Please ensure videos are in the assets/video_samples directory.")
+            st.info("📤 Please upload a video or select an existing one from the sidebar.")
 
         # Video controls
         st.markdown("#### 🎮 Video Controls")
