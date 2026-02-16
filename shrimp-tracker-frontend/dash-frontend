@@ -1,1 +1,234 @@
 
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+from datetime import datetime
+import time
+
+# ---------------------------------------
+# PAGE CONFIG
+# ---------------------------------------
+st.set_page_config(
+    page_title="Shrimp Monitoring System",
+    layout="wide"
+)
+
+# ---------------------------------------
+# SESSION STATE
+# ---------------------------------------
+if "analysis_done" not in st.session_state:
+    st.session_state.analysis_done = False
+
+if "results" not in st.session_state:
+    st.session_state.results = None
+
+# ---------------------------------------
+# DARK STYLE
+# ---------------------------------------
+st.markdown("""
+<style>
+.main {
+    background-color: #0E1117;
+    color: white;
+}
+div[data-testid="metric-container"] {
+    background: linear-gradient(145deg, #1C1F26, #111418);
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px solid #2C2F36;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------------------------------
+# SIDEBAR
+# ---------------------------------------
+with st.sidebar:
+    st.header("⚙ Settings")
+
+    uploaded_file = st.file_uploader(
+        "Upload Image or Video",
+        type=["jpg", "png", "mp4"]
+    )
+
+    confidence_percent = st.slider(
+        "Detection Confidence Threshold (%)",
+        0, 100, 50
+    )
+
+    alert_threshold_percent = st.slider(
+        "Abnormal Alert Threshold (%)",
+        0, 100, 20
+    )
+
+    run_button = st.button("▶ Run Analysis")
+
+# ---------------------------------------
+# HEADER
+# ---------------------------------------
+st.title("🦐 Shrimp Monitoring System")
+st.caption("Upload → Detect → Classify → Display Results")
+
+st.divider()
+
+# ---------------------------------------
+# RUN ANALYSIS
+# ---------------------------------------
+if uploaded_file and run_button:
+
+    progress_bar = st.progress(0)
+    for i in range(100):
+        time.sleep(0.01)
+        progress_bar.progress(i + 1)
+
+    # MOCK DATA
+    data = {
+        "total": 120,
+        "healthy": 92,
+        "stressed": 20,
+        "abnormal": 8
+    }
+
+    st.session_state.results = data
+    st.session_state.analysis_done = True
+
+# ---------------------------------------
+# DISPLAY RESULTS
+# ---------------------------------------
+if st.session_state.analysis_done:
+
+    data = st.session_state.results
+
+    total = data["total"]
+    healthy = data["healthy"]
+    stressed = data["stressed"]
+    abnormal = data["abnormal"]
+
+    # ---------------------------------------
+    # MEDIA DISPLAY
+    # ---------------------------------------
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Original Input")
+        if uploaded_file.type.startswith("video"):
+            st.video(uploaded_file)
+        else:
+            st.image(uploaded_file)
+
+    with col2:
+        st.subheader("Annotated Output")
+        if uploaded_file.type.startswith("video"):
+            st.video(uploaded_file)
+        else:
+            st.image(uploaded_file)
+
+    st.divider()
+
+    # ---------------------------------------
+    # CALCULATIONS
+    # ---------------------------------------
+    if total > 0:
+        healthy_pct = round((healthy / total) * 100, 1)
+        stressed_pct = round((stressed / total) * 100, 1)
+        abnormal_pct = round((abnormal / total) * 100, 1)
+    else:
+        healthy_pct = stressed_pct = abnormal_pct = 0
+
+    alert_triggered = abnormal_pct >= alert_threshold_percent
+
+    # ---------------------------------------
+    # DASHBOARD
+    # ---------------------------------------
+    st.subheader("📊 Health Dashboard")
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    col1.metric("Total Shrimp", total)
+    col2.metric("Healthy (%)", f"{healthy_pct}%")
+    col3.metric("Stressed (%)", f"{stressed_pct}%")
+    col4.metric("Abnormal (%)", f"{abnormal_pct}%")
+    col5.metric("Confidence Threshold", f"{confidence_percent}%")
+
+    st.divider()
+
+    # ---------------------------------------
+    # ALERT SYSTEM
+    # ---------------------------------------
+    if alert_triggered:
+        st.error("⚠ HIGH PATHOGEN RISK DETECTED")
+    else:
+        st.success("🟢 Abnormal Levels Within Safe Range")
+
+    st.divider()
+
+    # ---------------------------------------
+    # CHARTS
+    # ---------------------------------------
+    df = pd.DataFrame({
+        "Condition": ["Healthy", "Stressed", "Abnormal"],
+        "Count": [healthy, stressed, abnormal]
+    })
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        pie = px.pie(df, names="Condition", values="Count", hole=0.6)
+        pie.update_layout(
+            paper_bgcolor="#0E1117",
+            font_color="white"
+        )
+        st.plotly_chart(pie, use_container_width=True)
+
+    with col2:
+        bar = px.bar(df, x="Condition", y="Count", text="Count")
+        bar.update_layout(
+            paper_bgcolor="#0E1117",
+            font_color="white"
+        )
+        st.plotly_chart(bar, use_container_width=True)
+
+    st.divider()
+
+    # ---------------------------------------
+    # INDUSTRIAL CSV REPORT
+    # ---------------------------------------
+    summary = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "total_shrimp": total,
+        "healthy_count": healthy,
+        "stressed_count": stressed,
+        "abnormal_count": abnormal,
+        "healthy_percent": healthy_pct,
+        "stressed_percent": stressed_pct,
+        "abnormal_percent": abnormal_pct,
+        "confidence_threshold_percent": confidence_percent,
+        "alert_threshold_percent": alert_threshold_percent,
+        "alert_triggered": alert_triggered
+    }
+
+    summary_df = pd.DataFrame([summary])
+
+    # Optional: enforce column order
+    column_order = [
+        "timestamp",
+        "total_shrimp",
+        "healthy_count",
+        "stressed_count",
+        "abnormal_count",
+        "healthy_percent",
+        "stressed_percent",
+        "abnormal_percent",
+        "confidence_threshold_percent",
+        "alert_threshold_percent",
+        "alert_triggered"
+    ]
+
+    summary_df = summary_df[column_order]
+
+    st.download_button(
+        label="Download Industrial Report (CSV)",
+        data=summary_df.to_csv(index=False),
+        file_name="shrimp_monitoring_report.csv",
+        mime="text/csv"
+    )
