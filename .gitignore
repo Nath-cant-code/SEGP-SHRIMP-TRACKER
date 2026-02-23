@@ -1,3 +1,20 @@
 venv/
 __pycache__/
 .DS_Store
+
+#ai dataset 
+data/
+videos/
+datasets/
+frames/
+
+#video files
+*.mp4
+*.avi
+*.mov
+
+# Models
+models/
+checkpoints/
+*.pt
+*.pth

@@ -5,26 +5,23 @@ import plotly.express as px
 from datetime import datetime
 import time
 
-# ---------------------------------------
-# PAGE CONFIG
-# ---------------------------------------
+
+#PAGE CONFIG
 st.set_page_config(
     page_title="Shrimp Monitoring System",
     layout="wide"
 )
 
-# ---------------------------------------
-# SESSION STATE
-# ---------------------------------------
+
+#SESSION STATE
 if "analysis_done" not in st.session_state:
     st.session_state.analysis_done = False
 
 if "results" not in st.session_state:
     st.session_state.results = None
 
-# ---------------------------------------
-# DARK STYLE
-# ---------------------------------------
+
+#DARK STYLE
 st.markdown("""
 <style>
 .main {
@@ -40,9 +37,8 @@ div[data-testid="metric-container"] {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------
-# SIDEBAR
-# ---------------------------------------
+
+#SIDEBAR
 with st.sidebar:
     st.header("⚙ Settings")
 
@@ -63,17 +59,15 @@ with st.sidebar:
 
     run_button = st.button("▶ Run Analysis")
 
-# ---------------------------------------
-# HEADER
-# ---------------------------------------
-st.title("🦐 Shrimp Monitoring System")
+
+#HEADER
+st.title("Shrimp Monitoring System")
 st.caption("Upload → Detect → Classify → Display Results")
 
 st.divider()
 
-# ---------------------------------------
-# RUN ANALYSIS
-# ---------------------------------------
+
+#RUN ANALYSIS
 if uploaded_file and run_button:
 
     progress_bar = st.progress(0)
@@ -81,7 +75,7 @@ if uploaded_file and run_button:
         time.sleep(0.01)
         progress_bar.progress(i + 1)
 
-    # MOCK DATA
+    #MOCK DATA
     data = {
         "total": 120,
         "healthy": 92,
@@ -92,9 +86,8 @@ if uploaded_file and run_button:
     st.session_state.results = data
     st.session_state.analysis_done = True
 
-# ---------------------------------------
+
 # DISPLAY RESULTS
-# ---------------------------------------
 if st.session_state.analysis_done:
 
     data = st.session_state.results
@@ -104,9 +97,8 @@ if st.session_state.analysis_done:
     stressed = data["stressed"]
     abnormal = data["abnormal"]
 
-    # ---------------------------------------
+
     # MEDIA DISPLAY
-    # ---------------------------------------
     col1, col2 = st.columns(2)
 
     with col1:
@@ -125,9 +117,8 @@ if st.session_state.analysis_done:
 
     st.divider()
 
-    # ---------------------------------------
-    # CALCULATIONS
-    # ---------------------------------------
+   
+    #CALCULATIONS
     if total > 0:
         healthy_pct = round((healthy / total) * 100, 1)
         stressed_pct = round((stressed / total) * 100, 1)
@@ -137,10 +128,9 @@ if st.session_state.analysis_done:
 
     alert_triggered = abnormal_pct >= alert_threshold_percent
 
-    # ---------------------------------------
+    
     # DASHBOARD
-    # ---------------------------------------
-    st.subheader("📊 Health Dashboard")
+    st.subheader("Health Dashboard")
 
     col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -152,19 +142,19 @@ if st.session_state.analysis_done:
 
     st.divider()
 
-    # ---------------------------------------
+   
     # ALERT SYSTEM
-    # ---------------------------------------
+    
     if alert_triggered:
-        st.error("⚠ HIGH PATHOGEN RISK DETECTED")
+        st.error("HIGH PATHOGEN RISK DETECTED")
     else:
-        st.success("🟢 Abnormal Levels Within Safe Range")
+        st.success("Abnormal Levels Within Safe Range")
 
     st.divider()
 
-    # ---------------------------------------
+    
     # CHARTS
-    # ---------------------------------------
+    
     df = pd.DataFrame({
         "Condition": ["Healthy", "Stressed", "Abnormal"],
         "Count": [healthy, stressed, abnormal]
@@ -190,9 +180,7 @@ if st.session_state.analysis_done:
 
     st.divider()
 
-    # ---------------------------------------
-    # INDUSTRIAL CSV REPORT
-    # ---------------------------------------
+    #CSV REPORT
     summary = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "total_shrimp": total,
@@ -209,7 +197,7 @@ if st.session_state.analysis_done:
 
     summary_df = pd.DataFrame([summary])
 
-    # Optional: enforce column order
+    #enforce column order
     column_order = [
         "timestamp",
         "total_shrimp",
