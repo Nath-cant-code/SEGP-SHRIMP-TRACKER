@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEGP Shrimp Monitor</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div class="app-wrapper">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark">🦐</div>
+        <div class="logo-text-block">
+          <span class="logo-title">SEGP Shrimp</span>
+          <span class="logo-sub">Monitor</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">
+        <label class="section-label">VIDEO SOURCE</label>
+        <div class="upload-zone" id="uploadZone">
+          <div class="upload-icon">↑</div>
+          <div class="upload-text">Upload video file</div>
+          <div class="upload-hint">MP4, MOV, AVI supported</div>
+          <input type="file" id="fileInput" accept="video/*" hidden />
+        </div>
+        <div class="file-name" id="fileName">No file selected</div>
+      </div>
+
+      <div class="sidebar-section">
+        <label class="section-label">ACTIVITY THRESHOLD</label>
+        <div class="slider-wrap">
+          <input type="range" id="thresholdSlider" min="0" max="100" value="40" class="custom-slider" />
+          <div class="slider-labels">
+            <span>Low</span>
+            <span class="slider-val" id="thresholdValue">40</span>
+            <span>High</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="run-btn" id="runBtn">
+        ▶ &nbsp; Run Analysis
+      </button>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-meta">
+        <div class="meta-row">
+          <span class="meta-key">Model</span>
+          <span class="meta-val">AquaVision v2.1</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Mode</span>
+          <span class="meta-val">Batch / Upload</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Status</span>
+          <span class="meta-val" id="sideStatus">Idle</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+      <!-- HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 class="dashboard-title">Shrimp Activity Dashboard</h1>
+          <p class="dashboard-sub">AI-Based Movement Monitoring &amp; Behavioural Analysis</p>
+        </div>
+        <div class="header-right">
+          <div class="status-pill" id="statusPill">
+            <span class="status-dot" id="statusDot"></span>
+            <span class="status-text" id="statusText">Awaiting Input</span>
+          </div>
+          <div class="clock-block">
+            <div class="clock-time" id="clockTime">00:00:00</div>
+            <div class="clock-date" id="clockDate">—</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIDEO PANELS -->
+      <div class="video-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">ORIGINAL FEED</span>
+            <span class="panel-tag" id="srcTag">No source</span>
+          </div>
+          <div class="video-box" id="originalBox">
+            <div class="video-placeholder" id="originalPlaceholder">
+              <div class="ph-icon">📹</div>
+              <div class="ph-text">Upload a video to begin</div>
+            </div>
+            <video id="videoPlayer" style="display:none;" muted loop playsinline autoplay></video>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">MOVEMENT TRACKING</span>
+            <span class="panel-tag tag-info">YOLO Ready</span>
+          </div>
+          <div class="video-box tracking-box" id="trackingBox">
+            <div class="video-placeholder" id="trackingPlaceholder">
+              <div class="ph-icon">🔬</div>
+              <div class="ph-text">Analysis output will appear here</div>
+            </div>
+            <video id="videoPlayer2" style="display:none;" muted loop playsinline autoplay></video>
+            <div class="tracking-overlay" id="trackingOverlay" style="display:none;">
+              <span class="overlay-label">TRACKING ACTIVE — YOLO PLACEHOLDER</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BASIC STATS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">TOTAL SHRIMP</div>
+          <div class="stat-val" id="statShrimp">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">AVG SPEED</div>
+          <div class="stat-val" id="statSpeed">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">ACTIVE TIME</div>
+          <div class="stat-val" id="statTime">—</div>
+        </div>
+      </div>
+
+      <!-- INSIGHT -->
+      <div class="insight-bar" id="insightBar">
+        <span class="insight-icon" id="insightIcon">💡</span>
+        <span class="insight-label">INSIGHT</span>
+        <span class="insight-msg" id="insightMsg">Run analysis to receive system recommendations.</span>
+      </div>
+
+      <!-- EXPAND BUTTON -->
+      <div class="expand-row">
+        <button class="expand-btn" id="expandBtn">
+          View Detailed Analysis
+          <span class="expand-arrow" id="expandArrow">▼</span>
+        </button>
+      </div>
+
+      <!-- DETAILED SECTION -->
+      <div class="detailed-section" id="detailedSection">
+
+        <!-- Score + Level + Trend -->
+        <div class="detail-grid">
+
+          <div class="detail-card">
+            <div class="detail-card-label">ACTIVITY SCORE</div>
+            <div class="score-number" id="scoreNum">—</div>
+            <div class="score-bar-wrap">
+              <div class="score-track">
+                <div class="score-fill" id="scoreFill" style="width:0%"></div>
+              </div>
+              <div class="score-ends">
+                <span>0</span><span>100</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card-label">ACTIVITY LEVEL</div>
+            <div class="level-badge" id="levelBadge">—</div>
+            <div class="detail-card-label" style="margin-top:18px;">TREND</div>
+            <div class="trend-val" id="trendVal">—</div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card-label">ENV. SIGNALS</div>
+            <div class="env-list">
+              <div class="env-row"><span>DO Level</span><span id="envDO">—</span></div>
+              <div class="env-row"><span>Temperature</span><span id="envTemp">—</span></div>
+              <div class="env-row"><span>pH</span><span id="envPh">—</span></div>
+              <div class="env-row"><span>Salinity</span><span id="envSal">—</span></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">Speed Over Time</div>
+            <div class="chart-canvas-wrap">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Activity Distribution</div>
+            <div class="chart-canvas-wrap">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export + Disclaimer -->
+        <div class="bottom-row">
+          <button class="export-btn" id="exportBtn">⬇ Download CSV Report</button>
+          <div class="disclaimer">
+            ⚠ This analysis is AI-generated and may not be fully accurate. Validate results with domain expertise before making operational decisions.
+          </div>
+        </div>
+
+      </div><!-- /detailed-section -->
+
+    </main>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

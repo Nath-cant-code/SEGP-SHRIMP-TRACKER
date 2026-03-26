@@ -25,7 +25,7 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 
-# Video Files - IMPORTANT: Exclude all video files from git
+# Video Files (IMPORTANT)
 *.mp4
 *.avi
 *.mov
@@ -37,11 +37,16 @@ Thumbs.db
 assets/video_samples/*
 !assets/video_samples/.gitkeep
 
-# Data files
+# Data / AI datasets
 *.xlsx
 *.xls
 *.csv
 data/
+videos/
+datasets/
+frames/
+
+# Databases
 *.db
 *.sqlite
 
@@ -52,7 +57,7 @@ data/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Node modules (if you add any JS dependencies later)
+# Node
 node_modules/
 
 # Testing
@@ -60,5 +65,9 @@ node_modules/
 .coverage
 htmlcov/
 
-# Dash specific
+# Dash / ML models
 *.pickle
+models/
+checkpoints/
+*.pt
+*.pth
