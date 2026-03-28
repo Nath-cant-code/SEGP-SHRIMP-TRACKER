@@ -6,11 +6,13 @@
 
 // ---- STATE ----
 const state = {
-  lastScore: null,
+  lastScore:    null,
   currentScore: null,
-  analysisRun: false,
-  filename: null,
-  videoSrc: null,
+  analysisRun:  false,
+  filename:     null,
+  mediaSrc:     null,   // unified src (replaces videoSrc)
+  fileType:     null,   // 'video' | 'image'
+  isProcessing: false,
 };
 
 // ---- DOM REFS ----
@@ -23,6 +25,7 @@ const thresholdSlider = $('thresholdSlider');
 const thresholdValue  = $('thresholdValue');
 const runBtn          = $('runBtn');
 const sideStatus      = $('sideStatus');
+const metaMode        = $('metaMode');
 
 const clockTime  = $('clockTime');
 const clockDate  = $('clockDate');
@@ -30,12 +33,20 @@ const statusPill = $('statusPill');
 const statusDot  = $('statusDot');
 const statusText = $('statusText');
 const srcTag     = $('srcTag');
+const modeBadge  = $('modeBadge');
 
 const originalPlaceholder = $('originalPlaceholder');
 const videoPlayer         = $('videoPlayer');
+const imageDisplay        = $('imageDisplay');
 const videoPlayer2        = $('videoPlayer2');
+const imageDisplay2       = $('imageDisplay2');
 const trackingPlaceholder = $('trackingPlaceholder');
 const trackingOverlay     = $('trackingOverlay');
+const overlayLabel        = $('overlayLabel');
+const loadingOverlay      = $('loadingOverlay');
+const loadingText         = $('loadingText');
+const loadingSub          = $('loadingSub');
+const trackingTag         = $('trackingTag');
 
 const statShrimp = $('statShrimp');
 const statSpeed  = $('statSpeed');
@@ -45,8 +56,8 @@ const insightBar  = $('insightBar');
 const insightIcon = $('insightIcon');
 const insightMsg  = $('insightMsg');
 
-const expandBtn     = $('expandBtn');
-const expandArrow   = $('expandArrow');
+const expandBtn       = $('expandBtn');
+const expandArrow     = $('expandArrow');
 const detailedSection = $('detailedSection');
 
 const scoreNum   = $('scoreNum');
@@ -98,57 +109,188 @@ fileInput.addEventListener('change', () => {
   if (fileInput.files[0]) handleFile(fileInput.files[0]);
 });
 
+// ---- FILE TYPE DETECTION ----
+function detectFileType(file) {
+  if (file.type.startsWith('video/')) return 'video';
+  if (file.type.startsWith('image/')) return 'image';
+  return null;
+}
+
+// ---- RESET MEDIA PANELS ----
+// Hides all media elements in both panels, resets to clean slate.
+function resetMediaPanels() {
+  videoPlayer.style.display    = 'none';
+  videoPlayer.src              = '';
+  imageDisplay.style.display   = 'none';
+  imageDisplay.src             = '';
+
+  videoPlayer2.style.display   = 'none';
+  videoPlayer2.src             = '';
+  imageDisplay2.style.display  = 'none';
+  imageDisplay2.src            = '';
+
+  trackingOverlay.style.display = 'none';
+  loadingOverlay.style.display  = 'none';
+
+  originalPlaceholder.style.display = 'flex';
+  trackingPlaceholder.style.display = 'flex';
+}
+
+// ---- SHOW ORIGINAL MEDIA ----
+function showOriginalMedia(src, type) {
+  originalPlaceholder.style.display = 'none';
+
+  if (type === 'video') {
+    imageDisplay.style.display  = 'none';
+    videoPlayer.src             = src;
+    videoPlayer.style.display   = 'block';
+    videoPlayer.play().catch(() => {});
+  } else {
+    videoPlayer.style.display   = 'none';
+    imageDisplay.src            = src;
+    imageDisplay.style.display  = 'block';
+  }
+}
+
+// ---- SHOW TRACKING MEDIA ----
+function showTrackingMedia(src, type) {
+  loadingOverlay.style.display  = 'none';
+  trackingPlaceholder.style.display = 'none';
+
+  if (type === 'video') {
+    imageDisplay2.style.display  = 'none';
+    videoPlayer2.src             = src;
+    videoPlayer2.style.display   = 'block';
+    videoPlayer2.play().catch(() => {});
+  } else {
+    videoPlayer2.style.display   = 'none';
+    imageDisplay2.src            = src;
+    imageDisplay2.style.display  = 'block';
+  }
+
+  trackingOverlay.style.display = 'flex';
+}
+
+// ---- UPDATE MODE BADGE & META ----
+function applyModeUI(type) {
+  if (type === 'video') {
+    modeBadge.textContent    = 'VIDEO MODE';
+    modeBadge.style.display  = 'inline-flex';
+    modeBadge.style.background = 'rgba(45,212,191,0.15)';
+    modeBadge.style.color    = '#2dd4bf';
+    metaMode.textContent     = 'Video / Upload';
+    overlayLabel.textContent = 'TRACKING ACTIVE — YOLO PLACEHOLDER';
+    trackingTag.textContent  = 'YOLO Ready';
+    loadingText.textContent  = 'Analyzing video…';
+    loadingSub.textContent   = 'Running AquaVision model';
+  } else {
+    modeBadge.textContent    = 'IMAGE MODE';
+    modeBadge.style.display  = 'inline-flex';
+    modeBadge.style.background = 'rgba(139,92,246,0.15)';
+    modeBadge.style.color    = '#a78bfa';
+    metaMode.textContent     = 'Image / Upload';
+    overlayLabel.textContent = 'ANALYSIS COMPLETE — YOLO PLACEHOLDER';
+    trackingTag.textContent  = 'Frame Scan';
+    loadingText.textContent  = 'Analyzing image…';
+    loadingSub.textContent   = 'Running AquaVision model';
+  }
+}
+
+// ---- HANDLE FILE ----
 function handleFile(file) {
-  if (!file.type.startsWith('video/')) {
-    alert('Please upload a valid video file.');
+  const type = detectFileType(file);
+
+  if (!type) {
+    alert('Please upload a valid video (MP4, MOV, AVI) or image (JPG, PNG) file.');
     return;
   }
 
+  // Revoke previous object URL to avoid memory leaks
+  if (state.mediaSrc) {
+    URL.revokeObjectURL(state.mediaSrc);
+  }
+
   state.filename = file.name;
+  state.fileType = type;
+
   const shortName = file.name.length > 24 ? file.name.slice(0, 22) + '…' : file.name;
   fileNameEl.textContent = shortName;
 
   const url = URL.createObjectURL(file);
-  state.videoSrc = url;
+  state.mediaSrc = url;
 
-  // Show video in original panel
-  originalPlaceholder.style.display = 'none';
-  videoPlayer.src = url;
-  videoPlayer.style.display = 'block';
-  videoPlayer.play().catch(() => {});
+  // Reset panels to clean state before showing new media
+  resetMediaPanels();
 
-  // Tracking panel — same video, YOLO placeholder
-  trackingPlaceholder.style.display = 'none';
-  videoPlayer2.src = url;
-  videoPlayer2.style.display = 'block';
-  videoPlayer2.play().catch(() => {});
-  trackingOverlay.style.display = 'flex';
+  // Show the uploaded media in the original panel
+  showOriginalMedia(url, type);
+
+  // Apply mode-specific UI labels and badges
+  applyModeUI(type);
 
   srcTag.textContent = shortName;
   updateStatus('ready');
+
+  // AUTO RUN: kick off analysis immediately after upload
+  runAnalysis();
 }
 
 // ---- STATUS ----
 function updateStatus(mode) {
-  const dot = statusDot;
-  const text = statusText;
+  statusDot.className = 'status-dot';
+  const label = state.fileType === 'image' ? 'image' : 'video';
 
-  dot.className = 'status-dot';
   if (mode === 'active') {
-    dot.classList.add('green');
-    text.textContent = 'Monitoring Active';
+    statusDot.classList.add('green');
+    statusText.textContent = 'Monitoring Active';
     sideStatus.textContent = 'Running';
   } else if (mode === 'low') {
-    dot.classList.add('red');
-    text.textContent = 'Low Activity';
+    statusDot.classList.add('red');
+    statusText.textContent = 'Low Activity';
     sideStatus.textContent = 'Low Activity';
   } else if (mode === 'ready') {
-    dot.classList.add('amber');
-    text.textContent = 'Ready — Run Analysis';
+    statusDot.classList.add('amber');
+    statusText.textContent = 'Ready — Run Analysis';
     sideStatus.textContent = 'Standby';
+  } else if (mode === 'processing') {
+    statusDot.classList.add('amber');
+    statusText.textContent = `Analyzing ${label}…`;
+    sideStatus.textContent = 'Processing';
   } else {
-    text.textContent = 'Awaiting Input';
+    statusText.textContent = 'Awaiting Input';
     sideStatus.textContent = 'Idle';
+  }
+}
+
+// ---- LOADING STATE ----
+function setLoadingUI(isLoading) {
+  state.isProcessing = isLoading;
+
+  if (isLoading) {
+    runBtn.disabled      = true;
+    runBtn.textContent   = '⏳  Processing…';
+    runBtn.style.opacity = '0.6';
+    runBtn.style.cursor  = 'not-allowed';
+
+    // Hide any tracking media, show loading overlay
+    trackingPlaceholder.style.display = 'none';
+    videoPlayer2.style.display        = 'none';
+    imageDisplay2.style.display       = 'none';
+    trackingOverlay.style.display     = 'none';
+    loadingOverlay.style.display      = 'flex';
+
+    updateStatus('processing');
+  } else {
+    runBtn.disabled      = false;
+    runBtn.innerHTML     = '▶ &nbsp; Run Analysis';
+    runBtn.style.opacity = '';
+    runBtn.style.cursor  = '';
+
+    // Hide loading overlay; show tracking result
+    loadingOverlay.style.display = 'none';
+    if (state.mediaSrc) {
+      showTrackingMedia(state.mediaSrc, state.fileType);
+    }
   }
 }
 
@@ -162,17 +304,16 @@ function randFloat(min, max, dec = 1) {
 }
 
 function generateAnalysisData(threshold) {
-  const score = rand(10, 100);
-  const shrimpCount = rand(8, 60);
-  const avgSpeed = randFloat(0.5, 8.5);
-  const activeTime = rand(30, 95);
-
-  const level = score < 35 ? 'Low' : score < 65 ? 'Moderate' : 'High';
+  const score        = rand(10, 100);
+  const shrimpCount  = rand(8, 60);
+  const avgSpeed     = randFloat(0.5, 8.5);
+  const activeTime   = rand(30, 95);
+  const level        = score < 35 ? 'Low' : score < 65 ? 'Moderate' : 'High';
 
   const envData = {
-    do: randFloat(4.5, 9.0) + ' mg/L',
-    temp: randFloat(26, 32) + ' °C',
-    ph: randFloat(7.0, 8.5, 2),
+    do:       randFloat(4.5, 9.0) + ' mg/L',
+    temp:     randFloat(26, 32) + ' °C',
+    ph:       randFloat(7.0, 8.5, 2),
     salinity: rand(10, 28) + ' ppt',
   };
 
@@ -180,30 +321,36 @@ function generateAnalysisData(threshold) {
 }
 
 // ---- INSIGHT MESSAGES ----
-function getInsight(level, score, threshold) {
+function getInsight(level, score, threshold, shrimpCount, avgSpeed) {
+  if (score < 20) {
+    return {
+      msg: `Critical: Activity score is very low at ${score}/100 with only ${shrimpCount} shrimp detected. Immediately check dissolved oxygen and water temperature — this level of inactivity may indicate stress.`,
+      icon: '🚨',
+    };
+  }
+
   if (score < threshold) {
     const messages = [
-      'Low activity detected — check dissolved oxygen levels.',
-      'Activity below threshold — consider water quality inspection.',
-      'Reduced movement observed — monitor feeding schedule.',
-      'Below-threshold activity — review aeration systems.',
+      `Activity score of ${score}/100 is below your threshold of ${threshold}. Average speed is ${avgSpeed} px/s — consider checking dissolved oxygen levels and aeration systems.`,
+      `Score ${score}/100 falls short of target (${threshold}). With ${shrimpCount} shrimp at ${avgSpeed} px/s avg speed, a water quality inspection is recommended.`,
+      `Below-threshold activity at ${score}/100. Reduced movement detected across ${shrimpCount} shrimp — review feeding schedule and water circulation.`,
     ];
-    return { msg: messages[rand(0, messages.length - 1)], icon: '⚠' };
+    return { msg: messages[rand(0, messages.length - 1)], icon: '⚠️' };
   }
 
   if (level === 'High') {
     const messages = [
-      'High activity detected — shrimp behaviour is healthy.',
-      'Strong movement patterns — optimal feeding response likely.',
-      'Above-threshold activity — pond conditions appear favourable.',
+      `Excellent — activity score of ${score}/100 indicates healthy behaviour. ${shrimpCount} shrimp detected at ${avgSpeed} px/s avg speed. Pond conditions appear optimal.`,
+      `Strong result: ${score}/100 with vigorous movement across ${shrimpCount} shrimp. Above-threshold activity suggests a good feeding response and stable water quality.`,
+      `High activity confirmed at ${score}/100. Your ${shrimpCount} shrimp colony is moving well — no intervention required at this time.`,
     ];
-    return { msg: messages[rand(0, messages.length - 1)], icon: '✓' };
+    return { msg: messages[rand(0, messages.length - 1)], icon: '✅' };
   }
 
   const messages = [
-    'Moderate activity — conditions within normal range.',
-    'Steady movement patterns — no immediate action required.',
-    'Activity is within acceptable parameters.',
+    `Moderate activity at ${score}/100 — within acceptable range. ${shrimpCount} shrimp averaging ${avgSpeed} px/s. Continue routine monitoring; no immediate action needed.`,
+    `Score ${score}/100 is stable. Movement patterns across ${shrimpCount} shrimp are normal. Keep an eye on environmental signals and re-run analysis after feeding.`,
+    `Activity is steady at ${score}/100 with ${shrimpCount} shrimp detected. Conditions appear normal — consider re-analysing after 30 minutes to confirm the trend.`,
   ];
   return { msg: messages[rand(0, messages.length - 1)], icon: '💡' };
 }
@@ -212,172 +359,185 @@ function getInsight(level, score, threshold) {
 function getTrend(prev, current) {
   if (prev === null) return { symbol: '→', label: 'Baseline' };
   const diff = current - prev;
-  if (diff > 5) return { symbol: '↑', label: 'Improving' };
+  if (diff > 5)  return { symbol: '↑', label: 'Improving' };
   if (diff < -5) return { symbol: '↓', label: 'Declining' };
   return { symbol: '→', label: 'Stable' };
 }
 
+// ---- CHART OPTIONS (shared base) ----
+const baseChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  layout: {
+    padding: { top: 8, bottom: 4, left: 4, right: 8 },
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      backgroundColor: '#0f172a',
+      titleColor: '#94a3b8',
+      bodyColor: '#f1f5f9',
+      padding: 8,
+      cornerRadius: 4,
+      displayColors: false,
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: {
+        color: '#94a3b8',
+        font: { family: "'SF Mono', 'Fira Code', monospace", size: 9 },
+        maxRotation: 0,
+      },
+      border: { color: '#e2e8f0' },
+    },
+    y: {
+      grid: { color: '#f1f5f9' },
+      ticks: {
+        color: '#94a3b8',
+        font: { family: "'SF Mono', 'Fira Code', monospace", size: 9 },
+        maxTicksLimit: 5,
+      },
+      border: { color: '#e2e8f0' },
+    },
+  },
+  animation: { duration: 400 },
+};
+
 // ---- CHARTS ----
-let lineChart = null;
-let barChart = null;
-
-const baseScaleConfig = {
-  x: {
-    grid: { display: false },
-    ticks: {
-      color: '#94a3b8',
-      font: { family: 'IBM Plex Mono', size: 9 },
-      maxRotation: 0,
-    },
-    border: { color: '#e2e8f0' },
-  },
-  y: {
-    grid: { color: '#f1f5f9', lineWidth: 1 },
-    ticks: {
-      color: '#94a3b8',
-      font: { family: 'IBM Plex Mono', size: 9 },
-      maxTicksLimit: 5,
-    },
-    border: { color: '#e2e8f0' },
-  },
-};
-
-const basePlugins = {
-  legend: { display: false },
-  tooltip: {
-    enabled: true,
-    backgroundColor: '#0f172a',
-    titleColor: '#94a3b8',
-    bodyColor: '#f1f5f9',
-    padding: 8,
-    cornerRadius: 4,
-    displayColors: false,
-  },
-};
+let lineChartInst = null;
+let barChartInst  = null;
 
 function buildCharts(score) {
   const lineCtx = document.getElementById('lineChart').getContext('2d');
   const barCtx  = document.getElementById('barChart').getContext('2d');
 
   const timeLabels = ['0s', '10s', '20s', '30s', '40s', '50s', '60s'];
-  const speedData  = timeLabels.map(() => randFloat(0.5, 9));
+  const speedData = (() => {
+    let v = randFloat(2, 6);
+    return timeLabels.map(() => {
+      v = Math.max(0.5, Math.min(9, v + randFloat(-1.2, 1.2)));
+      return parseFloat(v.toFixed(1));
+    });
+  })();
+
   const distLabels = ['0–2', '2–4', '4–6', '6–8', '8–10'];
-  // Ensure no zero values — minimum bar of 1 so no empty gaps
-  const distData = distLabels.map(() => Math.max(1, rand(1, 20)));
+  const distData   = distLabels.map(() => Math.max(1, rand(1, 20)));
 
-  if (lineChart) lineChart.destroy();
-  if (barChart)  barChart.destroy();
+  if (lineChartInst) lineChartInst.destroy();
+  if (barChartInst)  barChartInst.destroy();
 
-  lineChart = new Chart(lineCtx, {
+  lineChartInst = new Chart(lineCtx, {
     type: 'line',
     data: {
       labels: timeLabels,
       datasets: [{
         data: speedData,
+        label: 'Speed (px/s)',
         borderColor: '#2dd4bf',
-        backgroundColor: 'rgba(45,212,191,0.07)',
+        backgroundColor: 'rgba(45,212,191,0.06)',
         borderWidth: 1.5,
         pointRadius: 2,
         pointHoverRadius: 4,
         pointBackgroundColor: '#2dd4bf',
+        pointBorderColor: 'transparent',
         fill: true,
         tension: 0.4,
       }],
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 400 },
-      layout: {
-        padding: { top: 8, bottom: 4, left: 4, right: 8 },
-      },
-      plugins: { ...basePlugins },
-      scales: { ...baseScaleConfig },
-    },
+    options: { ...baseChartOptions },
   });
 
-  barChart = new Chart(barCtx, {
+  barChartInst = new Chart(barCtx, {
     type: 'bar',
     data: {
       labels: distLabels,
       datasets: [{
         data: distData,
+        label: 'Count',
         backgroundColor: 'rgba(45,212,191,0.45)',
         borderColor: '#14b8a6',
         borderWidth: 1,
-        borderRadius: 2,
-        barPercentage: 0.7,
-        categoryPercentage: 0.8,
+        borderRadius: 3,
+        minBarLength: 4,
       }],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 400 },
-      layout: {
-        padding: { top: 8, bottom: 4, left: 4, right: 8 },
-      },
-      plugins: { ...basePlugins },
+      ...baseChartOptions,
       scales: {
-        ...baseScaleConfig,
-        y: {
-          ...baseScaleConfig.y,
-          beginAtZero: true,
+        ...baseChartOptions.scales,
+        x: {
+          ...baseChartOptions.scales.x,
+          ticks: { ...baseChartOptions.scales.x.ticks, display: true, autoSkip: false },
         },
+        y: { ...baseChartOptions.scales.y, beginAtZero: true },
       },
     },
   });
 }
 
-// ---- RUN ANALYSIS ----
-runBtn.addEventListener('click', () => {
-  if (!state.videoSrc) {
-    alert('Please upload a video file before running analysis.');
+// ---- CORE ANALYSIS LOGIC ----
+function runAnalysis() {
+  if (!state.mediaSrc) {
+    alert('Please upload a video or image file before running analysis.');
     return;
   }
 
+  if (state.isProcessing) return; // prevent double-trigger
+
   const threshold = parseInt(thresholdSlider.value, 10);
-  const data = generateAnalysisData(threshold);
 
-  state.lastScore = state.currentScore;
-  state.currentScore = data.score;
-  state.analysisRun = true;
+  setLoadingUI(true);
 
-  // Status
-  const mode = data.score < threshold ? 'low' : 'active';
-  updateStatus(mode);
+  // Images resolve faster than videos (feel more instant)
+  const delay = state.fileType === 'image' ? rand(800, 1400) : rand(1500, 2000);
 
-  // Stats row
-  statShrimp.textContent = data.shrimpCount;
-  statSpeed.textContent  = data.avgSpeed + ' px/s';
-  statTime.textContent   = data.activeTime + '%';
+  setTimeout(() => {
+    const data = generateAnalysisData(threshold);
 
-  // Insight
-  const insight = getInsight(data.level, data.score, threshold);
-  insightIcon.textContent = insight.icon;
-  insightMsg.textContent  = insight.msg;
+    state.lastScore    = state.currentScore;
+    state.currentScore = data.score;
+    state.analysisRun  = true;
 
-  // Detailed
-  scoreNum.textContent = data.score;
-  scoreFill.style.width = data.score + '%';
+    setLoadingUI(false); // shows tracking media + overlay
 
-  levelBadge.textContent = data.level;
-  levelBadge.className = 'level-badge ' + data.level.toLowerCase();
+    const mode = data.score < threshold ? 'low' : 'active';
+    updateStatus(mode);
 
-  const trend = getTrend(state.lastScore, state.currentScore);
-  trendVal.textContent = trend.symbol + ' ' + trend.label;
+    statShrimp.textContent = data.shrimpCount;
+    statSpeed.textContent  = data.avgSpeed + ' px/s';
+    statTime.textContent   = data.activeTime + '%';
 
-  envDO.textContent   = data.envData.do;
-  envTemp.textContent = data.envData.temp;
-  envPh.textContent   = data.envData.ph;
-  envSal.textContent  = data.envData.salinity;
+    const insight = getInsight(data.level, data.score, threshold, data.shrimpCount, data.avgSpeed);
+    insightIcon.textContent = insight.icon;
+    insightMsg.textContent  = insight.msg;
 
-  buildCharts(data.score);
+    scoreNum.textContent  = data.score;
+    scoreFill.style.width = data.score + '%';
 
-  // Store for CSV export
-  runBtn._lastData = data;
-  runBtn._threshold = threshold;
-});
+    levelBadge.textContent = data.level;
+    levelBadge.className   = 'level-badge ' + data.level.toLowerCase();
+
+    const trend = getTrend(state.lastScore, state.currentScore);
+    trendVal.textContent = trend.symbol + ' ' + trend.label;
+
+    envDO.textContent   = data.envData.do;
+    envTemp.textContent = data.envData.temp;
+    envPh.textContent   = data.envData.ph;
+    envSal.textContent  = data.envData.salinity;
+
+    buildCharts(data.score);
+
+    // Store for CSV export
+    runBtn._lastData  = data;
+    runBtn._threshold = threshold;
+  }, delay);
+}
+
+// ---- RUN BUTTON (manual re-run) ----
+runBtn.addEventListener('click', runAnalysis);
 
 // ---- EXPAND TOGGLE ----
 expandBtn.addEventListener('click', () => {
@@ -400,31 +560,32 @@ exportBtn.addEventListener('click', () => {
   }
 
   const threshold = runBtn._threshold ?? 40;
-  const now = new Date().toISOString();
-  const trend = getTrend(state.lastScore, state.currentScore);
+  const now       = new Date().toISOString();
+  const trend     = getTrend(state.lastScore, state.currentScore);
 
   const rows = [
-    ['Field', 'Value'],
-    ['Timestamp', now],
-    ['File', state.filename ?? '—'],
-    ['Activity Score', data.score],
-    ['Activity Level', data.level],
-    ['Trend', trend.label],
-    ['Total Shrimp', data.shrimpCount],
-    ['Avg Speed (px/s)', data.avgSpeed],
-    ['Active Time (%)', data.activeTime],
-    ['Threshold', threshold],
-    ['DO Level', data.envData.do],
-    ['Temperature', data.envData.temp],
-    ['pH', data.envData.ph],
-    ['Salinity', data.envData.salinity],
-    ['Disclaimer', 'AI-generated — validate before operational use'],
+    ['Field',             'Value'],
+    ['Timestamp',         now],
+    ['File',              state.filename ?? '—'],
+    ['File Type',         state.fileType ?? '—'],
+    ['Activity Score',    data.score],
+    ['Activity Level',    data.level],
+    ['Trend',             trend.label],
+    ['Total Shrimp',      data.shrimpCount],
+    ['Avg Speed (px/s)',  data.avgSpeed],
+    ['Active Time (%)',   data.activeTime],
+    ['Threshold',         threshold],
+    ['DO Level',          data.envData.do],
+    ['Temperature',       data.envData.temp],
+    ['pH',                data.envData.ph],
+    ['Salinity',          data.envData.salinity],
+    ['Disclaimer',        'AI-generated — validate before operational use'],
   ];
 
-  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const csv  = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
   a.download = `shrimp_report_${Date.now()}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
