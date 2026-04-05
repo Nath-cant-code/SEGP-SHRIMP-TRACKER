@@ -1,12 +1,18 @@
 venv/
 __pycache__/
 .DS_Store
+*.pyc
+*.pyo
 
 #ai dataset 
 data/
 videos/
 datasets/
 frames/
+new_frames/
+shrimp-ai/data/
+shrimp-ai/dataset/
+shrimp-ai/new_frames/
 
 #video files
 *.mp4
@@ -18,3 +24,14 @@ models/
 checkpoints/
 *.pt
 *.pth
+
+# YOLO / training outputs
+runs/
+shrimp-ai/runs/
+
+# Local analysis outputs
+shrimp-ai/analysis/*.csv
+
+# Editor/temp files
+tempCodeRunnerFile.py
+shrimp-ai/tempCodeRunnerFile.py
