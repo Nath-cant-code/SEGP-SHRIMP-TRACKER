@@ -1,0 +1,2654 @@
+{
+  "added": {
+    "train": 182,
+    "val": 0,
+    "test": 0
+  },
+  "replaced": {
+    "train": 0,
+    "val": 0,
+    "test": 0
+  },
+  "unchanged": {
+    "train": 0,
+    "val": 0,
+    "test": 0
+  },
+  "backed_up_conflicts": [],
+  "copied_pairs": [
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0001.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image0.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_001.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_001.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0002.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image1.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_002.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_002.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0003.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image2.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_003.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_003.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0004.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image3.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_004.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_004.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0005.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image4.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_005.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_005.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0006.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image5.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_006.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_006.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0007.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image6.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_007.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_007.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0008.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image7.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_008.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_008.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0009.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image8.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_009.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_009.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0010.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image9.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_010.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_010.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0011.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image10.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_011.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_011.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0012.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image11.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_012.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_012.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0013.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image12.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_013.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_013.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0014.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image13.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_014.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_014.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0015.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image14.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_015.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_015.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0016.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image15.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_016.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_016.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0017.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image16.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_017.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_017.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0018.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image17.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_018.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_018.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0019.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image18.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_019.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_019.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0020.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image19.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_020.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_020.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0021.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image20.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_021.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_021.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0022.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image21.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_022.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_022.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0023.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image22.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_023.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_023.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0024.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image23.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_024.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_024.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0025.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image24.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_025.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_025.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0026.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image25.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_026.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_026.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0027.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image26.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_027.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_027.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0028.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image27.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_028.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_028.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0029.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image28.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_029.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_029.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0030.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image29.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_030.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_030.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0031.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image30.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_031.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_031.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0032.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image31.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_032.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_032.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_001_0033.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image32.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video01_033.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video01_033.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0001.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image33.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_001.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_001.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0002.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image34.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_002.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_002.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0003.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image35.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_003.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_003.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0004.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image36.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_004.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_004.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0005.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image37.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_005.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_005.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0006.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image38.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_006.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_006.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0007.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image39.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_007.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_007.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0008.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image40.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_008.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_008.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0009.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image41.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_009.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_009.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0010.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image42.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_010.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_010.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0011.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image43.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_011.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_011.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0012.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image44.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_012.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_012.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0013.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image45.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_013.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_013.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0014.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image46.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_014.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_014.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0015.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image47.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_015.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_015.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0016.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image48.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_016.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_016.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0017.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image49.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_017.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_017.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0018.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image50.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_018.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_018.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0019.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image51.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_019.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_019.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0020.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image52.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_020.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_020.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0021.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image53.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_021.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_021.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0022.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image54.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_022.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_022.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0023.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image55.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_023.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_023.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0024.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image56.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_024.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_024.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0025.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image57.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_025.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_025.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0026.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image58.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_026.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_026.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0027.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image59.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_027.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_027.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0028.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image60.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_028.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_028.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_002_0029.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image61.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video02_029.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video02_029.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0001.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image62.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_001.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_001.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0002.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image63.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_002.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_002.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0003.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image64.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_003.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_003.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0004.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image65.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_004.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_004.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0005.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image66.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_005.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_005.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0006.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image67.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_006.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_006.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0007.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image68.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_007.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_007.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0008.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image69.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_008.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_008.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0009.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image70.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_009.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_009.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0010.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image71.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_010.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_010.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0011.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image72.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_011.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_011.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0012.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image73.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_012.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_012.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0013.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image74.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_013.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_013.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0014.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image75.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_014.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_014.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0015.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image76.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_015.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_015.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0016.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image77.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_016.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_016.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0017.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image78.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_017.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_017.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0018.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image79.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_018.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_018.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0019.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image80.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_019.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_019.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0020.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image81.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_020.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_020.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0021.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image82.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_021.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_021.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0022.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image83.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_022.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_022.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0023.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image84.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_023.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_023.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0024.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image85.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_024.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_024.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0025.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image86.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_025.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_025.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0026.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image87.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_026.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_026.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0027.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image88.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_027.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_027.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0028.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image89.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_028.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_028.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0029.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image90.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_029.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_029.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0030.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image91.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_030.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_030.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0031.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image92.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_031.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_031.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0032.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image93.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_032.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_032.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0033.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image94.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_033.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_033.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0034.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image95.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_034.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_034.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0035.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image96.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_035.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_035.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0036.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image97.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_036.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_036.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0037.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image98.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_037.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_037.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0038.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image99.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_038.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_038.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0039.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image100.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_039.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_039.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0040.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image101.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_040.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_040.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0041.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image102.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_041.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_041.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0042.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image103.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_042.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_042.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0043.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image104.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_043.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_043.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0044.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image105.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_044.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_044.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0045.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image106.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_045.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_045.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0046.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image107.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_046.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_046.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0047.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image108.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_047.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_047.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0048.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image109.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_048.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_048.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0049.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image110.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_049.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_049.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0050.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image111.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_050.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_050.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0051.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image112.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_051.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_051.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0052.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image113.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_052.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_052.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0053.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image114.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_053.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_053.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0054.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image115.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_054.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_054.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0055.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image116.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_055.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_055.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0056.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image117.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_056.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_056.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0057.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image118.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_057.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_057.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0058.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image119.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_058.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_058.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0059.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image120.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_059.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_059.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0060.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image121.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_060.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_060.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0061.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image122.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_061.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_061.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0062.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image123.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_062.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_062.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0063.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image124.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_063.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_063.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0064.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image125.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_064.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_064.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0065.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image126.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_065.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_065.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0066.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image127.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_066.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_066.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0067.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image128.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_067.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_067.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0068.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image129.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_068.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_068.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0069.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image130.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_069.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_069.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0070.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image131.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_070.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_070.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0071.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image132.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_071.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_071.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0072.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image133.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_072.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_072.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0073.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image134.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_073.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_073.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0074.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image135.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_074.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_074.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0075.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image136.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_075.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_075.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0076.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image137.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_076.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_076.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0077.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image138.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_077.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_077.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0078.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image139.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_078.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_078.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0079.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image140.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_079.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_079.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0080.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image141.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_080.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_080.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0081.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image142.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_081.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_081.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0082.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image143.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_082.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_082.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0083.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image144.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_083.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_083.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0084.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image145.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_084.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_084.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0085.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image146.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_085.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_085.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0086.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image147.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_086.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_086.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0087.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image148.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_087.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_087.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0088.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image149.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_088.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_088.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0089.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image150.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_089.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_089.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0090.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image151.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_090.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_090.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0091.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image152.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_091.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_091.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0092.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image153.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_092.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_092.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0093.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image154.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_093.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_093.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0094.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image155.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_094.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_094.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0095.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image156.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_095.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_095.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0096.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image157.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_096.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_096.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0097.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image158.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_097.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_097.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0098.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image159.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_098.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_098.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0099.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image160.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_099.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_099.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0100.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image161.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_100.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_100.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0101.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image162.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_101.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_101.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0102.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image163.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_102.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_102.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0103.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image164.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_103.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_103.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0104.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image165.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_104.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_104.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0105.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image166.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_105.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_105.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0106.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image167.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_106.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_106.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0107.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image168.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_107.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_107.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0108.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image169.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_108.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_108.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0109.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image170.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_109.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_109.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0110.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image171.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_110.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_110.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0111.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image172.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_111.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_111.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0112.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image173.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_112.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_112.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0113.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image174.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_113.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_113.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0114.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image175.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_114.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_114.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0115.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image176.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_115.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_115.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0116.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image177.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_116.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_116.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0117.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image178.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_117.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_117.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0118.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image179.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_118.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_118.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0119.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image180.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_119.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_119.txt",
+      "split": "train"
+    },
+    {
+      "source_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\new_frames\\video_003_0120.jpg",
+      "source_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image181.txt",
+      "target_image": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\images\\train\\video03_120.jpg",
+      "target_label": "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video03_120.txt",
+      "split": "train"
+    }
+  ],
+  "mapping": [
+    {
+      "predict_image": "image0.jpg",
+      "source_frame": "video_001_0001.jpg",
+      "dataset_image": "video01_001.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image1.jpg",
+      "source_frame": "video_001_0002.jpg",
+      "dataset_image": "video01_002.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image2.jpg",
+      "source_frame": "video_001_0003.jpg",
+      "dataset_image": "video01_003.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image3.jpg",
+      "source_frame": "video_001_0004.jpg",
+      "dataset_image": "video01_004.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image4.jpg",
+      "source_frame": "video_001_0005.jpg",
+      "dataset_image": "video01_005.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image5.jpg",
+      "source_frame": "video_001_0006.jpg",
+      "dataset_image": "video01_006.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image6.jpg",
+      "source_frame": "video_001_0007.jpg",
+      "dataset_image": "video01_007.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image7.jpg",
+      "source_frame": "video_001_0008.jpg",
+      "dataset_image": "video01_008.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image8.jpg",
+      "source_frame": "video_001_0009.jpg",
+      "dataset_image": "video01_009.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image9.jpg",
+      "source_frame": "video_001_0010.jpg",
+      "dataset_image": "video01_010.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image10.jpg",
+      "source_frame": "video_001_0011.jpg",
+      "dataset_image": "video01_011.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image11.jpg",
+      "source_frame": "video_001_0012.jpg",
+      "dataset_image": "video01_012.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image12.jpg",
+      "source_frame": "video_001_0013.jpg",
+      "dataset_image": "video01_013.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image13.jpg",
+      "source_frame": "video_001_0014.jpg",
+      "dataset_image": "video01_014.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image14.jpg",
+      "source_frame": "video_001_0015.jpg",
+      "dataset_image": "video01_015.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image15.jpg",
+      "source_frame": "video_001_0016.jpg",
+      "dataset_image": "video01_016.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image16.jpg",
+      "source_frame": "video_001_0017.jpg",
+      "dataset_image": "video01_017.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image17.jpg",
+      "source_frame": "video_001_0018.jpg",
+      "dataset_image": "video01_018.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image18.jpg",
+      "source_frame": "video_001_0019.jpg",
+      "dataset_image": "video01_019.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image19.jpg",
+      "source_frame": "video_001_0020.jpg",
+      "dataset_image": "video01_020.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image20.jpg",
+      "source_frame": "video_001_0021.jpg",
+      "dataset_image": "video01_021.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image21.jpg",
+      "source_frame": "video_001_0022.jpg",
+      "dataset_image": "video01_022.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image22.jpg",
+      "source_frame": "video_001_0023.jpg",
+      "dataset_image": "video01_023.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image23.jpg",
+      "source_frame": "video_001_0024.jpg",
+      "dataset_image": "video01_024.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image24.jpg",
+      "source_frame": "video_001_0025.jpg",
+      "dataset_image": "video01_025.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image25.jpg",
+      "source_frame": "video_001_0026.jpg",
+      "dataset_image": "video01_026.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image26.jpg",
+      "source_frame": "video_001_0027.jpg",
+      "dataset_image": "video01_027.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image27.jpg",
+      "source_frame": "video_001_0028.jpg",
+      "dataset_image": "video01_028.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image28.jpg",
+      "source_frame": "video_001_0029.jpg",
+      "dataset_image": "video01_029.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image29.jpg",
+      "source_frame": "video_001_0030.jpg",
+      "dataset_image": "video01_030.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image30.jpg",
+      "source_frame": "video_001_0031.jpg",
+      "dataset_image": "video01_031.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image31.jpg",
+      "source_frame": "video_001_0032.jpg",
+      "dataset_image": "video01_032.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image32.jpg",
+      "source_frame": "video_001_0033.jpg",
+      "dataset_image": "video01_033.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image33.jpg",
+      "source_frame": "video_002_0001.jpg",
+      "dataset_image": "video02_001.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image34.jpg",
+      "source_frame": "video_002_0002.jpg",
+      "dataset_image": "video02_002.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image35.jpg",
+      "source_frame": "video_002_0003.jpg",
+      "dataset_image": "video02_003.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image36.jpg",
+      "source_frame": "video_002_0004.jpg",
+      "dataset_image": "video02_004.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image37.jpg",
+      "source_frame": "video_002_0005.jpg",
+      "dataset_image": "video02_005.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image38.jpg",
+      "source_frame": "video_002_0006.jpg",
+      "dataset_image": "video02_006.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image39.jpg",
+      "source_frame": "video_002_0007.jpg",
+      "dataset_image": "video02_007.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image40.jpg",
+      "source_frame": "video_002_0008.jpg",
+      "dataset_image": "video02_008.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image41.jpg",
+      "source_frame": "video_002_0009.jpg",
+      "dataset_image": "video02_009.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image42.jpg",
+      "source_frame": "video_002_0010.jpg",
+      "dataset_image": "video02_010.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image43.jpg",
+      "source_frame": "video_002_0011.jpg",
+      "dataset_image": "video02_011.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image44.jpg",
+      "source_frame": "video_002_0012.jpg",
+      "dataset_image": "video02_012.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image45.jpg",
+      "source_frame": "video_002_0013.jpg",
+      "dataset_image": "video02_013.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image46.jpg",
+      "source_frame": "video_002_0014.jpg",
+      "dataset_image": "video02_014.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image47.jpg",
+      "source_frame": "video_002_0015.jpg",
+      "dataset_image": "video02_015.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image48.jpg",
+      "source_frame": "video_002_0016.jpg",
+      "dataset_image": "video02_016.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image49.jpg",
+      "source_frame": "video_002_0017.jpg",
+      "dataset_image": "video02_017.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image50.jpg",
+      "source_frame": "video_002_0018.jpg",
+      "dataset_image": "video02_018.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image51.jpg",
+      "source_frame": "video_002_0019.jpg",
+      "dataset_image": "video02_019.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image52.jpg",
+      "source_frame": "video_002_0020.jpg",
+      "dataset_image": "video02_020.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image53.jpg",
+      "source_frame": "video_002_0021.jpg",
+      "dataset_image": "video02_021.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image54.jpg",
+      "source_frame": "video_002_0022.jpg",
+      "dataset_image": "video02_022.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image55.jpg",
+      "source_frame": "video_002_0023.jpg",
+      "dataset_image": "video02_023.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image56.jpg",
+      "source_frame": "video_002_0024.jpg",
+      "dataset_image": "video02_024.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image57.jpg",
+      "source_frame": "video_002_0025.jpg",
+      "dataset_image": "video02_025.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image58.jpg",
+      "source_frame": "video_002_0026.jpg",
+      "dataset_image": "video02_026.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image59.jpg",
+      "source_frame": "video_002_0027.jpg",
+      "dataset_image": "video02_027.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image60.jpg",
+      "source_frame": "video_002_0028.jpg",
+      "dataset_image": "video02_028.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image61.jpg",
+      "source_frame": "video_002_0029.jpg",
+      "dataset_image": "video02_029.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image62.jpg",
+      "source_frame": "video_003_0001.jpg",
+      "dataset_image": "video03_001.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image63.jpg",
+      "source_frame": "video_003_0002.jpg",
+      "dataset_image": "video03_002.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image64.jpg",
+      "source_frame": "video_003_0003.jpg",
+      "dataset_image": "video03_003.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image65.jpg",
+      "source_frame": "video_003_0004.jpg",
+      "dataset_image": "video03_004.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image66.jpg",
+      "source_frame": "video_003_0005.jpg",
+      "dataset_image": "video03_005.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image67.jpg",
+      "source_frame": "video_003_0006.jpg",
+      "dataset_image": "video03_006.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image68.jpg",
+      "source_frame": "video_003_0007.jpg",
+      "dataset_image": "video03_007.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image69.jpg",
+      "source_frame": "video_003_0008.jpg",
+      "dataset_image": "video03_008.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image70.jpg",
+      "source_frame": "video_003_0009.jpg",
+      "dataset_image": "video03_009.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image71.jpg",
+      "source_frame": "video_003_0010.jpg",
+      "dataset_image": "video03_010.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image72.jpg",
+      "source_frame": "video_003_0011.jpg",
+      "dataset_image": "video03_011.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image73.jpg",
+      "source_frame": "video_003_0012.jpg",
+      "dataset_image": "video03_012.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image74.jpg",
+      "source_frame": "video_003_0013.jpg",
+      "dataset_image": "video03_013.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image75.jpg",
+      "source_frame": "video_003_0014.jpg",
+      "dataset_image": "video03_014.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image76.jpg",
+      "source_frame": "video_003_0015.jpg",
+      "dataset_image": "video03_015.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image77.jpg",
+      "source_frame": "video_003_0016.jpg",
+      "dataset_image": "video03_016.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image78.jpg",
+      "source_frame": "video_003_0017.jpg",
+      "dataset_image": "video03_017.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image79.jpg",
+      "source_frame": "video_003_0018.jpg",
+      "dataset_image": "video03_018.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image80.jpg",
+      "source_frame": "video_003_0019.jpg",
+      "dataset_image": "video03_019.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image81.jpg",
+      "source_frame": "video_003_0020.jpg",
+      "dataset_image": "video03_020.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image82.jpg",
+      "source_frame": "video_003_0021.jpg",
+      "dataset_image": "video03_021.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image83.jpg",
+      "source_frame": "video_003_0022.jpg",
+      "dataset_image": "video03_022.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image84.jpg",
+      "source_frame": "video_003_0023.jpg",
+      "dataset_image": "video03_023.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image85.jpg",
+      "source_frame": "video_003_0024.jpg",
+      "dataset_image": "video03_024.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image86.jpg",
+      "source_frame": "video_003_0025.jpg",
+      "dataset_image": "video03_025.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image87.jpg",
+      "source_frame": "video_003_0026.jpg",
+      "dataset_image": "video03_026.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image88.jpg",
+      "source_frame": "video_003_0027.jpg",
+      "dataset_image": "video03_027.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image89.jpg",
+      "source_frame": "video_003_0028.jpg",
+      "dataset_image": "video03_028.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image90.jpg",
+      "source_frame": "video_003_0029.jpg",
+      "dataset_image": "video03_029.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image91.jpg",
+      "source_frame": "video_003_0030.jpg",
+      "dataset_image": "video03_030.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image92.jpg",
+      "source_frame": "video_003_0031.jpg",
+      "dataset_image": "video03_031.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image93.jpg",
+      "source_frame": "video_003_0032.jpg",
+      "dataset_image": "video03_032.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image94.jpg",
+      "source_frame": "video_003_0033.jpg",
+      "dataset_image": "video03_033.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image95.jpg",
+      "source_frame": "video_003_0034.jpg",
+      "dataset_image": "video03_034.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image96.jpg",
+      "source_frame": "video_003_0035.jpg",
+      "dataset_image": "video03_035.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image97.jpg",
+      "source_frame": "video_003_0036.jpg",
+      "dataset_image": "video03_036.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image98.jpg",
+      "source_frame": "video_003_0037.jpg",
+      "dataset_image": "video03_037.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image99.jpg",
+      "source_frame": "video_003_0038.jpg",
+      "dataset_image": "video03_038.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image100.jpg",
+      "source_frame": "video_003_0039.jpg",
+      "dataset_image": "video03_039.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image101.jpg",
+      "source_frame": "video_003_0040.jpg",
+      "dataset_image": "video03_040.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image102.jpg",
+      "source_frame": "video_003_0041.jpg",
+      "dataset_image": "video03_041.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image103.jpg",
+      "source_frame": "video_003_0042.jpg",
+      "dataset_image": "video03_042.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image104.jpg",
+      "source_frame": "video_003_0043.jpg",
+      "dataset_image": "video03_043.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image105.jpg",
+      "source_frame": "video_003_0044.jpg",
+      "dataset_image": "video03_044.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image106.jpg",
+      "source_frame": "video_003_0045.jpg",
+      "dataset_image": "video03_045.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image107.jpg",
+      "source_frame": "video_003_0046.jpg",
+      "dataset_image": "video03_046.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image108.jpg",
+      "source_frame": "video_003_0047.jpg",
+      "dataset_image": "video03_047.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image109.jpg",
+      "source_frame": "video_003_0048.jpg",
+      "dataset_image": "video03_048.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image110.jpg",
+      "source_frame": "video_003_0049.jpg",
+      "dataset_image": "video03_049.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image111.jpg",
+      "source_frame": "video_003_0050.jpg",
+      "dataset_image": "video03_050.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image112.jpg",
+      "source_frame": "video_003_0051.jpg",
+      "dataset_image": "video03_051.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image113.jpg",
+      "source_frame": "video_003_0052.jpg",
+      "dataset_image": "video03_052.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image114.jpg",
+      "source_frame": "video_003_0053.jpg",
+      "dataset_image": "video03_053.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image115.jpg",
+      "source_frame": "video_003_0054.jpg",
+      "dataset_image": "video03_054.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image116.jpg",
+      "source_frame": "video_003_0055.jpg",
+      "dataset_image": "video03_055.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image117.jpg",
+      "source_frame": "video_003_0056.jpg",
+      "dataset_image": "video03_056.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image118.jpg",
+      "source_frame": "video_003_0057.jpg",
+      "dataset_image": "video03_057.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image119.jpg",
+      "source_frame": "video_003_0058.jpg",
+      "dataset_image": "video03_058.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image120.jpg",
+      "source_frame": "video_003_0059.jpg",
+      "dataset_image": "video03_059.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image121.jpg",
+      "source_frame": "video_003_0060.jpg",
+      "dataset_image": "video03_060.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image122.jpg",
+      "source_frame": "video_003_0061.jpg",
+      "dataset_image": "video03_061.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image123.jpg",
+      "source_frame": "video_003_0062.jpg",
+      "dataset_image": "video03_062.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image124.jpg",
+      "source_frame": "video_003_0063.jpg",
+      "dataset_image": "video03_063.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image125.jpg",
+      "source_frame": "video_003_0064.jpg",
+      "dataset_image": "video03_064.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image126.jpg",
+      "source_frame": "video_003_0065.jpg",
+      "dataset_image": "video03_065.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image127.jpg",
+      "source_frame": "video_003_0066.jpg",
+      "dataset_image": "video03_066.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image128.jpg",
+      "source_frame": "video_003_0067.jpg",
+      "dataset_image": "video03_067.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image129.jpg",
+      "source_frame": "video_003_0068.jpg",
+      "dataset_image": "video03_068.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image130.jpg",
+      "source_frame": "video_003_0069.jpg",
+      "dataset_image": "video03_069.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image131.jpg",
+      "source_frame": "video_003_0070.jpg",
+      "dataset_image": "video03_070.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image132.jpg",
+      "source_frame": "video_003_0071.jpg",
+      "dataset_image": "video03_071.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image133.jpg",
+      "source_frame": "video_003_0072.jpg",
+      "dataset_image": "video03_072.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image134.jpg",
+      "source_frame": "video_003_0073.jpg",
+      "dataset_image": "video03_073.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image135.jpg",
+      "source_frame": "video_003_0074.jpg",
+      "dataset_image": "video03_074.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image136.jpg",
+      "source_frame": "video_003_0075.jpg",
+      "dataset_image": "video03_075.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image137.jpg",
+      "source_frame": "video_003_0076.jpg",
+      "dataset_image": "video03_076.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image138.jpg",
+      "source_frame": "video_003_0077.jpg",
+      "dataset_image": "video03_077.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image139.jpg",
+      "source_frame": "video_003_0078.jpg",
+      "dataset_image": "video03_078.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image140.jpg",
+      "source_frame": "video_003_0079.jpg",
+      "dataset_image": "video03_079.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image141.jpg",
+      "source_frame": "video_003_0080.jpg",
+      "dataset_image": "video03_080.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image142.jpg",
+      "source_frame": "video_003_0081.jpg",
+      "dataset_image": "video03_081.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image143.jpg",
+      "source_frame": "video_003_0082.jpg",
+      "dataset_image": "video03_082.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image144.jpg",
+      "source_frame": "video_003_0083.jpg",
+      "dataset_image": "video03_083.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image145.jpg",
+      "source_frame": "video_003_0084.jpg",
+      "dataset_image": "video03_084.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image146.jpg",
+      "source_frame": "video_003_0085.jpg",
+      "dataset_image": "video03_085.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image147.jpg",
+      "source_frame": "video_003_0086.jpg",
+      "dataset_image": "video03_086.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image148.jpg",
+      "source_frame": "video_003_0087.jpg",
+      "dataset_image": "video03_087.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image149.jpg",
+      "source_frame": "video_003_0088.jpg",
+      "dataset_image": "video03_088.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image150.jpg",
+      "source_frame": "video_003_0089.jpg",
+      "dataset_image": "video03_089.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image151.jpg",
+      "source_frame": "video_003_0090.jpg",
+      "dataset_image": "video03_090.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image152.jpg",
+      "source_frame": "video_003_0091.jpg",
+      "dataset_image": "video03_091.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image153.jpg",
+      "source_frame": "video_003_0092.jpg",
+      "dataset_image": "video03_092.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image154.jpg",
+      "source_frame": "video_003_0093.jpg",
+      "dataset_image": "video03_093.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image155.jpg",
+      "source_frame": "video_003_0094.jpg",
+      "dataset_image": "video03_094.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image156.jpg",
+      "source_frame": "video_003_0095.jpg",
+      "dataset_image": "video03_095.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image157.jpg",
+      "source_frame": "video_003_0096.jpg",
+      "dataset_image": "video03_096.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image158.jpg",
+      "source_frame": "video_003_0097.jpg",
+      "dataset_image": "video03_097.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image159.jpg",
+      "source_frame": "video_003_0098.jpg",
+      "dataset_image": "video03_098.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image160.jpg",
+      "source_frame": "video_003_0099.jpg",
+      "dataset_image": "video03_099.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image161.jpg",
+      "source_frame": "video_003_0100.jpg",
+      "dataset_image": "video03_100.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image162.jpg",
+      "source_frame": "video_003_0101.jpg",
+      "dataset_image": "video03_101.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image163.jpg",
+      "source_frame": "video_003_0102.jpg",
+      "dataset_image": "video03_102.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image164.jpg",
+      "source_frame": "video_003_0103.jpg",
+      "dataset_image": "video03_103.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image165.jpg",
+      "source_frame": "video_003_0104.jpg",
+      "dataset_image": "video03_104.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image166.jpg",
+      "source_frame": "video_003_0105.jpg",
+      "dataset_image": "video03_105.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image167.jpg",
+      "source_frame": "video_003_0106.jpg",
+      "dataset_image": "video03_106.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image168.jpg",
+      "source_frame": "video_003_0107.jpg",
+      "dataset_image": "video03_107.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image169.jpg",
+      "source_frame": "video_003_0108.jpg",
+      "dataset_image": "video03_108.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image170.jpg",
+      "source_frame": "video_003_0109.jpg",
+      "dataset_image": "video03_109.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image171.jpg",
+      "source_frame": "video_003_0110.jpg",
+      "dataset_image": "video03_110.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image172.jpg",
+      "source_frame": "video_003_0111.jpg",
+      "dataset_image": "video03_111.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image173.jpg",
+      "source_frame": "video_003_0112.jpg",
+      "dataset_image": "video03_112.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image174.jpg",
+      "source_frame": "video_003_0113.jpg",
+      "dataset_image": "video03_113.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image175.jpg",
+      "source_frame": "video_003_0114.jpg",
+      "dataset_image": "video03_114.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image176.jpg",
+      "source_frame": "video_003_0115.jpg",
+      "dataset_image": "video03_115.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image177.jpg",
+      "source_frame": "video_003_0116.jpg",
+      "dataset_image": "video03_116.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image178.jpg",
+      "source_frame": "video_003_0117.jpg",
+      "dataset_image": "video03_117.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image179.jpg",
+      "source_frame": "video_003_0118.jpg",
+      "dataset_image": "video03_118.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image180.jpg",
+      "source_frame": "video_003_0119.jpg",
+      "dataset_image": "video03_119.jpg",
+      "split": "train"
+    },
+    {
+      "predict_image": "image181.jpg",
+      "source_frame": "video_003_0120.jpg",
+      "dataset_image": "video03_120.jpg",
+      "split": "train"
+    }
+  ],
+  "missing_pairs": [],
+  "invalid_labels_fixed": [
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image0.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image1.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image2.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image3.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image4.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image5.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image6.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image7.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image8.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image9.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image10.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image11.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image12.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image13.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image14.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image15.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image16.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image17.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image18.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image19.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image20.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image21.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image22.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image23.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image24.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image25.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image26.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image27.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image28.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image29.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image30.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image31.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image32.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image33.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image34.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image35.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image36.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image37.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image38.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image39.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image40.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image41.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image42.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image43.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image44.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image45.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image46.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image47.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image48.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image49.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image50.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image51.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image52.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image53.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image54.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image55.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image56.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image57.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image58.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image59.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image60.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image61.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image62.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image63.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image64.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image65.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image66.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image67.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image68.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image69.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image70.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image71.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image72.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image73.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image74.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image75.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image76.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image77.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image78.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image79.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image80.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image81.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image82.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image83.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image84.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image85.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image86.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image87.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image88.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image89.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image90.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image91.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image92.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image93.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image94.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image95.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image96.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image97.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image98.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image99.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image100.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image101.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image102.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image103.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image104.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image105.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image106.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image107.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image108.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image109.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image110.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image111.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image112.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image113.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image114.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image115.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image116.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image117.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image118.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image119.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image120.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image121.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image122.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image123.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image124.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image125.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image126.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image127.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image128.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image129.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image130.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image131.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image132.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image133.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image134.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image135.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image136.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image137.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image138.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image139.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image140.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image141.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image142.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image143.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image144.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image145.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image146.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image147.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image148.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image149.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image150.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image151.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image152.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image153.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image154.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image155.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image156.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image157.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image158.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image159.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image160.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image161.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image162.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image163.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image164.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image165.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image166.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image167.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image168.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image169.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image170.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image171.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image172.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image173.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image174.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image175.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image176.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image177.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image178.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image179.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image180.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\runs\\detect\\predict\\labels\\image181.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_001.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_002.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_003.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_004.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_005.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_006.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_007.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_008.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_009.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_010.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_011.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_012.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_013.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_014.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_015.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_016.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_017.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_018.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_019.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video06_020.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_001.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_002.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_003.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_004.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_005.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_006.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_007.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_008.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_009.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_010.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_011.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_012.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_013.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_014.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_015.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_016.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_017.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_018.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_019.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\train\\video07_020.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_001.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_002.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_003.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_004.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_005.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_006.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_007.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_008.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_009.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_010.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_011.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_012.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_013.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_014.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_015.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_016.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_017.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_018.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_019.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\val\\video08_020.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_001.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_002.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_003.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_004.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_005.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_006.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_007.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_008.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_009.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_010.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_011.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_012.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_013.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_014.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_015.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_016.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_017.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_018.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_019.txt",
+    "D:\\SEGP\\SEGP-SHRIMP-TRACKER\\shrimp-ai\\dataset\\labels\\test\\video09_020.txt"
+  ],
+  "invalid_labels_unresolved": []
+}
