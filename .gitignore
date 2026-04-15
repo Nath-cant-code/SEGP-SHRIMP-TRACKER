@@ -1,10 +1,48 @@
+# Python
 venv/
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
 *.pyc
 *.pyo
 
-#ai dataset 
+# Video Files (IMPORTANT)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.m4v
+assets/video_samples/*
+!assets/video_samples/.gitkeep
+
+# Data / AI datasets
+*.xlsx
+*.xls
+*.csv
 data/
 videos/
 datasets/
@@ -14,12 +52,27 @@ shrimp-ai/data/
 shrimp-ai/dataset/
 shrimp-ai/new_frames/
 
-#video files
-*.mp4
-*.avi
-*.mov
+# Databases
+*.db
+*.sqlite
 
-# Models
+# Environment
+.env
+*.env
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Node
+node_modules/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Dash / ML models
+*.pickle
 models/
 checkpoints/
 *.pt
