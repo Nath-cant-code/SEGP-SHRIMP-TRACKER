@@ -24,6 +24,8 @@ build/
 Thumbs.db
 .Spotlight-V100
 .Trashes
+*.pyc
+*.pyo
 
 # Video Files (IMPORTANT)
 *.mp4
@@ -45,6 +47,10 @@ data/
 videos/
 datasets/
 frames/
+new_frames/
+shrimp-ai/data/
+shrimp-ai/dataset/
+shrimp-ai/new_frames/
 
 # Databases
 *.db
@@ -71,3 +77,14 @@ models/
 checkpoints/
 *.pt
 *.pth
+
+# YOLO / training outputs
+runs/
+shrimp-ai/runs/
+
+# Local analysis outputs
+shrimp-ai/analysis/*.csv
+
+# Editor/temp files
+tempCodeRunnerFile.py
+shrimp-ai/tempCodeRunnerFile.py
