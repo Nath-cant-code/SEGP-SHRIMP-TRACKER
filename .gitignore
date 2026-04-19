@@ -88,3 +88,14 @@ shrimp-ai/analysis/*.csv
 # Editor/temp files
 tempCodeRunnerFile.py
 shrimp-ai/tempCodeRunnerFile.py
+
+# backend local env and/or any generated export/upload/ouput files
+backend/.venv/
+backend/__pycache__/
+backend/.env
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/exports/*
+!backend/exports/.gitkeep
+backend/outputs/*
+!backend/outputs/.gitkeep
