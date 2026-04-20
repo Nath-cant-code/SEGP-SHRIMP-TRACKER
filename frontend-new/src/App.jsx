@@ -1,11 +1,5 @@
-import ShrimpDashboard from './pages/ShrimpDashboard';
+import ShrimpDashboard from './pages/ShrimpDashboard'
 
-function App() {
-  return (
-    <div className="App">
-      <ShrimpDashboard />
-    </div>
-  );
+export default function App() {
+  return <ShrimpDashboard />
 }
-
-export default App;
