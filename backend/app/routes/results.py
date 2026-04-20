@@ -43,15 +43,17 @@ def get_results(db: Session = Depends(get_db)):
 
 @router.get("/results/{job_id}/{video_id}/csv")
 def download_csv(job_id: str, video_id: str, db: Session = Depends(get_db)):
-    stmt = select(VideoResult).where(VideoResult.job_id == job_id, VideoResult.video_id == video_id)
+    stmt = select(VideoResult).where(
+        VideoResult.job_id == job_id,
+        VideoResult.video_id == video_id,
+    )
     record = db.scalar(stmt)
 
     if not record:
-        raise HTTPException(status_code=404, detail="CSV not found")
+        raise HTTPException(status_code=404, detail="No CSV record found for this job/video combination.")
 
     csv_path = Path(record.csv_path)
-
     if not csv_path.exists():
-        raise HTTPException(status_code=404, detail="CSV file missing on disk")
+        raise HTTPException(status_code=404, detail="CSV file is missing from disk. Re-run the analysis.")
 
     return FileResponse(path=csv_path, filename=csv_path.name, media_type="text/csv")
