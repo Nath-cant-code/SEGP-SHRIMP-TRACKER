@@ -10,7 +10,9 @@ class AnalysisJob(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     job_id: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     selected_model: Mapped[str] = mapped_column(String(100))
-    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
     video_results = relationship("VideoResult", back_populates="job")
 
