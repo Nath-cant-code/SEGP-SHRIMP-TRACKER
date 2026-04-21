@@ -83,8 +83,8 @@ function uploadWithProgress(formData, onProgress, signal) {
     }
 
     xhr.onerror = () => reject(new Error('Network error — is the backend running on port 8000?'))
-    xhr.ontimeout = () => reject(new Error('Request timed out after 5 minutes'))
-    xhr.timeout = 300_000
+    xhr.ontimeout = () => reject(new Error('Request timed out after 20 minutes'))
+    xhr.timeout = 1200_000
 
     if (signal) signal.addEventListener('abort', () => xhr.abort())
     xhr.send(formData)
