@@ -40,3 +40,10 @@ class ResultListItem(BaseModel):
 
 class ResultsListResponse(BaseModel):
     results: list[ResultListItem]
+
+
+# New: returned by GET /results/{job_id}
+class JobDetailResponse(BaseModel):
+    job_id: str
+    selected_model: str
+    videos: list[VideoAnalysisResponse]

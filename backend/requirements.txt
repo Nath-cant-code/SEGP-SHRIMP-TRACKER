@@ -23,7 +23,7 @@ opencv-python==4.10.0.84
 # Uncomment the line below once you have a .pt model file in backend/models/
 # ultralytics==8.3.0
 
-# Misc (kept from original lock file — safe to leave in)
+# Misc utilities
 aiofiles==24.1.0
 annotated-types==0.7.0
 anyio==4.13.0
@@ -33,11 +33,13 @@ greenlet==3.4.0
 h11==0.16.0
 httptools==0.7.1
 idna==3.11
-pydantic_core==2.46.2
+# pydantic_core==2.46.2
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 six==1.17.0
-starlette==1.0.0
+# starlette version is intentionally NOT pinned here — FastAPI 0.115.5
+# pulls in starlette ~0.41.x automatically. Pinning starlette==1.0.0
+# caused a ResolutionImpossible conflict.
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2026.1

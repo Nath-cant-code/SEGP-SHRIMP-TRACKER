@@ -1,27 +1,27 @@
 /**
  * ShrimpDashboard.jsx
- * Full-stack React dashboard for the SEGP Shrimp Tracker.
  *
- * All API calls go through the Vite dev-server proxy (vite.config.js),
- * so there are NO cross-origin requests and NO CORS errors in development.
- * In production, configure your web server (Nginx / Caddy) to proxy the
- * same paths to the FastAPI backend.
+ * Changes vs previous version
+ * ----------------------------
+ * 1. On mount, fetches GET /results to find the most recent job, then calls
+ *    GET /results/{job_id} to restore timeseries + summary so charts survive
+ *    a page reload.
+ * 2. Stores the last job_id in sessionStorage so a hard-refresh within the
+ *    same tab also restores cleanly.
+ * 3. Shows a small "⚠ dummy data" badge on cards when the backend fell back
+ *    to generated data (real inference unavailable).
  */
 
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-// Empty string = same origin → Vite proxy handles forwarding to FastAPI
 const BASE_URL = ''
 const MAX_VIDEOS = 3
 const ALLOWED_TYPES = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
 const SMOOTHING_WINDOW = 7
 
-// ─── Theme Context ────────────────────────────────────────────────────────────
 const ThemeContext = createContext({ dark: true, toggle: () => {} })
 const useTheme = () => useContext(ThemeContext)
 
-// ─── Theme tokens ─────────────────────────────────────────────────────────────
 const DARK = {
   '--bg': '#090d16', '--surface': '#0f1623', '--card': '#131c2e',
   '--border': '#1a2740', '--border-hi': '#243553',
@@ -46,7 +46,6 @@ const LIGHT = {
   '--scrollbar': '#c5d5e8',
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 function applyTheme(tokens) {
   const root = document.documentElement
   Object.entries(tokens).forEach(([k, v]) => root.style.setProperty(k, v))
@@ -63,10 +62,6 @@ function shortName(name, max = 22) {
   return name.length > max ? name.slice(0, max - 1) + '…' : name
 }
 
-/**
- * Upload videos using XMLHttpRequest so we get upload progress events.
- * The request goes to /analyze which Vite proxies to http://127.0.0.1:8000/analyze.
- */
 function uploadWithProgress(formData, onProgress, signal) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
@@ -92,21 +87,17 @@ function uploadWithProgress(formData, onProgress, signal) {
     xhr.timeout = 300_000
 
     if (signal) signal.addEventListener('abort', () => xhr.abort())
-
     xhr.send(formData)
   })
 }
 
-// ─── Colour palette for chart series ─────────────────────────────────────────
 const SERIES_COLORS = [
   { line: '#14b8a6', dash: false },
   { line: '#f59e0b', dash: true  },
   { line: '#f87171', dash: true  },
 ]
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SUB-COMPONENTS
-// ═══════════════════════════════════════════════════════════════════════════════
+// ─── Sub-components (unchanged from previous version) ────────────────────────
 
 function LineChart({ datasets, field, unit, smoothing }) {
   const { dark } = useTheme()
@@ -374,10 +365,16 @@ function ProgressBar({ value, label, color }) {
 
 function VideoSummaryCards({ video, accent }) {
   const s = video.summary
+  const isDummy = video._used_dummy_data
   return (
     <div>
-      <div style={{ fontSize: 11, color: accent, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10 }}>
+      <div style={{ fontSize: 11, color: accent, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
         {video.video_name}
+        {isDummy && (
+          <span style={{ fontSize: 9, background: 'var(--amber-faint)', color: 'var(--amber)', border: '1px solid var(--amber)', borderRadius: 4, padding: '1px 6px', fontWeight: 600, letterSpacing: '0.08em' }}>
+            ⚠ DUMMY DATA — no model available
+          </span>
+        )}
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <MetricCard label="Avg Velocity" value={s.avg_velocity.toFixed(1)} unit="px/s" accent={accent} />
@@ -447,7 +444,7 @@ function TabBar({ tabs, active, onChange }) {
   )
 }
 
-function PastJobsTable({ jobs }) {
+function PastJobsTable({ jobs, onRestore }) {
   if (!jobs.length) return (
     <div style={{ color: 'var(--text-muted)', fontSize: 13, padding: '16px 0' }}>
       No past analyses found. Run your first analysis above.
@@ -459,7 +456,7 @@ function PastJobsTable({ jobs }) {
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr>{['Job ID', 'Created', 'Model', 'Videos'].map(h => <th key={h} style={hdSty}>{h}</th>)}</tr>
+          <tr>{['Job ID', 'Created', 'Model', 'Videos', ''].map(h => <th key={h} style={hdSty}>{h}</th>)}</tr>
         </thead>
         <tbody>
           {jobs.map(j => (
@@ -470,6 +467,13 @@ function PastJobsTable({ jobs }) {
               <td style={cellSty}>{new Date(j.created_at).toLocaleString()}</td>
               <td style={cellSty}>{j.selected_model}</td>
               <td style={cellSty}>{j.video_count}</td>
+              <td style={cellSty}>
+                <button onClick={() => onRestore(j.job_id)} style={{
+                  background: 'none', border: '1px solid var(--border)', borderRadius: 5,
+                  color: 'var(--accent)', fontSize: 11, padding: '4px 10px', cursor: 'pointer',
+                  fontFamily: 'inherit', transition: 'border-color 0.15s',
+                }}>↩ Restore</button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -497,11 +501,12 @@ function StatusBadge({ status }) {
     analyzing: { label: 'ANALYZING', bg: 'var(--accent-faint)',   c: 'var(--accent)' },
     done:      { label: 'READY',     bg: 'rgba(52,211,153,0.12)', c: 'var(--success)' },
     error:     { label: 'ERROR',     bg: 'var(--coral-faint)',    c: 'var(--err)' },
+    restoring: { label: 'RESTORING', bg: 'var(--blue-faint)',     c: 'var(--blue)' },
   }
   const { label, bg, c } = map[status] || map.idle
   return (
     <span style={{ background: bg, color: c, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', padding: '3px 10px', borderRadius: 4, fontFamily: 'monospace', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-      {status === 'analyzing' && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: c, animation: 'shrimpPulse 1.1s ease-in-out infinite' }} />}
+      {(status === 'analyzing' || status === 'restoring') && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: c, animation: 'shrimpPulse 1.1s ease-in-out infinite' }} />}
       {label}
     </span>
   )
@@ -539,7 +544,26 @@ export default function ShrimpDashboard() {
     setAlerts(a => [...a.slice(-99), { ts, msg, type, code }])
   }, [])
 
-  // Fetch models on mount
+  // ── Restore last job from sessionStorage on mount ──────────────────────────
+  const restoreJob = useCallback(async (jobId) => {
+    if (!jobId) return
+    setStatus('restoring')
+    log(`Restoring previous session: ${jobId}`, 'info')
+    try {
+      const res = await fetch(`${BASE_URL}/results/${jobId}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      setResult(data)
+      setStatus('done')
+      log(`Session restored: ${data.videos.length} video(s) from job ${jobId}`, 'ok')
+    } catch (e) {
+      setStatus('idle')
+      log(`Could not restore session: ${e.message}`, 'warn')
+      sessionStorage.removeItem('lastJobId')
+    }
+  }, [log])
+
+  // Fetch models on mount, then try to restore last session
   useEffect(() => {
     ;(async () => {
       try {
@@ -560,8 +584,14 @@ export default function ShrimpDashboard() {
       } finally {
         setModelsLoading(false)
       }
+
+      // Try to restore last session
+      const lastJobId = sessionStorage.getItem('lastJobId')
+      if (lastJobId) {
+        await restoreJob(lastJobId)
+      }
     })()
-  }, [log])
+  }, [log, restoreJob])
 
   const fetchPastJobs = useCallback(async () => {
     setPastLoading(true)
@@ -617,6 +647,15 @@ export default function ShrimpDashboard() {
       setAnalyzePct(100)
       setStatus('done')
       setResult(data)
+
+      // Persist job id so page reload can restore it
+      sessionStorage.setItem('lastJobId', data.job_id)
+
+      const dummyCount = data.videos.filter(v => v._used_dummy_data).length
+      if (dummyCount > 0) {
+        log(`⚠ ${dummyCount} video(s) used dummy data — no YOLO model found at backend/models/. Place a .pt file there and uncomment ultralytics in requirements.txt.`, 'warn')
+      }
+
       log(`Analysis complete. Job ID: ${data.job_id}`, 'ok', 200)
       data.videos.forEach(v => {
         log(`  → ${v.video_name}: avg vel=${v.summary.avg_velocity} px/s, avg cluster=${v.summary.avg_clustering_percent}%`, 'info')
@@ -645,6 +684,12 @@ export default function ShrimpDashboard() {
     log(`Downloading CSV for ${videoId} (job ${jobId})`, 'info')
   }
 
+  const handleRestore = useCallback(async (jobId) => {
+    sessionStorage.setItem('lastJobId', jobId)
+    await restoreJob(jobId)
+    setActiveTab('graphs')
+  }, [restoreJob])
+
   const legend = result?.videos?.map((v, i) => ({
     label: v.video_name,
     color: SERIES_COLORS[i % SERIES_COLORS.length].line,
@@ -652,6 +697,7 @@ export default function ShrimpDashboard() {
   })) || []
 
   const isRunning = status === 'uploading' || status === 'analyzing'
+  const hasDummy = result?.videos?.some(v => v._used_dummy_data)
 
   return (
     <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
@@ -726,6 +772,15 @@ export default function ShrimpDashboard() {
               </div>
             )}
 
+            {/* Dummy data warning */}
+            {hasDummy && (
+              <div style={{ background: 'var(--amber-faint)', border: '1px solid var(--amber)', borderRadius: 6, padding: '8px 10px', fontSize: 11, color: 'var(--amber)', marginBottom: 14 }}>
+                <strong>No YOLO model found.</strong> Charts show generated dummy data.
+                Place a <code>.pt</code> file in <code>backend/models/</code> and uncomment
+                <code>ultralytics</code> in <code>requirements.txt</code>, then re-run.
+              </div>
+            )}
+
             <div style={{ marginTop: 'auto', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <button onClick={runAnalysis} disabled={isRunning || !files.length} style={{
                 width: '100%', padding: '12px 0',
@@ -768,6 +823,7 @@ export default function ShrimpDashboard() {
                   <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: 14 }}>
                     <div style={{ fontSize: 36, marginBottom: 12 }}>📊</div>
                     <div>Upload videos and run analysis to see charts here.</div>
+                    <div style={{ fontSize: 12, marginTop: 8 }}>Or restore a past job from the <strong>History</strong> tab.</div>
                   </div>
                 ) : (
                   <>
@@ -856,7 +912,7 @@ export default function ShrimpDashboard() {
                   </button>
                 </div>
                 <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-                  <PastJobsTable jobs={pastJobs} />
+                  <PastJobsTable jobs={pastJobs} onRestore={handleRestore} />
                 </div>
               </div>
             )}
