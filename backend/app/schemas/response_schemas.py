@@ -23,6 +23,8 @@ class VideoAnalysisResponse(BaseModel):
     summary: VideoSummary
     timeseries: list[TimeSeriesPoint]
     csv_download_url: str
+    used_dummy_data: bool = False
+    warning: str | None = None
 
 
 class AnalyzeResponse(BaseModel):

@@ -45,6 +45,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.db.models import AnalysisJob, VideoResult
+from app.routes.models import get_model_paths
 from app.schemas.response_schemas import AnalyzeResponse
 
 router = APIRouter(tags=["analyze"])
@@ -65,56 +66,63 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 # ---------------------------------------------------------------------------
-# YOLO model registry  (same as before — backend maps id → .pt path)
-# ---------------------------------------------------------------------------
-MODEL_PATHS: dict[str, Path] = {
-    "best":      BACKEND_DIR / "models" / "best.pt",
-    "yolov8n":   BACKEND_DIR / "models" / "yolov8n.pt",
-    "custom_v2": BACKEND_DIR / "models" / "other_model.pt",
-}
-
-
-# ---------------------------------------------------------------------------
 # Real analysis helpers
 # ---------------------------------------------------------------------------
 
-def _run_yolo_inference(video_path: Path, model_path: Path, label_dir: Path) -> bool:
+def _find_generated_label_dir(run_dir: Path) -> Path | None:
+    direct_labels = run_dir / "labels"
+    if direct_labels.exists() and any(direct_labels.glob("*.txt")):
+        return direct_labels
+
+    if run_dir.exists() and any(run_dir.glob("*.txt")):
+        return run_dir
+
+    first_label = next(run_dir.rglob("*.txt"), None) if run_dir.exists() else None
+    return first_label.parent if first_label else None
+
+
+def _run_yolo_inference(video_path: Path, model_path: Path, run_dir: Path) -> tuple[Path | None, str | None]:
     """
     Run YOLO detect on *video_path* and write per-frame .txt label files
-    into *label_dir*.  Returns True on success, False if unavailable.
+    into *run_dir*. Returns the generated label directory and an optional
+    warning message if the pipeline could not continue.
     """
     try:
         from ultralytics import YOLO  # type: ignore
     except ImportError:
-        return False
+        return None, "ultralytics is not installed, so real YOLO inference could not start."
 
     if not model_path.exists():
-        return False
+        return None, f"Model file not found: {model_path}"
 
     try:
-        label_dir.mkdir(parents=True, exist_ok=True)
+        run_dir.mkdir(parents=True, exist_ok=True)
         model = YOLO(str(model_path))
         # save_txt=True writes label files; project/name controls output dir
         model.predict(
             source=str(video_path),
             save=False,
             save_txt=True,
-            project=str(label_dir.parent),
-            name=label_dir.name,
+            project=str(run_dir.parent),
+            name=run_dir.name,
             exist_ok=True,
             verbose=False,
             conf=0.25,
         )
-        return True
+        generated_label_dir = _find_generated_label_dir(run_dir)
+        if not generated_label_dir:
+            return None, f"YOLO inference completed but produced no label files under {run_dir}."
+
+        return generated_label_dir, None
     except Exception:
         traceback.print_exc()
-        return False
+        return None, "YOLO inference crashed before label files were produced."
 
 
 def _real_analysis(
     video_path: Path,
     label_dir: Path,
-) -> dict | None:
+) -> tuple[dict | None, str | None]:
     """
     Call the real shrimp_ai analysis functions.
     Returns a dict with keys: timeseries, summary, or None on failure.
@@ -125,10 +133,10 @@ def _real_analysis(
             analyze_saved_yolo_labels,
         )
     except ImportError:
-        return None
+        return None, "Could not import shrimp_ai.analysis.analysis."
 
     if not label_dir.exists() or not any(label_dir.glob("*.txt")):
-        return None
+        return None, f"No YOLO label files were found in {label_dir}."
 
     try:
         vel_summary = analyze_shrimp_velocity(
@@ -145,7 +153,7 @@ def _real_analysis(
         )
     except Exception:
         traceback.print_exc()
-        return None
+        return None, "The shrimp_ai analysis step crashed while processing the generated labels."
 
     # Merge the two frame-level result lists by frame_index
     vel_by_frame: dict[int, dict] = {
@@ -186,16 +194,19 @@ def _real_analysis(
     frames_processed = len(timeseries)
     shrimp_est = round(sum(shrimp_counts) / len(shrimp_counts)) if shrimp_counts else 0
 
-    return {
-        "timeseries": timeseries,
-        "summary": {
-            "avg_velocity":            avg_vel,
-            "max_velocity":            max_vel,
-            "avg_clustering_percent":  avg_clust,
-            "frames_processed":        frames_processed,
-            "shrimp_count_estimate":   shrimp_est,
+    return (
+        {
+            "timeseries": timeseries,
+            "summary": {
+                "avg_velocity":            avg_vel,
+                "max_velocity":            max_vel,
+                "avg_clustering_percent":  avg_clust,
+                "frames_processed":        frames_processed,
+                "shrimp_count_estimate":   shrimp_est,
+            },
         },
-    }
+        None,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -236,11 +247,13 @@ def analyze_videos(
     videos:   Annotated[list[UploadFile], File(...)],
     db: Session = Depends(get_db),
 ):
+    model_paths = get_model_paths()
+
     # ── Validate model ──────────────────────────────────────────────────────
-    if model_id not in MODEL_PATHS:
+    if model_id not in model_paths:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid model_id '{model_id}'. Choose from: {list(MODEL_PATHS.keys())}",
+            detail=f"Invalid model_id '{model_id}'. Choose from: {list(model_paths.keys())}",
         )
 
     # ── Validate video count ────────────────────────────────────────────────
@@ -263,7 +276,16 @@ def analyze_videos(
     db.add(db_job)
     db.commit()
 
-    model_path = MODEL_PATHS[model_id]
+    model_path = model_paths[model_id]
+    if not model_path.exists():
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Selected model '{model_id}' is not installed. "
+                f"Expected a .pt file at {model_path}."
+            ),
+        )
+
     response_videos: list[dict] = []
 
     for index, upload in enumerate(videos, start=1):
@@ -277,12 +299,16 @@ def analyze_videos(
         video_path.write_bytes(raw_bytes)
 
         # ── 2. Try real YOLO + analysis pipeline ────────────────────────────
-        job_dir   = UPLOAD_DIR / job_id / video_id
-        label_dir = job_dir / "labels"
+        job_dir = UPLOAD_DIR / job_id / video_id
 
-        used_dummy   = False
-        yolo_ran     = _run_yolo_inference(video_path, model_path, label_dir)
-        real_result  = _real_analysis(video_path, label_dir) if yolo_ran else None
+        used_dummy = False
+        warning = None
+        generated_label_dir, yolo_warning = _run_yolo_inference(video_path, model_path, job_dir)
+        real_result, analysis_warning = (
+            _real_analysis(video_path, generated_label_dir)
+            if generated_label_dir
+            else (None, None)
+        )
 
         if real_result:
             timeseries = real_result["timeseries"]
@@ -290,6 +316,7 @@ def analyze_videos(
         else:
             # Fall back to dummy data so the frontend always gets a response
             used_dummy = True
+            warning = analysis_warning or yolo_warning or "The backend fell back to generated dummy metrics."
             timeseries = _dummy_timeseries(index)
             summary    = _build_summary(timeseries)
 
@@ -326,7 +353,8 @@ def analyze_videos(
             "timeseries":      timeseries,
             "csv_download_url": f"/results/{job_id}/{video_id}/csv",
             # Optional informational field — frontend ignores unknown keys
-            "_used_dummy_data": used_dummy,
+            "used_dummy_data": used_dummy,
+            "warning": warning,
         })
 
     return {

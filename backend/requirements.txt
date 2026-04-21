@@ -21,7 +21,7 @@ opencv-python==4.10.0.84
 #   pip install ultralytics
 # Commented out here so the server starts even without GPU/model files.
 # Uncomment the line below once you have a .pt model file in backend/models/
-# ultralytics==8.3.0
+ultralytics==8.3.0
 
 # Misc utilities
 aiofiles==24.1.0
