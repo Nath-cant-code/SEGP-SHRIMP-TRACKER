@@ -5,30 +5,32 @@ POST /analyze  — accepts 1-3 video uploads, runs the real shrimp_ai
 analysis pipeline (velocity + clustering), saves results to SQLite,
 and returns the standard JSON contract.
 
-How the real pipeline is wired up
-----------------------------------
-The shrimp_ai/analysis/analysis.py module requires YOLO label files
-that are produced by a YOLO detect run.  Because the YOLO model inference
-itself is a separate step (running ultralytics on the uploaded video), we
-integrate it here as follows:
+BUG FIX (2026-04-21)
+---------------------
+ultralytics model.predict() saves label .txt files to:
+    {project}/{name}/labels/*.txt
 
-  1. Save the uploaded video to uploads/.
-  2. Run YOLO inference on the video using ultralytics, saving label txt
-     files to a temporary labels/ directory inside the job folder.
-  3. Call analyze_shrimp_velocity() and analyze_saved_yolo_labels() from
-     shrimp_ai/analysis/analysis.py with those label files.
-  4. Build the API response from the returned dicts.
+Previously we set:
+    project = label_dir.parent   (…/video_1/)
+    name     = label_dir.name    (labels)
+→ ultralytics wrote to  …/video_1/labels/labels/*.txt   (double-nested)
+→ _real_analysis() looked in  …/video_1/labels/   and found nothing
+→ fell back to dummy data every time.
 
-If YOLO / ultralytics is not installed or the model file is missing we
-fall back to the dummy generator so the frontend still works — the
-response will contain a warning field.
+Fix: use job_dir (…/analysis_xxx/video_1/) as the project root and
+"labels" as the name.  ultralytics then writes to:
+    job_dir/labels/labels/*.txt
+… wait, that still nests.  The real solution: set project=job_dir.parent
+and name=video_id so output lands at job_dir/predict/  — but that is
+confusing.  Simplest approach that actually works:
 
-Persistence
------------
-Uploaded videos are written to  uploads/<unique_name>.<ext>
-CSV exports are written to       exports/<job_id>_<video_id>.csv
-Both paths are stored in the VideoResult SQLite row so they survive
-restarts and can be served later.
+  project = UPLOAD_DIR / job_id          (e.g. uploads/analysis_xxx/)
+  name    = f"{video_id}_labels"         (e.g. video_1_labels)
+
+ultralytics writes labels to:
+    UPLOAD_DIR/job_id/video_1_labels/labels/*.txt
+
+We then point label_dir at that exact path.
 """
 
 from __future__ import annotations
@@ -65,7 +67,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 # ---------------------------------------------------------------------------
-# YOLO model registry  (same as before — backend maps id → .pt path)
+# YOLO model registry
 # ---------------------------------------------------------------------------
 MODEL_PATHS: dict[str, Path] = {
     "best":      BACKEND_DIR / "models" / "best.pt",
@@ -78,43 +80,57 @@ MODEL_PATHS: dict[str, Path] = {
 # Real analysis helpers
 # ---------------------------------------------------------------------------
 
-def _run_yolo_inference(video_path: Path, model_path: Path, label_dir: Path) -> bool:
+def _run_yolo_inference(video_path: Path, model_path: Path, job_dir: Path, video_id: str) -> Path | None:
     """
-    Run YOLO detect on *video_path* and write per-frame .txt label files
-    into *label_dir*.  Returns True on success, False if unavailable.
+    Run YOLO detect on *video_path*.
+
+    Returns the Path to the folder that contains the *.txt label files,
+    or None on failure.
+
+    ultralytics writes label files to:
+        {project}/{name}/labels/*.txt
+
+    We set:
+        project = job_dir          (e.g. uploads/analysis_xxx/)
+        name    = f"{video_id}_pred"   (e.g. video_1_pred)
+
+    So label files end up at:
+        uploads/analysis_xxx/video_1_pred/labels/*.txt
     """
     try:
         from ultralytics import YOLO  # type: ignore
     except ImportError:
-        return False
+        return None
 
     if not model_path.exists():
-        return False
+        return None
+
+    predict_name = f"{video_id}_pred"
+    expected_label_dir = job_dir / predict_name / "labels"
 
     try:
-        label_dir.mkdir(parents=True, exist_ok=True)
+        job_dir.mkdir(parents=True, exist_ok=True)
         model = YOLO(str(model_path))
-        # save_txt=True writes label files; project/name controls output dir
         model.predict(
             source=str(video_path),
             save=False,
             save_txt=True,
-            project=str(label_dir.parent),
-            name=label_dir.name,
+            project=str(job_dir),
+            name=predict_name,
             exist_ok=True,
             verbose=False,
             conf=0.25,
         )
-        return True
+        # Verify labels actually appeared
+        if expected_label_dir.exists() and any(expected_label_dir.glob("*.txt")):
+            return expected_label_dir
+        return None
     except Exception:
         traceback.print_exc()
-        return False
+        return None
 
 
-def _real_analysis(
-    video_path: Path,
-    label_dir: Path,
-) -> dict | None:
+def _real_analysis(video_path: Path, label_dir: Path) -> dict | None:
     """
     Call the real shrimp_ai analysis functions.
     Returns a dict with keys: timeseries, summary, or None on failure.
@@ -172,8 +188,8 @@ def _real_analysis(
         })
 
     # Build summary
-    velocities   = [t["avg_velocity"]       for t in timeseries if t["avg_velocity"] > 0]
-    clusterings  = [t["clustering_percent"] for t in timeseries if t["clustering_percent"] > 0]
+    velocities  = [t["avg_velocity"]       for t in timeseries if t["avg_velocity"] > 0]
+    clusterings = [t["clustering_percent"] for t in timeseries if t["clustering_percent"] > 0]
     shrimp_counts = [
         clust_by_frame[fi]["shrimp_count"]
         for fi in all_frame_indices
@@ -199,7 +215,7 @@ def _real_analysis(
 
 
 # ---------------------------------------------------------------------------
-# Fallback dummy generator (used only when real pipeline is unavailable)
+# Fallback dummy generator
 # ---------------------------------------------------------------------------
 
 def _dummy_timeseries(video_index: int, points: int = 20) -> list[dict]:
@@ -264,31 +280,31 @@ def analyze_videos(
     db.commit()
 
     model_path = MODEL_PATHS[model_id]
+    # job_dir is the per-job folder under uploads/
+    job_dir = UPLOAD_DIR / job_id
     response_videos: list[dict] = []
 
     for index, upload in enumerate(videos, start=1):
         video_id = f"video_{index}"
 
         # ── 1. Persist the uploaded video ───────────────────────────────────
-        unique_name  = f"{uuid4().hex[:8]}_{upload.filename}"
-        video_path   = UPLOAD_DIR / unique_name
         UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-        raw_bytes = upload.file.read()
+        unique_name = f"{uuid4().hex[:8]}_{upload.filename}"
+        video_path  = UPLOAD_DIR / unique_name
+        raw_bytes   = upload.file.read()
         video_path.write_bytes(raw_bytes)
 
-        # ── 2. Try real YOLO + analysis pipeline ────────────────────────────
-        job_dir   = UPLOAD_DIR / job_id / video_id
-        label_dir = job_dir / "labels"
-
-        used_dummy   = False
-        yolo_ran     = _run_yolo_inference(video_path, model_path, label_dir)
-        real_result  = _real_analysis(video_path, label_dir) if yolo_ran else None
+        # ── 2. Run YOLO inference ────────────────────────────────────────────
+        # _run_yolo_inference returns the path to the labels/ folder
+        # (job_dir / f"{video_id}_pred" / "labels") or None.
+        used_dummy  = False
+        label_dir   = _run_yolo_inference(video_path, model_path, job_dir, video_id)
+        real_result = _real_analysis(video_path, label_dir) if label_dir else None
 
         if real_result:
             timeseries = real_result["timeseries"]
             summary    = real_result["summary"]
         else:
-            # Fall back to dummy data so the frontend always gets a response
             used_dummy = True
             timeseries = _dummy_timeseries(index)
             summary    = _build_summary(timeseries)
@@ -320,12 +336,11 @@ def analyze_videos(
         db.commit()
 
         response_videos.append({
-            "video_id":        video_id,
-            "video_name":      upload.filename,
-            "summary":         summary,
-            "timeseries":      timeseries,
+            "video_id":         video_id,
+            "video_name":       upload.filename,
+            "summary":          summary,
+            "timeseries":       timeseries,
             "csv_download_url": f"/results/{job_id}/{video_id}/csv",
-            # Optional informational field — frontend ignores unknown keys
             "_used_dummy_data": used_dummy,
         })
 
