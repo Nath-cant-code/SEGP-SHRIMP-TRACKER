@@ -1,6 +1,6 @@
-train: shrimp-ai/dataset/images/train
-val: shrimp-ai/dataset/images/val
-test: shrimp-ai/dataset/images/test
+train: shrimp_ai/dataset/images/train
+val: shrimp_ai/dataset/images/val
+test: shrimp_ai/dataset/images/test
 
 nc: 1
 names: ["shrimp"]

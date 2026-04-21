@@ -48,9 +48,9 @@ videos/
 datasets/
 frames/
 new_frames/
-shrimp-ai/data/
-shrimp-ai/dataset/
-shrimp-ai/new_frames/
+shrimp_ai/data/
+shrimp_ai/dataset/
+shrimp_ai/new_frames/
 
 # Databases
 *.db
@@ -80,14 +80,14 @@ checkpoints/
 
 # YOLO / training outputs
 runs/
-shrimp-ai/runs/
+shrimp_ai/runs/
 
 # Local analysis outputs
 shrimp-ai/analysis/*.csv
 
 # Editor/temp files
 tempCodeRunnerFile.py
-shrimp-ai/tempCodeRunnerFile.py
+shrimp_ai/tempCodeRunnerFile.py
 
 # backend local env and/or any generated export/upload/ouput files
 backend/.venv/
