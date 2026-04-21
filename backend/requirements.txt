@@ -1,4 +1,30 @@
-annotated-doc==0.0.4
+# Core API framework
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+
+# Database
+sqlalchemy==2.0.36
+python-dotenv==1.0.1
+
+# Validation / serialization
+pydantic==2.10.3
+
+# Data processing
+pandas==2.2.3
+numpy==1.26.4
+
+# Computer vision — required by shrimp_ai/analysis/analysis.py
+opencv-python==4.10.0.84
+
+# YOLO inference — install manually if the model weights exist:
+#   pip install ultralytics
+# Commented out here so the server starts even without GPU/model files.
+# Uncomment the line below once you have a .pt model file in backend/models/
+# ultralytics==8.3.0
+
+# Misc (kept from original lock file — safe to leave in)
+aiofiles==24.1.0
 annotated-types==0.7.0
 anyio==4.13.0
 click==8.3.2
@@ -7,8 +33,6 @@ greenlet==3.4.0
 h11==0.16.0
 httptools==0.7.1
 idna==3.11
-psycopg==3.3.3
-psycopg-binary==3.3.3
 pydantic_core==2.46.2
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
@@ -19,7 +43,6 @@ typing_extensions==4.15.0
 tzdata==2026.1
 watchfiles==1.1.1
 websockets==16.0
-aiofiles==24.1.0
 
 # moiz's version
 # ----------------------------
@@ -31,14 +54,3 @@ aiofiles==24.1.0
 # pydantic==2.13.2
 # pandas==3.0.2
 # numpy==2.4.4
-
-# Claude's version
-# ----------------------------
-fastapi==0.115.5
-uvicorn[standard]==0.32.1
-python-multipart==0.0.12
-sqlalchemy==2.0.36
-python-dotenv==1.0.1
-pydantic==2.10.3
-pandas==2.2.3
-numpy==1.26.4
