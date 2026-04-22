@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TimeSeriesPoint(BaseModel):
@@ -18,6 +18,8 @@ class VideoSummary(BaseModel):
 
 
 class VideoAnalysisResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")   # ← allows _used_dummy_data through
+
     video_id: str
     video_name: str
     summary: VideoSummary
@@ -42,7 +44,7 @@ class ResultsListResponse(BaseModel):
     results: list[ResultListItem]
 
 
-# New: returned by GET /results/{job_id}
+# Returned by GET /results/{job_id}
 class JobDetailResponse(BaseModel):
     job_id: str
     selected_model: str

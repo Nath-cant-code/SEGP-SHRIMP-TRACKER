@@ -1,15 +1,26 @@
 /**
- * ShrimpDashboard.jsx
+ * ShrimpDashboard.jsx — Updated
  *
- * Changes vs previous version
- * ----------------------------
- * 1. On mount, fetches GET /results to find the most recent job, then calls
- *    GET /results/{job_id} to restore timeseries + summary so charts survive
- *    a page reload.
- * 2. Stores the last job_id in sessionStorage so a hard-refresh within the
- *    same tab also restores cleanly.
- * 3. Shows a small "⚠ dummy data" badge on cards when the backend fell back
- *    to generated data (real inference unavailable).
+ * New features vs previous version
+ * ----------------------------------
+ * 1. THRESHOLD VELOCITY ALERT
+ *    - User sets a velocity threshold (px/s) in the sidebar before running analysis.
+ *    - After analysis completes, the system checks every time-series point for each video.
+ *    - If avg_velocity drops below the threshold it is flagged as a "lethargic" event.
+ *    - A dismissable alert banner appears at the top of the Analytics tab listing
+ *      each affected video and the % of frames that fell below the threshold.
+ *    - Threshold breaches are also highlighted on the velocity chart as faint red dots.
+ *
+ * 2. EXPANDABLE / FULLSCREEN GRAPHS
+ *    - Each chart card now has an "⤢ Expand" button in its top-right corner.
+ *    - Clicking it opens a full-screen modal overlay with a smooth CSS transition.
+ *    - The expanded chart re-renders at full viewport width so all data points spread out.
+ *    - Press Escape or click the "✕ Close" button (or the backdrop) to dismiss.
+ *    - The modal uses a simple but polished fade+scale animation.
+ *
+ * 3. FIX: _used_dummy_data is now preserved by the backend Pydantic schema
+ *    (extra="allow" on VideoAnalysisResponse) so the dummy-data warning badge
+ *    renders correctly.
  */
 
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
@@ -97,17 +108,88 @@ const SERIES_COLORS = [
   { line: '#f87171', dash: true  },
 ]
 
-// ─── Sub-components (unchanged from previous version) ────────────────────────
+// ─── Fullscreen Graph Modal ──────────────────────────────────────────────────
 
-function LineChart({ datasets, field, unit, smoothing }) {
+function GraphModal({ title, subtitle, children, onClose }) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        animation: 'modalBackdropIn 0.22s ease both',
+        padding: '24px',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'var(--card)', border: '1px solid var(--border-hi)',
+          borderRadius: 14, width: '100%', maxWidth: 1100,
+          maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+          animation: 'modalContentIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Modal header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0,
+        }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-pri)' }}>{title}</div>
+            {subtitle && <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 7, color: 'var(--text-sec)', cursor: 'pointer',
+              fontSize: 13, padding: '6px 14px', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: 6,
+              transition: 'border-color 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--err)'; e.currentTarget.style.color = 'var(--err)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-sec)' }}
+          >
+            ✕ Close
+          </button>
+        </div>
+        {/* Modal body — extra padding, full width chart */}
+        <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px 24px' }}>
+          {children}
+        </div>
+        <div style={{ padding: '10px 20px', borderTop: '1px solid var(--border)', fontSize: 10.5, color: 'var(--text-muted)', flexShrink: 0 }}>
+          Press <kbd style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'monospace' }}>Esc</kbd> or click outside to close
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Line Chart ──────────────────────────────────────────────────────────────
+
+function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expanded }) {
   const { dark } = useTheme()
   const svgRef = useRef(null)
   const [hover, setHover] = useState(null)
 
-  const W = 560, H = 190
+  // Expanded charts use more vertical space
+  const W = expanded ? 900 : 560
+  const H = expanded ? 320 : 190
   const PAD = { t: 14, r: 12, b: 34, l: 50 }
   const IW = W - PAD.l - PAD.r
   const IH = H - PAD.t - PAD.b
+
+  const showThreshold = field === 'avg_velocity' && velocityThreshold > 0
 
   const processed = datasets.map((ds, di) => {
     const raw = ds.timeseries.map(p => p[field])
@@ -126,7 +208,8 @@ function LineChart({ datasets, field, unit, smoothing }) {
     )
   }
 
-  const minV = Math.min(...allVals), maxV = Math.max(...allVals)
+  const minV = Math.min(...allVals, showThreshold ? velocityThreshold : Infinity)
+  const maxV = Math.max(...allVals, showThreshold ? velocityThreshold : -Infinity)
   const minT = Math.min(...allTimes), maxT = Math.max(...allTimes)
   const rangeV = maxV - minV || 1, rangeT = maxT - minT || 1
 
@@ -141,7 +224,7 @@ function LineChart({ datasets, field, unit, smoothing }) {
       return `${first ? 'M' : 'L'}${tx(p.time_sec).toFixed(1)},${ty(v).toFixed(1)}`
     }).filter(Boolean).join(' ')
 
-  const Y_TICKS = 5, X_TICKS = 5
+  const Y_TICKS = 5, X_TICKS = expanded ? 8 : 5
   const gridVals = Array.from({ length: Y_TICKS + 1 }, (_, i) => minV + (rangeV * i / Y_TICKS))
   const gridTimes = Array.from({ length: X_TICKS + 1 }, (_, i) => minT + (rangeT * i / X_TICKS))
   const textFill = dark ? '#45607a' : '#8fa3c0'
@@ -162,10 +245,13 @@ function LineChart({ datasets, field, unit, smoothing }) {
         x: tx(ds.timeseries[idx].time_sec),
         y: ty(ds.vals[idx] ?? 0),
         color: ds.color.line,
+        belowThreshold: showThreshold && ds.vals[idx] != null && ds.vals[idx] < velocityThreshold,
       }
     })
     setHover(hoverData)
-  }, [processed, minT, rangeT, IW, PAD.l])
+  }, [processed, minT, rangeT, IW, PAD.l, showThreshold, velocityThreshold])
+
+  const thresholdY = showThreshold ? ty(velocityThreshold) : null
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -174,12 +260,14 @@ function LineChart({ datasets, field, unit, smoothing }) {
         onMouseMove={onMouseMove} onMouseLeave={() => setHover(null)}>
         <defs>
           {processed.map((ds, di) => (
-            <linearGradient key={di} id={`grad-${field}-${di}`} x1="0" x2="0" y1="0" y2="1">
+            <linearGradient key={di} id={`grad-${field}-${di}-${expanded ? 'exp' : 'sm'}`} x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor={ds.color.line} stopOpacity={ds.color.dash ? 0.08 : 0.15} />
               <stop offset="100%" stopColor={ds.color.line} stopOpacity="0" />
             </linearGradient>
           ))}
         </defs>
+
+        {/* Grid */}
         {gridVals.map((v, i) => (
           <g key={i}>
             <line x1={PAD.l} y1={ty(v)} x2={W - PAD.r} y2={ty(v)} stroke={gridStroke} strokeWidth="0.6" />
@@ -196,6 +284,29 @@ function LineChart({ datasets, field, unit, smoothing }) {
         <text x={-H / 2} y={15} transform="rotate(-90)" textAnchor="middle" fill={textFill} fontSize="10" fontFamily="monospace">
           {unit}
         </text>
+
+        {/* Threshold line */}
+        {showThreshold && thresholdY != null && (
+          <g>
+            <line
+              x1={PAD.l} y1={thresholdY} x2={W - PAD.r} y2={thresholdY}
+              stroke="#f87171" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.8"
+            />
+            <rect x={W - PAD.r - 72} y={thresholdY - 14} width={70} height={14} rx={3}
+              fill="rgba(248,113,113,0.15)" stroke="#f87171" strokeWidth="0.5" />
+            <text x={W - PAD.r - 37} y={thresholdY - 3} textAnchor="middle"
+              fill="#f87171" fontSize="9" fontFamily="monospace" fontWeight="600">
+              threshold {velocityThreshold}
+            </text>
+            {/* Shade below-threshold zone */}
+            <rect
+              x={PAD.l} y={thresholdY} width={IW} height={Math.max(0, PAD.t + IH - thresholdY)}
+              fill="rgba(248,113,113,0.04)"
+            />
+          </g>
+        )}
+
+        {/* Data lines */}
         {processed.map((ds, di) => {
           const path = buildPath(ds)
           const lastPt = ds.timeseries[ds.timeseries.length - 1]
@@ -203,31 +314,45 @@ function LineChart({ datasets, field, unit, smoothing }) {
           return (
             <g key={di}>
               <path d={`${path} L${tx(lastPt.time_sec)},${PAD.t + IH} L${tx(firstPt.time_sec)},${PAD.t + IH} Z`}
-                fill={`url(#grad-${field}-${di})`} />
+                fill={`url(#grad-${field}-${di}-${expanded ? 'exp' : 'sm'})`} />
               <path d={path} fill="none" stroke={ds.color.line} strokeWidth="1.8"
                 strokeDasharray={ds.color.dash ? '6 3' : undefined}
                 strokeLinejoin="round" strokeLinecap="round" />
+              {/* Mark below-threshold points for velocity */}
+              {showThreshold && ds.timeseries.map((p, i) => {
+                const v = ds.vals[i]
+                if (v == null || v >= velocityThreshold) return null
+                return (
+                  <circle key={i} cx={tx(p.time_sec)} cy={ty(v)} r={expanded ? 3 : 2}
+                    fill="#f87171" opacity="0.5" />
+                )
+              })}
             </g>
           )
         })}
+
+        {/* Hover crosshair + dots */}
         {hover && (
           <>
             <line x1={hover[0].x} y1={PAD.t} x2={hover[0].x} y2={PAD.t + IH}
               stroke={textFill} strokeWidth="0.8" strokeDasharray="3 2" />
             {hover.map((h, i) => h.val != null && (
-              <circle key={i} cx={h.x} cy={h.y} r="4" fill={h.color}
+              <circle key={i} cx={h.x} cy={h.y} r={5}
+                fill={h.belowThreshold ? '#f87171' : h.color}
                 stroke={dark ? '#090d16' : '#ffffff'} strokeWidth="1.5" />
             ))}
           </>
         )}
       </svg>
+
+      {/* Hover tooltip */}
       {hover && (
         <div style={{
           position: 'absolute', top: 6, right: 8,
           background: 'var(--surface)', border: '1px solid var(--border-hi)',
           borderRadius: 8, padding: '8px 12px', fontSize: 11.5, lineHeight: 1.8,
           pointerEvents: 'none', fontFamily: 'monospace', color: 'var(--text-sec)',
-          minWidth: 170, boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+          minWidth: 180, boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
         }}>
           <div style={{ color: 'var(--text-muted)', marginBottom: 3, fontSize: 10 }}>
             t = {hover[0]?.time.toFixed(2)}s
@@ -235,8 +360,11 @@ function LineChart({ datasets, field, unit, smoothing }) {
           {hover.map((h, i) => h.val != null && (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 8, height: 8, borderRadius: 2, background: h.color, display: 'inline-block', flexShrink: 0 }} />
-              <span style={{ color: 'var(--text-pri)', fontWeight: 500 }}>{h.val.toFixed(2)}</span>
+              <span style={{ color: h.belowThreshold ? 'var(--err)' : 'var(--text-pri)', fontWeight: 500 }}>
+                {h.val.toFixed(2)}
+              </span>
               <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>{unit}</span>
+              {h.belowThreshold && <span style={{ color: 'var(--err)', fontSize: 9, marginLeft: 2 }}>⚠ low</span>}
               <span style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 'auto', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {shortName(h.label, 14)}
               </span>
@@ -247,6 +375,93 @@ function LineChart({ datasets, field, unit, smoothing }) {
     </div>
   )
 }
+
+// ─── Chart Card with Expand Button ───────────────────────────────────────────
+
+function ChartCard({ title, subtitle, children, expandContent }) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <>
+      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 16px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-pri)' }}>{title}</div>
+            {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
+          </div>
+          <button
+            onClick={() => setExpanded(true)}
+            title="Expand chart"
+            style={{
+              background: 'none', border: '1px solid var(--border)', borderRadius: 6,
+              color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11,
+              padding: '4px 9px', fontFamily: 'inherit', flexShrink: 0, marginLeft: 8,
+              transition: 'border-color 0.15s, color 0.15s',
+              display: 'flex', alignItems: 'center', gap: 4,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+          >
+            ⤢ Expand
+          </button>
+        </div>
+        {children}
+      </div>
+
+      {expanded && (
+        <GraphModal title={title} subtitle={subtitle} onClose={() => setExpanded(false)}>
+          {expandContent}
+        </GraphModal>
+      )}
+    </>
+  )
+}
+
+// ─── Threshold Alert Banner ───────────────────────────────────────────────────
+
+function ThresholdAlertBanner({ alerts, onDismiss }) {
+  if (!alerts || alerts.length === 0) return null
+
+  return (
+    <div style={{
+      background: 'rgba(248,113,113,0.08)', border: '1px solid var(--err)',
+      borderRadius: 10, padding: '14px 18px',
+      animation: 'fadeUp 0.4s ease both',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--err)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ fontSize: 16 }}>⚠</span>
+            Lethargic Shrimp Detected — Velocity Below Threshold
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {alerts.map((a, i) => (
+              <div key={i} style={{ fontSize: 12, color: 'var(--text-sec)', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: SERIES_COLORS[a.videoIndex % SERIES_COLORS.length].line, display: 'inline-block', flexShrink: 0 }} />
+                <span style={{ color: 'var(--text-pri)', fontWeight: 500 }}>{shortName(a.videoName, 30)}</span>
+                <span style={{ color: 'var(--text-muted)' }}>—</span>
+                <span style={{ color: 'var(--err)' }}>{a.pctBelow.toFixed(1)}% of frames</span>
+                <span style={{ color: 'var(--text-muted)' }}>below {a.threshold} px/s</span>
+                <span style={{ color: 'var(--text-muted)' }}>·</span>
+                <span style={{ color: 'var(--text-muted)' }}>avg {a.avgVelocity.toFixed(2)} px/s</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8 }}>
+            Red dots on the velocity chart indicate frames below the threshold. Check water quality, oxygen levels, or feeding schedule.
+          </div>
+        </div>
+        <button
+          onClick={onDismiss}
+          style={{ background: 'none', border: 'none', color: 'var(--err)', cursor: 'pointer', fontSize: 16, padding: '0 4px', lineHeight: 1, flexShrink: 0 }}
+          title="Dismiss"
+        >×</button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Other sub-components (unchanged) ────────────────────────────────────────
 
 function MetricCard({ label, value, unit, accent }) {
   return (
@@ -482,18 +697,6 @@ function PastJobsTable({ jobs, onRestore }) {
   )
 }
 
-function ChartCard({ title, subtitle, children }) {
-  return (
-    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 16px 12px' }}>
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-pri)' }}>{title}</div>
-        {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
-      </div>
-      {children}
-    </div>
-  )
-}
-
 function StatusBadge({ status }) {
   const map = {
     idle:      { label: 'IDLE',      bg: 'rgba(69,96,122,0.25)', c: 'var(--text-muted)' },
@@ -510,6 +713,27 @@ function StatusBadge({ status }) {
       {label}
     </span>
   )
+}
+
+// ─── Threshold velocity helper ────────────────────────────────────────────────
+
+function computeThresholdAlerts(videos, threshold) {
+  if (!threshold || threshold <= 0) return []
+  const alerts = []
+  videos.forEach((v, i) => {
+    const velPoints = v.timeseries.map(p => p.avg_velocity).filter(x => x > 0)
+    if (!velPoints.length) return
+    const below = velPoints.filter(x => x < threshold)
+    if (below.length === 0) return
+    alerts.push({
+      videoIndex: i,
+      videoName: v.video_name,
+      threshold,
+      pctBelow: (below.length / velPoints.length) * 100,
+      avgVelocity: velPoints.reduce((a, b) => a + b, 0) / velPoints.length,
+    })
+  })
+  return alerts
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -537,6 +761,11 @@ export default function ShrimpDashboard() {
   const [activeTab, setActiveTab] = useState('graphs')
   const [alerts, setAlerts] = useState([])
 
+  // Threshold velocity state
+  const [velocityThreshold, setVelocityThreshold] = useState(0)
+  const [thresholdAlerts, setThresholdAlerts] = useState([])
+  const [thresholdAlertDismissed, setThresholdAlertDismissed] = useState(false)
+
   const abortRef = useRef(null)
 
   const log = useCallback((msg, type = 'info', code) => {
@@ -544,7 +773,6 @@ export default function ShrimpDashboard() {
     setAlerts(a => [...a.slice(-99), { ts, msg, type, code }])
   }, [])
 
-  // ── Restore last job from sessionStorage on mount ──────────────────────────
   const restoreJob = useCallback(async (jobId) => {
     if (!jobId) return
     setStatus('restoring')
@@ -563,7 +791,6 @@ export default function ShrimpDashboard() {
     }
   }, [log])
 
-  // Fetch models on mount, then try to restore last session
   useEffect(() => {
     ;(async () => {
       try {
@@ -585,7 +812,6 @@ export default function ShrimpDashboard() {
         setModelsLoading(false)
       }
 
-      // Try to restore last session
       const lastJobId = sessionStorage.getItem('lastJobId')
       if (lastJobId) {
         await restoreJob(lastJobId)
@@ -616,8 +842,12 @@ export default function ShrimpDashboard() {
     if (status === 'uploading' || status === 'analyzing') return
 
     setError(''); setResult(null); setUploadPct(0); setAnalyzePct(0)
+    setThresholdAlerts([]); setThresholdAlertDismissed(false)
     setStatus('uploading')
     log(`Starting analysis: model=${selectedModel}, videos=${files.map(f => f.name).join(', ')}`, 'info')
+    if (velocityThreshold > 0) {
+      log(`Velocity threshold set to ${velocityThreshold} px/s — lethargic shrimp detection enabled`, 'info')
+    }
 
     const ctrl = new AbortController()
     abortRef.current = ctrl
@@ -648,12 +878,25 @@ export default function ShrimpDashboard() {
       setStatus('done')
       setResult(data)
 
-      // Persist job id so page reload can restore it
       sessionStorage.setItem('lastJobId', data.job_id)
+
+      // ── Threshold check (runs after analysis is fully complete) ──
+      if (velocityThreshold > 0) {
+        const tAlerts = computeThresholdAlerts(data.videos, velocityThreshold)
+        setThresholdAlerts(tAlerts)
+        if (tAlerts.length > 0) {
+          tAlerts.forEach(a => {
+            log(`⚠ LETHARGIC ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% of frames below ${a.threshold} px/s`, 'warn')
+          })
+          setActiveTab('graphs') // bring user to the graph tab to see the alert
+        } else {
+          log(`✓ All videos passed velocity threshold (${velocityThreshold} px/s)`, 'ok')
+        }
+      }
 
       const dummyCount = data.videos.filter(v => v._used_dummy_data).length
       if (dummyCount > 0) {
-        log(`⚠ ${dummyCount} video(s) used dummy data — no YOLO model found at backend/models/. Place a .pt file there and uncomment ultralytics in requirements.txt.`, 'warn')
+        log(`⚠ ${dummyCount} video(s) used dummy data — no YOLO model found at backend/models/.`, 'warn')
       }
 
       log(`Analysis complete. Job ID: ${data.job_id}`, 'ok', 200)
@@ -670,7 +913,7 @@ export default function ShrimpDashboard() {
         log(`Error: ${e.message}`, 'err')
       }
     }
-  }, [files, selectedModel, status, log, fetchPastJobs])
+  }, [files, selectedModel, status, log, fetchPastJobs, velocityThreshold])
 
   const cancelAnalysis = () => {
     if (abortRef.current) {
@@ -686,6 +929,7 @@ export default function ShrimpDashboard() {
 
   const handleRestore = useCallback(async (jobId) => {
     sessionStorage.setItem('lastJobId', jobId)
+    setThresholdAlerts([]); setThresholdAlertDismissed(false)
     await restoreJob(jobId)
     setActiveTab('graphs')
   }, [restoreJob])
@@ -698,6 +942,8 @@ export default function ShrimpDashboard() {
 
   const isRunning = status === 'uploading' || status === 'analyzing'
   const hasDummy = result?.videos?.some(v => v._used_dummy_data)
+  const showThresholdAlerts = thresholdAlerts.length > 0 && !thresholdAlertDismissed
+  const activeVelocityThreshold = velocityThreshold > 0 ? velocityThreshold : 0
 
   return (
     <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
@@ -710,7 +956,10 @@ export default function ShrimpDashboard() {
         ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
         @keyframes shrimpPulse { 0%,100%{opacity:1}50%{opacity:0.3} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+        @keyframes modalBackdropIn { from{opacity:0} to{opacity:1} }
+        @keyframes modalContentIn { from{opacity:0;transform:scale(0.93) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
         .fade-up { animation: fadeUp 0.35s ease both; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 0.4; }
       `}</style>
 
       <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
@@ -755,6 +1004,40 @@ export default function ShrimpDashboard() {
               <UploadZone files={files} onFiles={setFiles} />
             </SideSection>
 
+            {/* ── Threshold velocity ── */}
+            <SideSection label="Lethargic Detection">
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, lineHeight: 1.5 }}>
+                Set a minimum velocity threshold. Frames below this value will be flagged after analysis.
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={velocityThreshold || ''}
+                  onChange={e => setVelocityThreshold(Math.max(0, parseFloat(e.target.value) || 0))}
+                  placeholder="e.g. 5"
+                  disabled={isRunning}
+                  style={{
+                    flex: 1, background: 'var(--surface)', border: '1px solid var(--border)',
+                    borderRadius: 6, color: 'var(--text-pri)', fontSize: 13,
+                    padding: '7px 10px', outline: 'none', fontFamily: 'monospace',
+                    transition: 'border-color 0.15s',
+                    opacity: isRunning ? 0.5 : 1,
+                  }}
+                  onFocus={e => e.target.style.borderColor = 'var(--err)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                />
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>px/s</span>
+              </div>
+              {velocityThreshold > 0 && (
+                <div style={{ fontSize: 10, color: 'var(--err)', marginTop: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span>⚠</span> Alert if velocity &lt; {velocityThreshold} px/s
+                  <button onClick={() => setVelocityThreshold(0)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11, marginLeft: 'auto', padding: 0 }}>clear</button>
+                </div>
+              )}
+            </SideSection>
+
             <SideSection label="Display">
               <Toggle value={smoothing} onChange={setSmoothing} label={`Rolling average (${SMOOTHING_WINDOW}-frame)`} />
             </SideSection>
@@ -772,7 +1055,6 @@ export default function ShrimpDashboard() {
               </div>
             )}
 
-            {/* Dummy data warning */}
             {hasDummy && (
               <div style={{ background: 'var(--amber-faint)', border: '1px solid var(--amber)', borderRadius: 6, padding: '8px 10px', fontSize: 11, color: 'var(--amber)', marginBottom: 14 }}>
                 <strong>No YOLO model found.</strong> Charts show generated dummy data.
@@ -807,7 +1089,7 @@ export default function ShrimpDashboard() {
 
             <TabBar
               tabs={[
-                { id: 'graphs',  label: 'Analytics' },
+                { id: 'graphs',  label: `Analytics${showThresholdAlerts ? ' ⚠' : ''}` },
                 { id: 'metrics', label: 'Summary Metrics' },
                 { id: 'history', label: 'History' },
                 { id: 'log',     label: 'System Log' },
@@ -818,7 +1100,7 @@ export default function ShrimpDashboard() {
 
             {/* Analytics */}
             {activeTab === 'graphs' && (
-              <div className="fade-up">
+              <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {!result ? (
                   <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: 14 }}>
                     <div style={{ fontSize: 36, marginBottom: 12 }}>📊</div>
@@ -827,6 +1109,14 @@ export default function ShrimpDashboard() {
                   </div>
                 ) : (
                   <>
+                    {/* Threshold alert banner — shown after analysis, before charts */}
+                    {showThresholdAlerts && (
+                      <ThresholdAlertBanner
+                        alerts={thresholdAlerts}
+                        onDismiss={() => setThresholdAlertDismissed(true)}
+                      />
+                    )}
+
                     {legend.length > 1 && (
                       <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-sec)' }}>
                         {legend.map((l, i) => (
@@ -837,14 +1127,59 @@ export default function ShrimpDashboard() {
                         ))}
                       </div>
                     )}
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                      <ChartCard title="Shrimp Velocity Over Time" subtitle={`Average movement speed (px/s)${smoothing ? ' — smoothed' : ''}`}>
-                        <LineChart datasets={result.videos} field="avg_velocity" unit="px/s" smoothing={smoothing} />
+                      {/* Velocity chart */}
+                      <ChartCard
+                        title="Shrimp Velocity Over Time"
+                        subtitle={`Average movement speed (px/s)${smoothing ? ' — smoothed' : ''}${activeVelocityThreshold > 0 ? ` · threshold ${activeVelocityThreshold} px/s` : ''}`}
+                        expandContent={
+                          <LineChart
+                            datasets={result.videos}
+                            field="avg_velocity"
+                            unit="px/s"
+                            smoothing={smoothing}
+                            velocityThreshold={activeVelocityThreshold}
+                            expanded={true}
+                          />
+                        }
+                      >
+                        <LineChart
+                          datasets={result.videos}
+                          field="avg_velocity"
+                          unit="px/s"
+                          smoothing={smoothing}
+                          velocityThreshold={activeVelocityThreshold}
+                          expanded={false}
+                        />
                       </ChartCard>
-                      <ChartCard title="Shrimp Clustering Over Time" subtitle={`Spatial clustering score (%)${smoothing ? ' — smoothed' : ''}`}>
-                        <LineChart datasets={result.videos} field="clustering_percent" unit="%" smoothing={smoothing} />
+
+                      {/* Clustering chart */}
+                      <ChartCard
+                        title="Shrimp Clustering Over Time"
+                        subtitle={`Spatial clustering score (%)${smoothing ? ' — smoothed' : ''}`}
+                        expandContent={
+                          <LineChart
+                            datasets={result.videos}
+                            field="clustering_percent"
+                            unit="%"
+                            smoothing={smoothing}
+                            velocityThreshold={0}
+                            expanded={true}
+                          />
+                        }
+                      >
+                        <LineChart
+                          datasets={result.videos}
+                          field="clustering_percent"
+                          unit="%"
+                          smoothing={smoothing}
+                          velocityThreshold={0}
+                          expanded={false}
+                        />
                       </ChartCard>
                     </div>
+
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {result.videos.map((v, i) => (
                         <button key={i} onClick={() => downloadCsv(result.job_id, v.video_id)} style={{
