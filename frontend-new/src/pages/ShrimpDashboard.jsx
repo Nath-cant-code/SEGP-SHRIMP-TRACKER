@@ -1,26 +1,30 @@
 /**
  * ShrimpDashboard.jsx — Updated
  *
- * New features vs previous version
+ * Changes in this version vs previous:
  * ----------------------------------
- * 1. THRESHOLD VELOCITY ALERT
- *    - User sets a velocity threshold (px/s) in the sidebar before running analysis.
- *    - After analysis completes, the system checks every time-series point for each video.
- *    - If avg_velocity drops below the threshold it is flagged as a "lethargic" event.
- *    - A dismissable alert banner appears at the top of the Analytics tab listing
- *      each affected video and the % of frames that fell below the threshold.
- *    - Threshold breaches are also highlighted on the velocity chart as faint red dots.
+ * TASK 1 — ON-DEMAND THRESHOLD CALCULATION FOR ANY LOADED ANALYSIS
  *
- * 2. EXPANDABLE / FULLSCREEN GRAPHS
- *    - Each chart card now has an "⤢ Expand" button in its top-right corner.
- *    - Clicking it opens a full-screen modal overlay with a smooth CSS transition.
- *    - The expanded chart re-renders at full viewport width so all data points spread out.
- *    - Press Escape or click the "✕ Close" button (or the backdrop) to dismiss.
- *    - The modal uses a simple but polished fade+scale animation.
+ * The "Lethargic Detection" sidebar section now works for ANY loaded result —
+ * whether just completed or restored from history — without re-running YOLO.
  *
- * 3. FIX: _used_dummy_data is now preserved by the backend Pydantic schema
- *    (extra="allow" on VideoAnalysisResponse) so the dummy-data warning badge
- *    renders correctly.
+ * New UI elements:
+ *   • A "Calculate Frames Exceeding Threshold" button appears in the sidebar
+ *     whenever a result is loaded (new analysis OR restored).
+ *   • The button is disabled when no threshold is set or no result is loaded.
+ *   • Clicking it runs `computeThresholdAlerts()` over the in-memory timeseries
+ *     of the current result and updates `thresholdAlerts` state immediately.
+ *   • The existing ThresholdAlertBanner then renders automatically.
+ *   • If the result was restored, a small "(restored)" label appears in the
+ *     banner so the user knows the metrics are based on historical data.
+ *
+ * The threshold input still auto-computes on fresh analysis completion (same
+ * behaviour as before). On restored analyses the auto-compute is skipped and
+ * the user must click the button manually (so as not to produce stale/confusing
+ * alerts with a leftover threshold value from a previous session).
+ *
+ * All other features (expand graphs, dummy-data warning, rolling average,
+ * system log, history tab, etc.) are unchanged.
  */
 
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
@@ -77,11 +81,9 @@ function uploadWithProgress(formData, onProgress, signal) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `${BASE_URL}/analyze`)
-
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
     }
-
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         try { resolve(JSON.parse(xhr.responseText)) }
@@ -92,11 +94,9 @@ function uploadWithProgress(formData, onProgress, signal) {
         reject(new Error(msg))
       }
     }
-
     xhr.onerror = () => reject(new Error('Network error — is the backend running on port 8000?'))
     xhr.ontimeout = () => reject(new Error('Request timed out after 20 minutes'))
     xhr.timeout = 1200_000
-
     if (signal) signal.addEventListener('abort', () => xhr.abort())
     xhr.send(formData)
   })
@@ -139,7 +139,6 @@ function GraphModal({ title, subtitle, children, onClose }) {
           overflow: 'hidden',
         }}
       >
-        {/* Modal header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0,
@@ -163,7 +162,6 @@ function GraphModal({ title, subtitle, children, onClose }) {
             ✕ Close
           </button>
         </div>
-        {/* Modal body — extra padding, full width chart */}
         <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px 24px' }}>
           {children}
         </div>
@@ -182,7 +180,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
   const svgRef = useRef(null)
   const [hover, setHover] = useState(null)
 
-  // Expanded charts use more vertical space
   const W = expanded ? 900 : 560
   const H = expanded ? 320 : 190
   const PAD = { t: 14, r: 12, b: 34, l: 50 }
@@ -267,7 +264,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
           ))}
         </defs>
 
-        {/* Grid */}
         {gridVals.map((v, i) => (
           <g key={i}>
             <line x1={PAD.l} y1={ty(v)} x2={W - PAD.r} y2={ty(v)} stroke={gridStroke} strokeWidth="0.6" />
@@ -285,7 +281,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
           {unit}
         </text>
 
-        {/* Threshold line */}
         {showThreshold && thresholdY != null && (
           <g>
             <line
@@ -298,7 +293,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
               fill="#f87171" fontSize="9" fontFamily="monospace" fontWeight="600">
               threshold {velocityThreshold}
             </text>
-            {/* Shade below-threshold zone */}
             <rect
               x={PAD.l} y={thresholdY} width={IW} height={Math.max(0, PAD.t + IH - thresholdY)}
               fill="rgba(248,113,113,0.04)"
@@ -306,7 +300,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
           </g>
         )}
 
-        {/* Data lines */}
         {processed.map((ds, di) => {
           const path = buildPath(ds)
           const lastPt = ds.timeseries[ds.timeseries.length - 1]
@@ -318,7 +311,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
               <path d={path} fill="none" stroke={ds.color.line} strokeWidth="1.8"
                 strokeDasharray={ds.color.dash ? '6 3' : undefined}
                 strokeLinejoin="round" strokeLinecap="round" />
-              {/* Mark below-threshold points for velocity */}
               {showThreshold && ds.timeseries.map((p, i) => {
                 const v = ds.vals[i]
                 if (v == null || v >= velocityThreshold) return null
@@ -331,7 +323,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
           )
         })}
 
-        {/* Hover crosshair + dots */}
         {hover && (
           <>
             <line x1={hover[0].x} y1={PAD.t} x2={hover[0].x} y2={PAD.t + IH}
@@ -345,7 +336,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
         )}
       </svg>
 
-      {/* Hover tooltip */}
       {hover && (
         <div style={{
           position: 'absolute', top: 6, right: 8,
@@ -380,7 +370,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
 
 function ChartCard({ title, subtitle, children, expandContent }) {
   const [expanded, setExpanded] = useState(false)
-
   return (
     <>
       <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 16px 12px' }}>
@@ -407,7 +396,6 @@ function ChartCard({ title, subtitle, children, expandContent }) {
         </div>
         {children}
       </div>
-
       {expanded && (
         <GraphModal title={title} subtitle={subtitle} onClose={() => setExpanded(false)}>
           {expandContent}
@@ -419,9 +407,8 @@ function ChartCard({ title, subtitle, children, expandContent }) {
 
 // ─── Threshold Alert Banner ───────────────────────────────────────────────────
 
-function ThresholdAlertBanner({ alerts, onDismiss }) {
+function ThresholdAlertBanner({ alerts, onDismiss, isRestored }) {
   if (!alerts || alerts.length === 0) return null
-
   return (
     <div style={{
       background: 'rgba(248,113,113,0.08)', border: '1px solid var(--err)',
@@ -433,6 +420,15 @@ function ThresholdAlertBanner({ alerts, onDismiss }) {
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--err)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ fontSize: 16 }}>⚠</span>
             Lethargic Shrimp Detected — Velocity Below Threshold
+            {isRestored && (
+              <span style={{
+                fontSize: 9, background: 'var(--blue-faint)', color: 'var(--blue)',
+                border: '1px solid var(--blue)', borderRadius: 4, padding: '1px 6px',
+                fontWeight: 600, letterSpacing: '0.08em', marginLeft: 4,
+              }}>
+                RESTORED ANALYSIS
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {alerts.map((a, i) => (
@@ -448,7 +444,8 @@ function ThresholdAlertBanner({ alerts, onDismiss }) {
             ))}
           </div>
           <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8 }}>
-            Red dots on the velocity chart indicate frames below the threshold. Check water quality, oxygen levels, or feeding schedule.
+            Red dots on the velocity chart indicate frames below the threshold.
+            {isRestored ? ' These results are calculated from previously saved timeseries data.' : ' Check water quality, oxygen levels, or feeding schedule.'}
           </div>
         </div>
         <button
@@ -461,7 +458,7 @@ function ThresholdAlertBanner({ alerts, onDismiss }) {
   )
 }
 
-// ─── Other sub-components (unchanged) ────────────────────────────────────────
+// ─── Other sub-components ─────────────────────────────────────────────────────
 
 function MetricCard({ label, value, unit, accent }) {
   return (
@@ -505,7 +502,6 @@ function AlertLog({ entries }) {
 function UploadZone({ files, onFiles }) {
   const [dragging, setDragging] = useState(false)
   const inputRef = useRef(null)
-
   const validate = (fileList) => {
     const arr = Array.from(fileList)
     const valid = arr.filter(f => ALLOWED_TYPES.includes(f.type) || f.name.match(/\.(mp4|avi|mov|mkv)$/i))
@@ -517,19 +513,16 @@ function UploadZone({ files, onFiles }) {
     }
     return valid
   }
-
   const onDrop = (e) => {
     e.preventDefault(); setDragging(false)
     const added = validate(e.dataTransfer.files)
     if (added.length) onFiles([...files, ...added])
   }
-
   const onPick = (e) => {
     const added = validate(e.target.files)
     if (added.length) onFiles([...files, ...added])
     e.target.value = ''
   }
-
   return (
     <div>
       <div onClick={() => inputRef.current?.click()}
@@ -715,7 +708,7 @@ function StatusBadge({ status }) {
   )
 }
 
-// ─── Threshold velocity helper ────────────────────────────────────────────────
+// ─── Threshold velocity helpers ───────────────────────────────────────────────
 
 function computeThresholdAlerts(videos, threshold) {
   if (!threshold || threshold <= 0) return []
@@ -754,6 +747,9 @@ export default function ShrimpDashboard() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
 
+  // Track whether the current result came from a restore (vs fresh analysis)
+  const [isRestoredResult, setIsRestoredResult] = useState(false)
+
   const [pastJobs, setPastJobs] = useState([])
   const [pastLoading, setPastLoading] = useState(false)
 
@@ -782,8 +778,13 @@ export default function ShrimpDashboard() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setResult(data)
+      setIsRestoredResult(true)   // ← Mark as restored
+      // Clear any previous threshold alerts when loading a new result
+      setThresholdAlerts([])
+      setThresholdAlertDismissed(false)
       setStatus('done')
       log(`Session restored: ${data.videos.length} video(s) from job ${jobId}`, 'ok')
+      log(`To check velocity threshold on this analysis, set a threshold and click "Calculate Frames Exceeding Threshold".`, 'info')
     } catch (e) {
       setStatus('idle')
       log(`Could not restore session: ${e.message}`, 'warn')
@@ -843,6 +844,7 @@ export default function ShrimpDashboard() {
 
     setError(''); setResult(null); setUploadPct(0); setAnalyzePct(0)
     setThresholdAlerts([]); setThresholdAlertDismissed(false)
+    setIsRestoredResult(false)   // ← Fresh analysis
     setStatus('uploading')
     log(`Starting analysis: model=${selectedModel}, videos=${files.map(f => f.name).join(', ')}`, 'info')
     if (velocityThreshold > 0) {
@@ -877,10 +879,9 @@ export default function ShrimpDashboard() {
       setAnalyzePct(100)
       setStatus('done')
       setResult(data)
-
       sessionStorage.setItem('lastJobId', data.job_id)
 
-      // ── Threshold check (runs after analysis is fully complete) ──
+      // Auto-compute threshold alerts only on fresh analyses
       if (velocityThreshold > 0) {
         const tAlerts = computeThresholdAlerts(data.videos, velocityThreshold)
         setThresholdAlerts(tAlerts)
@@ -888,7 +889,7 @@ export default function ShrimpDashboard() {
           tAlerts.forEach(a => {
             log(`⚠ LETHARGIC ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% of frames below ${a.threshold} px/s`, 'warn')
           })
-          setActiveTab('graphs') // bring user to the graph tab to see the alert
+          setActiveTab('graphs')
         } else {
           log(`✓ All videos passed velocity threshold (${velocityThreshold} px/s)`, 'ok')
         }
@@ -914,6 +915,33 @@ export default function ShrimpDashboard() {
       }
     }
   }, [files, selectedModel, status, log, fetchPastJobs, velocityThreshold])
+
+  /**
+   * calculateThresholdOnCurrentResult
+   *
+   * This is the NEW function for Task 1.
+   * It re-runs the threshold calculation over the in-memory timeseries of
+   * whatever analysis is currently loaded (fresh or restored) WITHOUT
+   * contacting the backend or re-running YOLO.
+   * Called when the user clicks "Calculate Frames Exceeding Threshold".
+   */
+  const calculateThresholdOnCurrentResult = useCallback(() => {
+    if (!result || !velocityThreshold || velocityThreshold <= 0) return
+
+    log(`Calculating threshold metrics on current result (threshold: ${velocityThreshold} px/s)…`, 'info')
+    const tAlerts = computeThresholdAlerts(result.videos, velocityThreshold)
+    setThresholdAlerts(tAlerts)
+    setThresholdAlertDismissed(false)
+
+    if (tAlerts.length > 0) {
+      tAlerts.forEach(a => {
+        log(`⚠ LETHARGIC ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% of frames below ${a.threshold} px/s${isRestoredResult ? ' [restored data]' : ''}`, 'warn')
+      })
+      setActiveTab('graphs')
+    } else {
+      log(`✓ All videos in ${isRestoredResult ? 'restored' : 'current'} analysis passed threshold (${velocityThreshold} px/s)`, 'ok')
+    }
+  }, [result, velocityThreshold, isRestoredResult, log])
 
   const cancelAnalysis = () => {
     if (abortRef.current) {
@@ -945,6 +973,10 @@ export default function ShrimpDashboard() {
   const showThresholdAlerts = thresholdAlerts.length > 0 && !thresholdAlertDismissed
   const activeVelocityThreshold = velocityThreshold > 0 ? velocityThreshold : 0
 
+  // The "calculate" button should be available whenever there's a loaded result
+  // and a threshold is set — regardless of whether it was restored or fresh.
+  const canCalculateThreshold = !!result && velocityThreshold > 0 && !isRunning
+
   return (
     <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
       <style>{`
@@ -974,6 +1006,11 @@ export default function ShrimpDashboard() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {isRestoredResult && result && (
+              <span style={{ fontSize: 10, background: 'var(--blue-faint)', color: 'var(--blue)', border: '1px solid var(--blue)', borderRadius: 4, padding: '2px 8px', fontWeight: 600, letterSpacing: '0.07em', fontFamily: 'monospace' }}>
+                ↩ RESTORED · {result.job_id}
+              </span>
+            )}
             <StatusBadge status={status} />
             <button onClick={() => setDark(d => !d)} title="Toggle theme" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-sec)', cursor: 'pointer', fontSize: 14, padding: '5px 9px', lineHeight: 1, transition: 'border-color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
@@ -1004,12 +1041,12 @@ export default function ShrimpDashboard() {
               <UploadZone files={files} onFiles={setFiles} />
             </SideSection>
 
-            {/* ── Threshold velocity ── */}
+            {/* ── Threshold velocity — works on both fresh & restored analyses ── */}
             <SideSection label="Lethargic Detection">
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, lineHeight: 1.5 }}>
-                Set a minimum velocity threshold. Frames below this value will be flagged after analysis.
+                Set a minimum velocity threshold. For a <strong>new analysis</strong>, threshold alerts calculate automatically. For a <strong>restored analysis</strong>, click the button below.
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <input
                   type="number"
                   min="0"
@@ -1030,10 +1067,53 @@ export default function ShrimpDashboard() {
                 />
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>px/s</span>
               </div>
+
+              {/* ── NEW: Calculate button for on-demand threshold computation ── */}
+              <button
+                onClick={calculateThresholdOnCurrentResult}
+                disabled={!canCalculateThreshold}
+                title={
+                  !result ? 'Load an analysis first' :
+                  velocityThreshold <= 0 ? 'Enter a threshold value first' :
+                  'Calculate threshold metrics on the loaded analysis'
+                }
+                style={{
+                  width: '100%', padding: '9px 0',
+                  background: canCalculateThreshold ? 'rgba(248,113,113,0.12)' : 'var(--border)',
+                  color: canCalculateThreshold ? 'var(--err)' : 'var(--text-muted)',
+                  border: `1px solid ${canCalculateThreshold ? 'var(--err)' : 'var(--border)'}`,
+                  borderRadius: 7, fontSize: 11.5, fontWeight: 600,
+                  cursor: canCalculateThreshold ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.15s', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}
+                onMouseEnter={e => {
+                  if (canCalculateThreshold) {
+                    e.currentTarget.style.background = 'rgba(248,113,113,0.2)'
+                    e.currentTarget.style.borderColor = 'var(--err)'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (canCalculateThreshold) {
+                    e.currentTarget.style.background = 'rgba(248,113,113,0.12)'
+                  }
+                }}
+              >
+                <span style={{ fontSize: 13 }}>⚠</span>
+                Calculate Frames Exceeding Threshold
+              </button>
+
               {velocityThreshold > 0 && (
-                <div style={{ fontSize: 10, color: 'var(--err)', marginTop: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ fontSize: 10, color: 'var(--err)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span>⚠</span> Alert if velocity &lt; {velocityThreshold} px/s
-                  <button onClick={() => setVelocityThreshold(0)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11, marginLeft: 'auto', padding: 0 }}>clear</button>
+                  <button onClick={() => { setVelocityThreshold(0); setThresholdAlerts([]); setThresholdAlertDismissed(false) }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11, marginLeft: 'auto', padding: 0 }}>clear</button>
+                </div>
+              )}
+
+              {!result && velocityThreshold > 0 && (
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 5, fontStyle: 'italic' }}>
+                  Load or run an analysis to enable calculation.
                 </div>
               )}
             </SideSection>
@@ -1084,7 +1164,7 @@ export default function ShrimpDashboard() {
             </div>
           </aside>
 
-          {/* Main */}
+          {/* Main content */}
           <main style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0 }}>
 
             <TabBar
@@ -1098,7 +1178,7 @@ export default function ShrimpDashboard() {
               onChange={setActiveTab}
             />
 
-            {/* Analytics */}
+            {/* Analytics Tab */}
             {activeTab === 'graphs' && (
               <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {!result ? (
@@ -1109,11 +1189,12 @@ export default function ShrimpDashboard() {
                   </div>
                 ) : (
                   <>
-                    {/* Threshold alert banner — shown after analysis, before charts */}
+                    {/* Threshold alert banner — now includes isRestored flag */}
                     {showThresholdAlerts && (
                       <ThresholdAlertBanner
                         alerts={thresholdAlerts}
                         onDismiss={() => setThresholdAlertDismissed(true)}
+                        isRestored={isRestoredResult}
                       />
                     )}
 
@@ -1129,7 +1210,6 @@ export default function ShrimpDashboard() {
                     )}
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                      {/* Velocity chart */}
                       <ChartCard
                         title="Shrimp Velocity Over Time"
                         subtitle={`Average movement speed (px/s)${smoothing ? ' — smoothed' : ''}${activeVelocityThreshold > 0 ? ` · threshold ${activeVelocityThreshold} px/s` : ''}`}
@@ -1154,7 +1234,6 @@ export default function ShrimpDashboard() {
                         />
                       </ChartCard>
 
-                      {/* Clustering chart */}
                       <ChartCard
                         title="Shrimp Clustering Over Time"
                         subtitle={`Spatial clustering score (%)${smoothing ? ' — smoothed' : ''}`}
@@ -1196,13 +1275,14 @@ export default function ShrimpDashboard() {
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                       Job: {result.job_id} · Model: {result.selected_model}
+                      {isRestoredResult && <span style={{ color: 'var(--blue)', marginLeft: 8 }}>↩ restored</span>}
                     </div>
                   </>
                 )}
               </div>
             )}
 
-            {/* Summary Metrics */}
+            {/* Summary Metrics Tab */}
             {activeTab === 'metrics' && (
               <div className="fade-up">
                 {!result ? (
@@ -1237,7 +1317,7 @@ export default function ShrimpDashboard() {
               </div>
             )}
 
-            {/* History */}
+            {/* History Tab */}
             {activeTab === 'history' && (
               <div className="fade-up">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -1252,7 +1332,7 @@ export default function ShrimpDashboard() {
               </div>
             )}
 
-            {/* Log */}
+            {/* Log Tab */}
             {activeTab === 'log' && (
               <div className="fade-up">
                 <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 20px' }}>
