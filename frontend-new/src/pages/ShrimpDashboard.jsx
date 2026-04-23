@@ -365,7 +365,7 @@ function ProgressBar({ value, label, color }) {
 
 function VideoSummaryCards({ video, accent }) {
   const s = video.summary
-  const isDummy = video._used_dummy_data
+  const isDummy = video.used_dummy_data ?? video._used_dummy_data ?? false
   return (
     <div>
       <div style={{ fontSize: 11, color: accent, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -571,7 +571,12 @@ export default function ShrimpDashboard() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         setModels(data.models || [])
-        if (data.models?.length) setSelectedModel(data.models[0].id)
+        if (data.models?.length) {
+          setSelectedModel(data.models[0].id)
+        } else {
+          setSelectedModel('')
+          log('Backend is running, but no .pt model files were found in backend/models.', 'warn')
+        }
         log(`Loaded ${data.models.length} model(s) from server`, 'ok', 200)
       } catch (e) {
         log(`Could not reach backend: ${e.message}. Is it running on port 8000?`, 'err')
@@ -651,8 +656,12 @@ export default function ShrimpDashboard() {
       // Persist job id so page reload can restore it
       sessionStorage.setItem('lastJobId', data.job_id)
 
-      const dummyCount = data.videos.filter(v => v._used_dummy_data).length
-      if (dummyCount > 0) {
+      const dummyVideos = data.videos.filter(v => v.used_dummy_data ?? v._used_dummy_data)
+      const dummyCount = dummyVideos.length
+      if (dummyVideos.length > 0) {
+        dummyVideos.forEach(v => {
+          log(`Fallback reason for ${v.video_name}: ${v.warning || 'backend returned generated dummy metrics.'}`, 'warn')
+        })
         log(`⚠ ${dummyCount} video(s) used dummy data — no YOLO model found at backend/models/. Place a .pt file there and uncomment ultralytics in requirements.txt.`, 'warn')
       }
 
@@ -697,7 +706,11 @@ export default function ShrimpDashboard() {
   })) || []
 
   const isRunning = status === 'uploading' || status === 'analyzing'
-  const hasDummy = result?.videos?.some(v => v._used_dummy_data)
+  const hasDummy = result?.videos?.some(v => v.used_dummy_data ?? v._used_dummy_data)
+  const fallbackWarnings = result?.videos
+    ?.filter(v => v.used_dummy_data ?? v._used_dummy_data)
+    .map(v => v.warning)
+    .filter(Boolean) || []
 
   return (
     <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
@@ -775,9 +788,10 @@ export default function ShrimpDashboard() {
             {/* Dummy data warning */}
             {hasDummy && (
               <div style={{ background: 'var(--amber-faint)', border: '1px solid var(--amber)', borderRadius: 6, padding: '8px 10px', fontSize: 11, color: 'var(--amber)', marginBottom: 14 }}>
-                <strong>No YOLO model found.</strong> Charts show generated dummy data.
-                Place a <code>.pt</code> file in <code>backend/models/</code> and uncomment
-                <code>ultralytics</code> in <code>requirements.txt</code>, then re-run.
+                <strong>Backend fallback active.</strong> Charts show generated dummy data.
+                {fallbackWarnings.length > 0 && (
+                  <span> {fallbackWarnings[0]}</span>
+                )}
               </div>
             )}
 
