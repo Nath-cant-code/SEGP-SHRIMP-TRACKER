@@ -1,0 +1,1024 @@
+# SEGP Shrimp Tracker App Plan
+
+## Goal
+Build a **presentable local app by April 24** where a user can:
+- upload 1 to 3 videos
+- choose which YOLO model to run
+- detect shrimps from the uploaded videos
+- calculate **velocity** and **clustering percentage**
+- compare multiple videos on the **same graph axes**
+- hover over graphs and see exact values interactively
+- download results as **CSV**
+- save results to a **database** for later viewing
+
+This document is written for **absolute beginners** and is also designed so you can paste parts of it into **Codex, Claude, or another agentic AI**.
+
+---
+
+# 1. Main idea: how the app should work
+
+## User flow
+1. User opens the app in the browser.
+2. User selects one of the available YOLO models from a dropdown.
+3. User uploads 1, 2, or 3 videos.
+4. User clicks **Analyze**.
+5. Frontend sends the videos and selected model name to the backend.
+6. Backend:
+   - stores the uploaded video files
+   - runs inference using the chosen YOLO model
+   - extracts shrimp detections frame by frame
+   - calculates metrics such as velocity and clustering percentage
+   - saves raw and summary results
+7. Backend returns processed results to the frontend.
+8. Frontend shows:
+   - summary cards
+   - interactive graphs
+   - per-video comparison on the same axes
+   - CSV download buttons
+   - save status / history if stored in database
+
+---
+
+# 2. Best beginner-friendly architecture
+
+Use this stack because it is simple and realistic for beginners.
+
+## Frontend
+- **React + Vite**
+- Graph library: **Recharts**
+- HTTP requests: **Axios**
+
+## Backend
+- **Python FastAPI**
+- YOLO inference in Python
+- OpenCV for video/frame handling
+- Pandas for CSV creation
+
+## Database
+Use **SQLite** first.
+Why:
+- zero setup compared to MySQL/Postgres
+- good enough for local demo
+- fewer connection errors
+- easier for beginners
+
+## Storage
+- uploaded videos stored in a local `uploads/` folder
+- generated CSV files stored in a local `exports/` folder
+- optional processed images / previews stored in `outputs/`
+
+---
+
+# 3. Most important rule to avoid frontend-backend connection errors
+
+Both sides must agree on the **contract** before coding too much.
+
+That means both people must agree on:
+- exact API endpoints
+- request format
+- response JSON format
+- file names / field names
+- error format
+
+If you do not agree on this early, integration will break even if both sides code correctly.
+
+---
+
+# 4. Fixed division of work
+
+## Person A: Backend
+This person focuses on:
+- receiving uploaded videos
+- loading selected YOLO model
+- running detection
+- computing metrics
+- exporting CSV
+- saving to database
+- returning clean JSON to frontend
+
+## Person B: Frontend
+This person focuses on:
+- upload UI
+- model dropdown
+- analysis button
+- progress/loading state
+- results dashboard
+- comparison graphs
+- hover interactivity
+- download buttons
+- history/results screen if needed
+
+## Shared responsibility
+Both must agree on:
+- API contract
+- data format
+- names of fields
+- test cases
+- demo flow
+
+---
+
+# 5. Recommended project structure
+
+```text
+segp-shrimp-tracker/
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── routes/
+│   │   │   ├── analyze.py
+│   │   │   ├── models.py
+│   │   │   └── results.py
+│   │   ├── services/
+│   │   │   ├── yolo_service.py
+│   │   │   ├── video_service.py
+│   │   │   ├── metrics_service.py
+│   │   │   ├── csv_service.py
+│   │   │   └── db_service.py
+│   │   ├── schemas/
+│   │   │   └── response_schemas.py
+│   │   ├── db/
+│   │   │   ├── database.py
+│   │   │   └── models.py
+│   │   └── utils/
+│   │       └── file_utils.py
+│   ├── models/
+│   │   ├── yolov8n.pt
+│   │   ├── best.pt
+│   │   └── other_model.pt
+│   ├── uploads/
+│   ├── exports/
+│   ├── outputs/
+│   ├── requirements.txt
+│   └── README.md
+│
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   │   └── analysisApi.js
+│   │   ├── components/
+│   │   │   ├── UploadPanel.jsx
+│   │   │   ├── ModelSelector.jsx
+│   │   │   ├── SummaryCards.jsx
+│   │   │   ├── VelocityChart.jsx
+│   │   │   ├── ClusteringChart.jsx
+│   │   │   ├── ComparisonChart.jsx
+│   │   │   ├── ResultTable.jsx
+│   │   │   └── DownloadButtons.jsx
+│   │   ├── pages/
+│   │   │   └── Dashboard.jsx
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── README.md
+│
+├── shared/
+│   └── api-contract.md
+│
+└── README.md
+```
+
+---
+
+# 6. Backend and frontend must agree on this API contract first
+
+Create `shared/api-contract.md` and do not change it casually.
+
+## Endpoint 1: get available models
+
+### Request
+`GET /models`
+
+### Response
+```json
+{
+  "models": [
+    { "id": "best", "label": "Best Trained Model" },
+    { "id": "yolov8n", "label": "YOLOv8 Nano" },
+    { "id": "custom_v2", "label": "Custom Model V2" }
+  ]
+}
+```
+
+## Endpoint 2: upload and analyze videos
+
+### Request
+`POST /analyze`
+
+### Form fields
+- `model_id`: string
+- `videos`: one to three uploaded video files
+
+### Response shape
+```json
+{
+  "job_id": "analysis_001",
+  "selected_model": "best",
+  "videos": [
+    {
+      "video_id": "video_1",
+      "video_name": "sample1.mp4",
+      "summary": {
+        "avg_velocity": 3.42,
+        "max_velocity": 7.91,
+        "avg_clustering_percent": 62.4,
+        "frames_processed": 300,
+        "shrimp_count_estimate": 48
+      },
+      "timeseries": [
+        {
+          "frame": 1,
+          "time_sec": 0.03,
+          "avg_velocity": 2.1,
+          "clustering_percent": 61.0
+        },
+        {
+          "frame": 2,
+          "time_sec": 0.06,
+          "avg_velocity": 2.3,
+          "clustering_percent": 60.7
+        }
+      ],
+      "csv_download_url": "/results/analysis_001/video_1/csv"
+    }
+  ]
+}
+```
+
+## Endpoint 3: download CSV
+
+### Request
+`GET /results/{job_id}/{video_id}/csv`
+
+### Response
+CSV file download.
+
+## Endpoint 4: save result metadata
+This may be done automatically inside `/analyze`, but if split separately:
+
+### Request
+`POST /results/save`
+
+### Response
+```json
+{
+  "message": "Result saved successfully"
+}
+```
+
+## Endpoint 5: get previous results
+
+### Request
+`GET /results`
+
+### Response
+```json
+{
+  "results": [
+    {
+      "job_id": "analysis_001",
+      "created_at": "2026-04-15T10:30:00",
+      "selected_model": "best",
+      "video_count": 2
+    }
+  ]
+}
+```
+
+---
+
+# 7. What backend should do in basic terms
+
+## Step 1: receive the files
+When frontend sends the videos, backend should:
+- check that 1 to 3 files were sent
+- check file type like `.mp4`, `.avi`, `.mov`
+- save them into `uploads/`
+- generate unique names so files do not overwrite each other
+
+## Step 2: load the chosen model
+Backend should map model IDs to actual model paths.
+
+Example:
+```python
+MODEL_PATHS = {
+    "best": "models/best.pt",
+    "yolov8n": "models/yolov8n.pt",
+    "custom_v2": "models/other_model.pt"
+}
+```
+
+This is better than letting the frontend send a raw file path.
+
+## Step 3: run YOLO inference on each video
+For each uploaded video:
+- open video with OpenCV
+- read frames one by one
+- run detection on each frame
+- collect shrimp positions for each frame
+- store results temporarily in memory or list
+
+## Step 4: calculate velocity
+A beginner-safe explanation:
+- each shrimp has a position in one frame
+- then it has a position in the next frame
+- distance moved / time difference = velocity
+
+Real issue:
+YOLO detection alone does not always keep the same shrimp identity between frames.
+So for the demo, choose one of these:
+
+### Option A: simple nearest-neighbor tracking
+- for each shrimp in frame N, match it to the closest shrimp in frame N+1
+- estimate motion using center points of boxes
+- easier for demo
+
+### Option B: use a tracking method later
+- DeepSORT / ByteTrack
+- more powerful, but harder for beginners in limited time
+
+For your deadline, **Option A is the safer path**.
+
+## Step 5: calculate clustering percentage
+Define one simple consistent rule and use it everywhere.
+
+Example rule:
+- calculate the center point of each shrimp detection
+- if distance between shrimps is below a threshold, count them as clustered
+- clustering percentage =
+  `(number of clustered shrimps / total shrimps) * 100`
+
+Important:
+write this definition clearly in code comments and in the presentation, because judges may ask how clustering is defined.
+
+## Step 6: make time-series data
+For every frame or every sampled interval, store:
+- frame number
+- time in seconds
+- average velocity
+- clustering percentage
+
+This time-series data is what the frontend will use for graphs.
+
+## Step 7: generate CSV
+Create a CSV per video with columns like:
+- frame
+- time_sec
+- avg_velocity
+- clustering_percent
+- shrimp_count
+
+Also optionally create a summary CSV with:
+- video_name
+- avg_velocity
+- max_velocity
+- avg_clustering_percent
+- total_frames
+
+## Step 8: save to database
+Store at least:
+- analysis job
+- selected model
+- uploaded video names
+- summary metrics
+- CSV path
+- created date
+
+---
+
+# 8. What frontend should do in basic terms
+
+## Screen 1: upload and configure
+This page should have:
+- a dropdown for model selection
+- a file upload box that accepts 1 to 3 videos
+- an Analyze button
+- simple validation messages
+
+## Screen 2: results dashboard
+After analysis, show:
+- summary cards for each video
+- velocity chart
+- clustering chart
+- comparison chart
+- download CSV button
+- save status
+
+## Screen 3: previous analyses (optional but useful)
+If time allows:
+- list previous jobs from database
+- click one to view past results
+
+---
+
+# 9. How the graphs should behave
+
+## Velocity graph
+- x-axis = time in seconds
+- y-axis = average velocity
+- one line per video
+- hover tooltip should show:
+  - video name
+  - exact time
+  - exact velocity
+
+## Clustering graph
+- x-axis = time in seconds
+- y-axis = clustering percentage
+- one line per video
+- hover tooltip should show exact values
+
+## Comparison on same axis
+If 2 or 3 videos are uploaded, all should be shown on the same graph.
+This is important for easy comparison during presentation.
+
+## Interactivity on mouse movement
+What you described means:
+- when mouse moves over the graph, a tooltip should appear
+- the tooltip should display the value at that point
+- the highlighted point should move with the mouse
+
+This is standard in Recharts and is beginner-friendly.
+
+---
+
+# 10. What must be decided early so there are no surprises
+
+These are the things that cause integration errors most often.
+
+## A. Decide file upload format
+Use `multipart/form-data`.
+
+## B. Decide exact field names
+For example:
+- `model_id`
+- `videos`
+
+Do not let frontend send `modelName` while backend expects `selected_model`.
+
+## C. Decide exact response field names
+For example, choose one style and keep it consistent:
+- `avg_velocity`
+- `clustering_percent`
+- `csv_download_url`
+
+Do not mix:
+- `avgVelocity`
+- `average_velocity`
+- `velocityAvg`
+
+Choose one format and use it everywhere.
+
+## D. Decide error format
+Example:
+```json
+{
+  "error": true,
+  "message": "Only up to 3 videos are allowed"
+}
+```
+
+## E. Decide CORS settings early
+If frontend runs on one port and backend on another, backend must allow frontend origin.
+Example:
+- frontend: `http://localhost:5173`
+- backend: `http://localhost:8000`
+
+## F. Test with fake data before real model integration
+Frontend should not wait for the full backend model logic.
+Backend person should first return a dummy JSON response with fake numbers.
+That lets frontend finish charts early.
+
+This is one of the most important beginner strategies.
+
+---
+
+# 11. Recommended timeline from April 15 to April 24
+
+You have about 9 days, so avoid overengineering.
+
+## Day 1: lock scope
+Both people together:
+- finalize features
+- freeze stack
+- freeze API contract
+- create GitHub branches
+- create folder structure
+
+Output of Day 1:
+- project folders created
+- API contract written
+- roles fixed
+
+## Day 2: backend skeleton + frontend skeleton
+Backend:
+- FastAPI app running
+- `/models` endpoint working
+- `/analyze` endpoint stub returning fake data
+
+Frontend:
+- React app running
+- upload page created
+- model dropdown created
+- fake dashboard created using dummy JSON
+
+Output:
+- frontend and backend can already talk
+
+## Day 3: real upload + dummy charts
+Backend:
+- accept real uploaded files
+- save to folder
+
+Frontend:
+- send actual files to backend
+- show loading state
+- render graphs from returned JSON
+
+Output:
+- full request/response pipeline works
+
+## Day 4 to 5: model inference integration
+Backend:
+- connect YOLO model loading
+- run inference on one video first
+- return sample time-series data
+
+Frontend:
+- polish summary cards
+- polish graph tooltips and legends
+- show multi-video comparison layout
+
+Output:
+- first real analysis visible in UI
+
+## Day 6: metrics calculation
+Backend:
+- implement velocity calculation
+- implement clustering percentage calculation
+- validate results on sample videos
+
+Frontend:
+- connect summary metrics
+- connect CSV download buttons
+
+Output:
+- useful dashboard exists
+
+## Day 7: database save
+Backend:
+- SQLite tables created
+- save summary result and file paths
+- endpoint to list past results
+
+Frontend:
+- optional previous analyses page
+
+Output:
+- results persistence works
+
+## Day 8: testing and bug fixing
+Together:
+- test 1 video upload
+- test 2 videos upload
+- test 3 videos upload
+- test wrong file type
+- test missing model selection
+- test long video
+- test empty response
+
+Output:
+- integration issues reduced
+
+## Day 9: demo polish
+Together:
+- better labels and titles
+- make graphs clean
+- make demo script
+- prepare fallback if model fails
+
+Output:
+- stable presentation version
+
+---
+
+# 12. Minimum viable product vs extra features
+
+## Must-have before April 24
+- upload 1 to 3 videos
+- choose model
+- run analysis
+- show velocity graph
+- show clustering graph
+- compare videos on same axes
+- CSV download
+- local database save or at least local file save
+
+## Nice-to-have only if time remains
+- authentication/login
+- beautiful UI animations
+- processed video preview
+- previous analysis history page
+- model performance comparison page
+
+Do not sacrifice the must-have features for fancy extras.
+
+---
+
+# 13. Exact beginner-safe database design
+
+Use SQLite with two tables.
+
+## Table 1: analysis_jobs
+Fields:
+- id
+- job_id
+- selected_model
+- created_at
+
+## Table 2: video_results
+Fields:
+- id
+- job_id
+- video_name
+- avg_velocity
+- max_velocity
+- avg_clustering_percent
+- frames_processed
+- shrimp_count_estimate
+- csv_path
+
+Why this design is good:
+- simple
+- enough for demo
+- easy to query
+- easy to explain
+
+---
+
+# 14. Common beginner mistakes that will break the project
+
+## Mistake 1: backend and frontend coded separately without agreed JSON
+Fix:
+- write the API contract first
+
+## Mistake 2: trying to finish perfect YOLO/tracking before UI exists
+Fix:
+- use dummy JSON first, then plug in real model later
+
+## Mistake 3: changing field names midway
+Fix:
+- freeze names early
+
+## Mistake 4: trying to support too many file types
+Fix:
+- only support the few you need first
+
+## Mistake 5: trying to make real-time streaming now
+Fix:
+- stay with uploaded-video analysis for this deadline
+
+## Mistake 6: overcomplicated database
+Fix:
+- use SQLite, not a heavy setup
+
+## Mistake 7: no error handling
+Fix:
+- return clear JSON errors and show them in UI
+
+## Mistake 8: no shared testing
+Fix:
+- test integration daily, not only at the end
+
+---
+
+# 15. Exact integration strategy that reduces errors massively
+
+This is the safest workflow.
+
+## Phase 1: agree the contract
+Both together define:
+- endpoint URLs
+- request body
+- response JSON
+
+## Phase 2: backend returns fake data
+Even before YOLO is ready, backend returns dummy result like:
+```json
+{
+  "job_id": "demo_001",
+  "selected_model": "best",
+  "videos": [
+    {
+      "video_id": "video_1",
+      "video_name": "sample.mp4",
+      "summary": {
+        "avg_velocity": 3.1,
+        "max_velocity": 5.7,
+        "avg_clustering_percent": 64.0,
+        "frames_processed": 200,
+        "shrimp_count_estimate": 40
+      },
+      "timeseries": [
+        {"frame": 1, "time_sec": 0.0, "avg_velocity": 2.8, "clustering_percent": 60},
+        {"frame": 2, "time_sec": 1.0, "avg_velocity": 3.0, "clustering_percent": 63},
+        {"frame": 3, "time_sec": 2.0, "avg_velocity": 3.5, "clustering_percent": 65}
+      ],
+      "csv_download_url": "/results/demo_001/video_1/csv"
+    }
+  ]
+}
+```
+
+Now frontend can finish graph development without waiting.
+
+## Phase 3: replace fake data with real data
+Once YOLO and metrics are ready, backend keeps the same JSON shape and only changes the values.
+
+This is the cleanest beginner method.
+
+---
+
+# 16. Suggested responsibilities in more detail
+
+## Backend person daily checklist
+- can backend start?
+- does `/models` work?
+- does `/analyze` accept files?
+- does it save files?
+- does it return valid JSON?
+- does CSV download work?
+- does database save work?
+
+## Frontend person daily checklist
+- can page load?
+- can model dropdown load from backend?
+- can files be selected?
+- can request be sent?
+- is loading state visible?
+- do graphs render?
+- do tooltips work?
+- does CSV button work?
+- do errors show nicely?
+
+## Joint checklist every evening
+- test one full flow together
+- note every mismatch
+- fix field names immediately
+- commit working version
+
+---
+
+# 17. Recommended demo flow for presentation day
+
+1. Open app.
+2. Select trained model from dropdown.
+3. Upload 2 videos.
+4. Click Analyze.
+5. Show summary cards.
+6. Show velocity comparison graph.
+7. Move mouse over graph and explain exact values changing over time.
+8. Show clustering percentage comparison graph.
+9. Download CSV.
+10. Mention results are also stored locally/database.
+
+This is enough to look like a complete software system, not just a raw model.
+
+---
+
+# 18. What not to do before the deadline
+
+Do not spend major time on:
+- cloud deployment
+- real-time streaming from camera
+- authentication unless required
+- advanced tracking framework if nearest-neighbor is enough
+- perfect UI animations
+- complex database setup
+
+Your current goal is a **stable local demo**.
+
+---
+
+# 19. Agent prompt for backend build
+
+Copy this into Codex / Claude if needed.
+
+```md
+Build a beginner-friendly FastAPI backend for a shrimp analysis app.
+
+Requirements:
+- Python FastAPI
+- Endpoint GET /models returns a list of available YOLO models
+- Endpoint POST /analyze accepts multipart/form-data with:
+  - model_id: string
+  - videos: 1 to 3 uploaded video files
+- Save uploaded videos into a local uploads folder with unique names
+- Load YOLO model based on a fixed model path map
+- For each uploaded video:
+  - run frame-by-frame analysis
+  - collect detections
+  - compute average velocity over time
+  - compute clustering percentage over time
+  - return time-series data in JSON
+  - generate CSV file in exports folder
+- Save analysis summary to SQLite
+- Add endpoint to download a CSV by job_id and video_id
+- Add CORS so React frontend on localhost can connect
+- Use clean folder structure with routes, services, db, schemas
+- Keep code simple, commented, and beginner-friendly
+- Return errors in JSON format
+- Preserve this response shape exactly:
+  {
+    "job_id": "string",
+    "selected_model": "string",
+    "videos": [
+      {
+        "video_id": "string",
+        "video_name": "string",
+        "summary": {
+          "avg_velocity": 0,
+          "max_velocity": 0,
+          "avg_clustering_percent": 0,
+          "frames_processed": 0,
+          "shrimp_count_estimate": 0
+        },
+        "timeseries": [
+          {
+            "frame": 0,
+            "time_sec": 0,
+            "avg_velocity": 0,
+            "clustering_percent": 0
+          }
+        ],
+        "csv_download_url": "string"
+      }
+    ]
+  }
+
+Also generate:
+- requirements.txt
+- simple README with run steps
+- SQLite schema or SQLAlchemy models
+```
+
+---
+
+# 20. Agent prompt for frontend build
+
+Copy this into Codex / Claude if needed.
+
+```md
+Build a beginner-friendly React + Vite frontend for a shrimp analysis app.
+
+Requirements:
+- React with clean component structure
+- Fetch available models from GET /models
+- Provide a dropdown to choose one model
+- Allow user to upload 1 to 3 video files
+- On clicking Analyze, send multipart/form-data to POST /analyze
+- Show loading and error states clearly
+- After response, show:
+  - summary cards for each video
+  - interactive velocity line chart
+  - interactive clustering percentage line chart
+  - comparison of 2 to 3 videos on the same axes
+- On mouse hover over graph, show exact values in a tooltip
+- Add buttons for CSV download using csv_download_url from backend
+- Keep design simple, clean, and presentable for a university demo
+- Use Recharts for charts
+- Write beginner-friendly code with comments
+- Use these exact response fields from backend:
+  - job_id
+  - selected_model
+  - videos
+  - video_id
+  - video_name
+  - summary
+  - avg_velocity
+  - max_velocity
+  - avg_clustering_percent
+  - frames_processed
+  - shrimp_count_estimate
+  - timeseries
+  - frame
+  - time_sec
+  - clustering_percent
+  - csv_download_url
+
+Suggested components:
+- ModelSelector
+- UploadPanel
+- SummaryCards
+- VelocityChart
+- ClusteringChart
+- ComparisonChart
+- DownloadButtons
+- Dashboard
+
+Please also generate:
+- Axios API helper
+- simple CSS or minimal styling
+- README with run steps
+```
+
+---
+
+# 21. Agent prompt for full-stack coordination
+
+```md
+I have two beginner developers building a shrimp analysis app in parallel.
+One is building a FastAPI backend and one is building a React frontend.
+Your job is to help them avoid integration issues.
+
+App requirements:
+- Upload 1 to 3 videos
+- Choose YOLO model from dropdown
+- Analyze shrimp detections
+- Show velocity and clustering percentage dashboards
+- Compare multiple videos on the same axes
+- Hover tooltips must show exact graph values
+- CSV download must work
+- Results should be saved locally or in SQLite database
+
+Important rules:
+- Keep the API contract fixed
+- Use beginner-friendly structure
+- Avoid advanced unnecessary features
+- Prioritize a stable local demo before April 24
+- Provide code that is simple, commented, and easy to explain in a presentation
+
+Use this API contract:
+GET /models
+POST /analyze with multipart/form-data fields model_id and videos
+GET /results/{job_id}/{video_id}/csv
+GET /results
+
+Response shape for /analyze must stay:
+{
+  "job_id": "string",
+  "selected_model": "string",
+  "videos": [
+    {
+      "video_id": "string",
+      "video_name": "string",
+      "summary": {
+        "avg_velocity": 0,
+        "max_velocity": 0,
+        "avg_clustering_percent": 0,
+        "frames_processed": 0,
+        "shrimp_count_estimate": 0
+      },
+      "timeseries": [
+        {
+          "frame": 0,
+          "time_sec": 0,
+          "avg_velocity": 0,
+          "clustering_percent": 0
+        }
+      ],
+      "csv_download_url": "string"
+    }
+  ]
+}
+
+When giving advice, always:
+- start from the simplest working version
+- reduce chances of frontend/backend mismatch
+- prefer SQLite over more complex databases
+- use dummy data first, then real model integration
+```
+
+---
+
+# 22. Final recommendation in one sentence
+
+Do **not** try to build a perfect advanced AI system before April 24.
+Build a **stable uploaded-video analysis app** with a fixed API contract, dummy-data-first integration, then replace dummy values with real YOLO metrics.
+
+---
+
+# 23. Ultra-short version for both teammates
+
+## Backend person
+Make the engine.
+- accept files
+- run chosen model
+- compute metrics
+- return JSON
+- export CSV
+- save to SQLite
+
+## Frontend person
+Make the screen.
+- upload files
+- choose model
+- call backend
+- show graphs
+- hover tooltips
+- download CSV
+
+## Both together
+Agree on the exact JSON first.
+That is what will save the project.

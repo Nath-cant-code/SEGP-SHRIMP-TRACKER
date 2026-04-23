@@ -1,20 +1,101 @@
+# Python
 venv/
 __pycache__/
-.DS_Store
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
 
-#ai dataset 
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+*.pyc
+*.pyo
+
+# Video Files (IMPORTANT)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.m4v
+assets/video_samples/*
+!assets/video_samples/.gitkeep
+
+# Data / AI datasets
+*.xlsx
+*.xls
+*.csv
 data/
 videos/
 datasets/
 frames/
+new_frames/
+shrimp_ai/data/
+shrimp_ai/dataset/
+shrimp_ai/new_frames/
 
-#video files
-*.mp4
-*.avi
-*.mov
+# Databases
+*.db
+*.sqlite
 
-# Models
+# Environment
+.env
+*.env
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Node
+node_modules/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Dash / ML models
+*.pickle
 models/
 checkpoints/
 *.pt
 *.pth
+
+# YOLO / training outputs
+runs/
+shrimp_ai/runs/
+
+# Local analysis outputs
+shrimp-ai/analysis/*.csv
+
+# Editor/temp files
+tempCodeRunnerFile.py
+shrimp_ai/tempCodeRunnerFile.py
+
+# backend local env and/or any generated export/upload/ouput files
+backend/.venv/
+backend/__pycache__/
+backend/.env
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/exports/*
+!backend/exports/.gitkeep
+backend/outputs/*
+!backend/outputs/.gitkeep
