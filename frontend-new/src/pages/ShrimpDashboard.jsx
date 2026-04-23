@@ -1,46 +1,58 @@
 /**
- * ShrimpDashboard.jsx — Floating Island Glassmorphism Redesign
+ * ShrimpDashboard.jsx — Apple Spatial UI / "Living Glass" Edition
  *
- * UI rebuilt with the 'Floating Island' aesthetic:
- * - Each functional area is a standalone glassmorphism island
- * - High-blur frosted glass panels floating over a background
- * - IBM Plex Mono for data, Satoshi/DM Sans for labels
- * - All original logic preserved intact
+ * Aesthetic: Apple visionOS-inspired "Floating Islands" over an ambient
+ * background video. Light-first with dark-mode support.
+ *
+ * Stack additions (install if missing):
+ *   npm install framer-motion
+ *
+ * All original business logic preserved intact.
  */
 
-import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
+import {
+  useState, useEffect, useRef, useCallback,
+  createContext, useContext,
+} from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const BASE_URL = ''
 const MAX_VIDEOS = 3
-const ALLOWED_TYPES = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
+const ALLOWED_TYPES = [
+  'video/mp4', 'video/avi', 'video/quicktime',
+  'video/x-msvideo', 'video/x-matroska',
+]
 const SMOOTHING_WINDOW = 7
 const SERIES_COLORS = [
-  { line: '#2dd4bf', dash: false },
-  { line: '#f59e0b', dash: true },
-  { line: '#f87171', dash: true },
+  { line: '#0A84FF', dash: false },
+  { line: '#FF9F0A', dash: true },
+  { line: '#FF453A', dash: true },
 ]
 
-// ─── Theme ────────────────────────────────────────────────────────────────────
-const ThemeContext = createContext({ dark: true, toggle: () => {} })
+// ─── Theme Context ─────────────────────────────────────────────────────────────
+const ThemeContext = createContext({ dark: false, toggle: () => {} })
 const useTheme = () => useContext(ThemeContext)
 
-// Glass panel style generator
-const glass = (opacity = 0.08, blur = 40) => ({
-  background: `rgba(10, 20, 35, ${opacity})`,
-  backdropFilter: `blur(${blur}px)`,
-  WebkitBackdropFilter: `blur(${blur}px)`,
-  border: '1px solid rgba(255,255,255,0.10)',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
-})
-
-const glassLight = (opacity = 0.55, blur = 40) => ({
-  background: `rgba(240, 248, 255, ${opacity})`,
-  backdropFilter: `blur(${blur}px)`,
-  WebkitBackdropFilter: `blur(${blur}px)`,
-  border: '1px solid rgba(255,255,255,0.6)',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8)',
-})
+// ─── Glass style generators ────────────────────────────────────────────────────
+function glassLight() {
+  return {
+    background: 'rgba(255,255,255,0.62)',
+    backdropFilter: 'blur(40px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+    border: '1px solid rgba(255,255,255,0.5)',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.8)',
+  }
+}
+function glassDark() {
+  return {
+    background: 'rgba(18,18,22,0.55)',
+    backdropFilter: 'blur(40px) saturate(160%)',
+    WebkitBackdropFilter: 'blur(40px) saturate(160%)',
+    border: '1px solid rgba(255,255,255,0.10)',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
+  }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function rollingAvg(arr, w) {
@@ -49,16 +61,14 @@ function rollingAvg(arr, w) {
     return slice.length ? slice.reduce((a, b) => a + b, 0) / slice.length : null
   })
 }
-
-function shortName(name, max = 22) {
-  return name.length > max ? name.slice(0, max - 1) + '…' : name
+function shortName(name, max = 24) {
+  return name && name.length > max ? name.slice(0, max - 1) + '…' : (name || '')
 }
-
 function uploadWithProgress(formData, onProgress, signal) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `${BASE_URL}/analyze`)
-    xhr.upload.onprogress = (e) => {
+    xhr.upload.onprogress = e => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
     }
     xhr.onload = () => {
@@ -73,12 +83,11 @@ function uploadWithProgress(formData, onProgress, signal) {
     }
     xhr.onerror = () => reject(new Error('Network error — is the backend running on port 8000?'))
     xhr.ontimeout = () => reject(new Error('Request timed out'))
-    xhr.timeout = 1200_000
+    xhr.timeout = 1_200_000
     if (signal) signal.addEventListener('abort', () => xhr.abort())
     xhr.send(formData)
   })
 }
-
 function computeThresholdAlerts(videos, threshold) {
   if (!threshold || threshold <= 0) return []
   const alerts = []
@@ -98,119 +107,425 @@ function computeThresholdAlerts(videos, threshold) {
   return alerts
 }
 
-// ─── SVG Icons ────────────────────────────────────────────────────────────────
-const Icons = {
-  Activity: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+// ─── SF-Symbol–style SVG Icons ────────────────────────────────────────────────
+const Icon = {
+  Waveform: ({ s = 15, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round">
+      <path d="M2 12h2M6 6v12M10 9v6M14 4v16M18 7v10M22 12h-2" />
     </svg>
   ),
-  Upload: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
+  Upload: ({ s = 15, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
     </svg>
   ),
-  Play: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none">
-      <polygon points="5 3 19 12 5 21 5 3" />
-    </svg>
+  Play: ({ s = 15, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill={c}><polygon points="5,3 19,12 5,21" /></svg>
   ),
-  X: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
+  X: ({ s = 13, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round">
       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
-  Download: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
+  Download: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
     </svg>
   ),
-  History: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="1 4 1 10 7 10" />
-      <path d="M3.51 15a9 9 0 1 0 .49-3.51" />
+  Clock: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round">
+      <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
     </svg>
   ),
-  Terminal: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  Terminal: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
     </svg>
   ),
-  AlertTriangle: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+  Alert: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
       <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   ),
-  Check: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
+  Expand: ({ s = 13, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
     </svg>
   ),
-  Maximize: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+  Sun: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
     </svg>
   ),
-  Sun: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  Moon: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
     </svg>
   ),
-  Moon: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  ),
-  Film: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+  Film: ({ s = 13, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="2.18" />
       <line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" />
-      <line x1="2" y1="12" x2="22" y2="12" /><line x1="2" y1="7" x2="7" y2="7" />
-      <line x1="2" y1="17" x2="7" y2="17" /><line x1="17" y1="17" x2="22" y2="17" />
-      <line x1="17" y1="7" x2="22" y2="7" />
+      <line x1="2" y1="12" x2="22" y2="12" />
     </svg>
   ),
-  Cpu: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <rect x="9" y="9" width="6" height="6" />
+  Refresh: ({ s = 13, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+    </svg>
+  ),
+  Chart: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round">
+      <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" /><line x1="2" y1="20" x2="22" y2="20" />
+    </svg>
+  ),
+  Metrics: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M8 12h8M8 8h8M8 16h5" />
+    </svg>
+  ),
+  Cpu: ({ s = 14, c = 'currentColor' }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round">
+      <rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" />
       <line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" />
       <line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" />
       <line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" />
       <line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" />
     </svg>
   ),
-  BarChart: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" /><line x1="2" y1="20" x2="22" y2="20" />
-    </svg>
-  ),
-  RefreshCw: ({ size = 14, color = 'currentColor' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-    </svg>
-  ),
 }
 
-// ─── Line Chart ───────────────────────────────────────────────────────────────
+// ─── Motion variants ───────────────────────────────────────────────────────────
+const islandVariants = {
+  hidden: { opacity: 0, y: 24, scale: 0.97 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 90, damping: 18 } },
+}
+const stagger = { visible: { transition: { staggerChildren: 0.07 } } }
+const tabContent = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 20 } },
+  exit: { opacity: 0, y: -8, transition: { duration: 0.15 } },
+}
+
+// ─── Island wrapper ────────────────────────────────────────────────────────────
+function Island({ children, style = {}, hover = true, className = '' }) {
+  const { dark } = useTheme()
+  const glass = dark ? glassDark() : glassLight()
+  return (
+    <motion.div
+      variants={islandVariants}
+      whileHover={hover ? { scale: 1.005, transition: { duration: 0.2 } } : {}}
+      style={{
+        ...glass,
+        borderRadius: '2rem',
+        ...style,
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// ─── Label ────────────────────────────────────────────────────────────────────
+function Label({ children, style = {} }) {
+  const { dark } = useTheme()
+  return (
+    <div style={{
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: '0.12em',
+      textTransform: 'uppercase',
+      color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+      fontFamily: "'SF Pro Display', 'Satoshi', system-ui, sans-serif",
+      marginBottom: 7,
+      ...style,
+    }}>
+      {children}
+    </div>
+  )
+}
+
+// ─── iOS Toggle ───────────────────────────────────────────────────────────────
+function IOSToggle({ value, onChange, label }) {
+  const { dark } = useTheme()
+  return (
+    <button
+      onClick={() => onChange(!value)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        background: 'none', border: 'none', cursor: 'pointer',
+        padding: '4px 0',
+        fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+        fontSize: 13,
+        color: dark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.75)',
+      }}
+    >
+      <motion.span
+        animate={{ background: value ? '#34C759' : (dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.15)') }}
+        transition={{ duration: 0.2 }}
+        style={{
+          width: 42, height: 25, borderRadius: 13,
+          display: 'flex', alignItems: 'center',
+          padding: '0 3px', flexShrink: 0, position: 'relative',
+        }}
+      >
+        <motion.span
+          animate={{ x: value ? 17 : 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+          style={{
+            width: 19, height: 19, borderRadius: '50%',
+            background: '#fff',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+            display: 'block',
+          }}
+        />
+      </motion.span>
+      {label}
+    </button>
+  )
+}
+
+// ─── Squircle Select ──────────────────────────────────────────────────────────
+function GlassSelect({ value, onChange, options, disabled }) {
+  const { dark } = useTheme()
+  return (
+    <select
+      value={value} onChange={e => onChange(e.target.value)} disabled={disabled}
+      style={{
+        width: '100%',
+        background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
+        border: `1px solid ${dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
+        borderRadius: 12,
+        color: dark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)',
+        fontSize: 13,
+        padding: '10px 32px 10px 12px',
+        appearance: 'none',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        outline: 'none',
+        fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='${dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'calc(100% - 10px) center',
+        transition: 'border-color 0.15s',
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      {options.map(o => (
+        <option key={o.value} value={o.value}
+          style={{ background: dark ? '#1c1c1e' : '#fff' }}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+// ─── Number Input ─────────────────────────────────────────────────────────────
+function GlassInput({ value, onChange, placeholder, disabled }) {
+  const { dark } = useTheme()
+  return (
+    <input
+      type="number" min="0" step="0.5"
+      value={value || ''}
+      onChange={e => onChange(Math.max(0, parseFloat(e.target.value) || 0))}
+      placeholder={placeholder}
+      disabled={disabled}
+      style={{
+        flex: 1,
+        background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
+        border: `1px solid ${dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
+        borderRadius: 10, color: dark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)',
+        fontSize: 13, padding: '9px 11px', outline: 'none',
+        fontFamily: "'IBM Plex Mono', monospace",
+        opacity: disabled ? 0.5 : 1,
+        transition: 'border-color 0.15s',
+      }}
+    />
+  )
+}
+
+// ─── Upload Zone ──────────────────────────────────────────────────────────────
+function UploadZone({ files, onFiles }) {
+  const [dragging, setDragging] = useState(false)
+  const inputRef = useRef(null)
+  const { dark } = useTheme()
+
+  const validate = fileList => {
+    const arr = Array.from(fileList)
+    const valid = arr.filter(f => ALLOWED_TYPES.includes(f.type) || f.name.match(/\.(mp4|avi|mov|mkv)$/i))
+    if (valid.length !== arr.length) alert('Some files skipped — only MP4, AVI, MOV, MKV supported.')
+    const slots = MAX_VIDEOS - files.length
+    if (valid.length > slots) {
+      alert(`Max ${MAX_VIDEOS} videos. Only first ${slots} added.`)
+      return valid.slice(0, slots)
+    }
+    return valid
+  }
+
+  return (
+    <div>
+      <motion.div
+        whileTap={{ scale: 0.98 }}
+        onClick={() => inputRef.current?.click()}
+        onDragOver={e => { e.preventDefault(); setDragging(true) }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={e => {
+          e.preventDefault(); setDragging(false)
+          const added = validate(e.dataTransfer.files)
+          if (added.length) onFiles([...files, ...added])
+        }}
+        style={{
+          border: `1.5px dashed ${dragging
+            ? '#0A84FF'
+            : dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.18)'}`,
+          borderRadius: 16, padding: '16px 12px', textAlign: 'center',
+          cursor: 'pointer',
+          background: dragging
+            ? 'rgba(10,132,255,0.06)'
+            : dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+          transition: 'all 0.15s',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 7, opacity: 0.5 }}>
+          <Icon.Upload s={20} c={dragging ? '#0A84FF' : (dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)')} />
+        </div>
+        <div style={{
+          fontSize: 12.5, fontWeight: 500,
+          color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
+          fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+        }}>
+          Click or drop videos here
+        </div>
+        <div style={{
+          fontSize: 10.5, marginTop: 3,
+          color: dark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.3)',
+          fontFamily: "'IBM Plex Mono', monospace",
+        }}>
+          mp4 · avi · mov · mkv — up to {MAX_VIDEOS}
+        </div>
+        <input ref={inputRef} type="file" accept="video/*" multiple hidden
+          onChange={e => {
+            const added = validate(e.target.files)
+            if (added.length) onFiles([...files, ...added])
+            e.target.value = ''
+          }} />
+      </motion.div>
+
+      <AnimatePresence>
+        {files.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}
+          >
+            {files.map((f, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                  borderRadius: 10, padding: '7px 10px',
+                  border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                }}
+              >
+                <Icon.Film s={12} c={SERIES_COLORS[i % SERIES_COLORS.length].line} />
+                <span style={{
+                  flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  fontSize: 12,
+                  color: dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)',
+                  fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                }}>{f.name}</span>
+                <span style={{
+                  fontSize: 10, flexShrink: 0,
+                  color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                  fontFamily: "'IBM Plex Mono', monospace",
+                }}>{(f.size / 1e6).toFixed(1)}MB</span>
+                <button
+                  onClick={e => { e.stopPropagation(); onFiles(files.filter((_, idx) => idx !== i)) }}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                    display: 'flex', opacity: 0.5,
+                  }}>
+                  <Icon.X s={11} c={dark ? '#fff' : '#000'} />
+                </button>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ─── Progress Bar ─────────────────────────────────────────────────────────────
+function ProgressRing({ value, color = '#0A84FF', size = 48 }) {
+  const r = 18, circ = 2 * Math.PI * r
+  return (
+    <svg width={size} height={size} viewBox="0 0 44 44" style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx="22" cy="22" r={r} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="3.5" />
+      <motion.circle
+        cx="22" cy="22" r={r} fill="none"
+        stroke={color} strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeDasharray={circ}
+        animate={{ strokeDashoffset: circ * (1 - value / 100) }}
+        transition={{ duration: 0.3 }}
+      />
+    </svg>
+  )
+}
+
+// ─── Metric Chip ──────────────────────────────────────────────────────────────
+function MetricChip({ label, value, unit, accent }) {
+  const { dark } = useTheme()
+  return (
+    <div style={{
+      background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+      border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)'}`,
+      borderRadius: 14, padding: '11px 14px', flex: 1, minWidth: 0,
+    }}>
+      <div style={{
+        fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+        color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+        fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+        marginBottom: 6,
+      }}>{label}</div>
+      <div style={{
+        fontSize: 20, fontWeight: 700,
+        color: accent || (dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)'),
+        fontFamily: "'IBM Plex Mono', monospace",
+        lineHeight: 1,
+      }}>
+        {value}
+        {unit && <span style={{
+          fontSize: 10, fontWeight: 400,
+          color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+          marginLeft: 3,
+        }}>{unit}</span>}
+      </div>
+    </div>
+  )
+}
+
+// ─── Line Chart (custom SVG, no recharts) ─────────────────────────────────────
 function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expanded }) {
   const svgRef = useRef(null)
   const [hover, setHover] = useState(null)
+  const { dark } = useTheme()
 
-  const W = expanded ? 880 : 520
-  const H = expanded ? 300 : 170
-  const PAD = { t: 12, r: 14, b: 32, l: 46 }
+  const W = expanded ? 820 : 480
+  const H = expanded ? 280 : 160
+  const PAD = { t: 12, r: 12, b: 30, l: 44 }
   const IW = W - PAD.l - PAD.r
   const IH = H - PAD.t - PAD.b
   const showThreshold = field === 'avg_velocity' && velocityThreshold > 0
@@ -224,13 +539,14 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
   const allVals = processed.flatMap(p => p.vals).filter(v => v != null)
   const allTimes = processed.flatMap(p => p.timeseries.map(x => x.time_sec))
 
-  if (!allVals.length || !allTimes.length) {
-    return (
-      <div style={{ height: H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, fontFamily: 'IBM Plex Mono, monospace' }}>no data</span>
-      </div>
-    )
-  }
+  if (!allVals.length || !allTimes.length) return (
+    <div style={{ height: H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{
+        fontSize: 11, fontFamily: "'IBM Plex Mono', monospace",
+        color: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+      }}>no data</span>
+    </div>
+  )
 
   const minV = Math.min(...allVals, showThreshold ? velocityThreshold : Infinity)
   const maxV = Math.max(...allVals, showThreshold ? velocityThreshold : -Infinity)
@@ -240,22 +556,21 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
   const tx = t => PAD.l + ((t - minT) / rangeT) * IW
   const ty = v => PAD.t + (1 - (v - minV) / rangeV) * IH
 
-  const buildPath = (ds) =>
+  const buildPath = ds =>
     ds.timeseries.map((p, i) => {
-      const v = ds.vals[i]
-      if (v == null) return null
+      const v = ds.vals[i]; if (v == null) return null
       const first = i === 0 || ds.vals.slice(0, i).every(x => x == null)
       return `${first ? 'M' : 'L'}${tx(p.time_sec).toFixed(1)},${ty(v).toFixed(1)}`
     }).filter(Boolean).join(' ')
 
-  const Y_TICKS = 4, X_TICKS = expanded ? 7 : 4
+  const Y_TICKS = 4, X_TICKS = expanded ? 6 : 3
   const gridVals = Array.from({ length: Y_TICKS + 1 }, (_, i) => minV + (rangeV * i / Y_TICKS))
   const gridTimes = Array.from({ length: X_TICKS + 1 }, (_, i) => minT + (rangeT * i / X_TICKS))
-  const dim = 'rgba(255,255,255,0.15)'
-  const gridLine = 'rgba(255,255,255,0.05)'
+  const dim = dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
+  const gridLine = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
   const thresholdY = showThreshold ? ty(velocityThreshold) : null
 
-  const onMouseMove = useCallback((e) => {
+  const onMouseMove = useCallback(e => {
     if (!svgRef.current) return
     const rect = svgRef.current.getBoundingClientRect()
     const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left - PAD.l) / IW))
@@ -264,8 +579,7 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
       const idx = ds.timeseries.reduce((best, p, i) =>
         Math.abs(p.time_sec - tVal) < Math.abs(ds.timeseries[best].time_sec - tVal) ? i : best, 0)
       return {
-        label: ds.video_name,
-        val: ds.vals[idx],
+        label: ds.video_name, val: ds.vals[idx],
         time: ds.timeseries[idx].time_sec,
         x: tx(ds.timeseries[idx].time_sec),
         y: ty(ds.vals[idx] ?? 0),
@@ -283,8 +597,8 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
         onMouseMove={onMouseMove} onMouseLeave={() => setHover(null)}>
         <defs>
           {processed.map((ds, di) => (
-            <linearGradient key={di} id={`g-${field}-${di}-${expanded ? 'e' : 's'}`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor={ds.color.line} stopOpacity="0.18" />
+            <linearGradient key={di} id={`grad-${field}-${di}-${expanded ? 'e' : 's'}`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor={ds.color.line} stopOpacity="0.20" />
               <stop offset="100%" stopColor={ds.color.line} stopOpacity="0" />
             </linearGradient>
           ))}
@@ -292,26 +606,31 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
 
         {gridVals.map((v, i) => (
           <g key={i}>
-            <line x1={PAD.l} y1={ty(v)} x2={W - PAD.r} y2={ty(v)} stroke={gridLine} strokeWidth="0.8" />
-            <text x={PAD.l - 5} y={ty(v) + 3.5} textAnchor="end" fill={dim} fontSize="9" fontFamily="IBM Plex Mono, monospace">{v.toFixed(0)}</text>
+            <line x1={PAD.l} y1={ty(v)} x2={W - PAD.r} y2={ty(v)} stroke={gridLine} strokeWidth="0.7" />
+            <text x={PAD.l - 5} y={ty(v) + 3.5} textAnchor="end" fill={dim} fontSize="9"
+              fontFamily="'IBM Plex Mono', monospace">{v.toFixed(0)}</text>
           </g>
         ))}
         {gridTimes.map((t, i) => (
-          <text key={i} x={tx(t)} y={H - PAD.b + 12} textAnchor="middle" fill={dim} fontSize="9" fontFamily="IBM Plex Mono, monospace">{t.toFixed(1)}s</text>
+          <text key={i} x={tx(t)} y={H - PAD.b + 12} textAnchor="middle" fill={dim} fontSize="9"
+            fontFamily="'IBM Plex Mono', monospace">{t.toFixed(1)}s</text>
         ))}
-        <text x={-H / 2} y={13} transform="rotate(-90)" textAnchor="middle" fill={dim} fontSize="9" fontFamily="IBM Plex Mono, monospace">{unit}</text>
+        <text x={-H / 2} y={14} transform="rotate(-90)" textAnchor="middle" fill={dim} fontSize="9"
+          fontFamily="'IBM Plex Mono', monospace">{unit}</text>
 
         {showThreshold && thresholdY != null && (
-          <g>
+          <>
             <line x1={PAD.l} y1={thresholdY} x2={W - PAD.r} y2={thresholdY}
-              stroke="#f87171" strokeWidth="1.2" strokeDasharray="4 3" opacity="0.7" />
-            <rect x={W - PAD.r - 62} y={thresholdY - 12} width={60} height={12} rx={2}
-              fill="rgba(248,113,113,0.12)" />
-            <text x={W - PAD.r - 32} y={thresholdY - 3} textAnchor="middle"
-              fill="#f87171" fontSize="8" fontFamily="IBM Plex Mono, monospace">thr:{velocityThreshold}</text>
+              stroke="#FF453A" strokeWidth="1" strokeDasharray="4 3" opacity="0.7" />
+            <rect x={W - PAD.r - 64} y={thresholdY - 13} width={62} height={13} rx={3}
+              fill="rgba(255,69,58,0.12)" />
+            <text x={W - PAD.r - 33} y={thresholdY - 3} textAnchor="middle"
+              fill="#FF453A" fontSize="8" fontFamily="'IBM Plex Mono', monospace">
+              thr:{velocityThreshold}
+            </text>
             <rect x={PAD.l} y={thresholdY} width={IW} height={Math.max(0, PAD.t + IH - thresholdY)}
-              fill="rgba(248,113,113,0.03)" />
-          </g>
+              fill="rgba(255,69,58,0.03)" />
+          </>
         )}
 
         {processed.map((ds, di) => {
@@ -321,16 +640,10 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
           return (
             <g key={di}>
               <path d={`${path} L${tx(lastPt.time_sec)},${PAD.t + IH} L${tx(firstPt.time_sec)},${PAD.t + IH} Z`}
-                fill={`url(#g-${field}-${di}-${expanded ? 'e' : 's'})`} />
-              <path d={path} fill="none" stroke={ds.color.line} strokeWidth="1.6"
+                fill={`url(#grad-${field}-${di}-${expanded ? 'e' : 's'})`} />
+              <path d={path} fill="none" stroke={ds.color.line} strokeWidth="1.8"
                 strokeDasharray={ds.color.dash ? '5 3' : undefined}
                 strokeLinejoin="round" strokeLinecap="round" />
-              {showThreshold && ds.timeseries.map((p, i) => {
-                const v = ds.vals[i]
-                if (v == null || v >= velocityThreshold) return null
-                return <circle key={i} cx={tx(p.time_sec)} cy={ty(v)} r={expanded ? 2.5 : 1.8}
-                  fill="#f87171" opacity="0.6" />
-              })}
             </g>
           )
         })}
@@ -338,133 +651,228 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
         {hover && (
           <>
             <line x1={hover[0].x} y1={PAD.t} x2={hover[0].x} y2={PAD.t + IH}
-              stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" strokeDasharray="3 2" />
+              stroke={dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)'}
+              strokeWidth="0.8" strokeDasharray="3 2" />
             {hover.map((h, i) => h.val != null && (
-              <circle key={i} cx={h.x} cy={h.y} r={4}
-                fill={h.belowThreshold ? '#f87171' : h.color}
-                stroke="rgba(10,20,35,0.8)" strokeWidth="1.5" />
+              <circle key={i} cx={h.x} cy={h.y} r={4.5}
+                fill={h.belowThreshold ? '#FF453A' : h.color}
+                stroke={dark ? 'rgba(18,18,22,0.8)' : 'rgba(255,255,255,0.9)'} strokeWidth="1.5" />
             ))}
           </>
         )}
       </svg>
 
-      {hover && (
-        <div style={{
-          position: 'absolute', top: 6, right: 6,
-          ...glass(0.85, 20),
-          borderRadius: 8, padding: '8px 12px', fontSize: 11,
-          lineHeight: 1.9, pointerEvents: 'none',
-          fontFamily: 'IBM Plex Mono, monospace',
-          color: 'rgba(255,255,255,0.7)',
-          minWidth: 160,
-        }}>
-          <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, marginBottom: 3 }}>
-            t = {hover[0]?.time.toFixed(2)}s
-          </div>
-          {hover.map((h, i) => h.val != null && (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 7, height: 7, borderRadius: 2, background: h.color, display: 'inline-block', flexShrink: 0 }} />
-              <span style={{ color: h.belowThreshold ? '#f87171' : 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
-                {h.val.toFixed(2)}
-              </span>
-              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>{unit}</span>
+      <AnimatePresence>
+        {hover && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.92 }}
+            style={{
+              position: 'absolute', top: 6, right: 6,
+              ...(dark ? glassDark() : glassLight()),
+              borderRadius: 12, padding: '9px 13px',
+              fontSize: 11, lineHeight: 1.9, pointerEvents: 'none',
+              fontFamily: "'IBM Plex Mono', monospace",
+              color: dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
+              minWidth: 140,
+            }}
+          >
+            <div style={{ fontSize: 9, opacity: 0.5, marginBottom: 2 }}>
+              t = {hover[0]?.time.toFixed(2)}s
             </div>
-          ))}
-        </div>
-      )}
+            {hover.map((h, i) => h.val != null && (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <span style={{ width: 7, height: 7, borderRadius: 2, background: h.color, display: 'inline-block' }} />
+                <span style={{ fontWeight: 700, color: h.belowThreshold ? '#FF453A' : (dark ? '#fff' : '#000') }}>
+                  {h.val.toFixed(2)}
+                </span>
+                <span style={{ opacity: 0.4, fontSize: 9 }}>{unit}</span>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
 
-// ─── Graph Modal ──────────────────────────────────────────────────────────────
-function GraphModal({ title, subtitle, children, onClose }) {
-  useEffect(() => {
-    const h = (e) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', h)
-    return () => document.removeEventListener('keydown', h)
-  }, [onClose])
-
-  return (
-    <div onClick={onClose} style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        ...glass(0.12, 60),
-        borderRadius: 16, width: '100%', maxWidth: 1060,
-        maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
-      }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0,
-        }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.9)', fontFamily: 'DM Sans, sans-serif' }}>{title}</div>
-            {subtitle && <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.35)', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>{subtitle}</div>}
-          </div>
-          <button onClick={onClose} style={{
-            ...glass(0.1, 20), borderRadius: 8, color: 'rgba(255,255,255,0.5)',
-            cursor: 'pointer', fontSize: 12, padding: '5px 12px',
-            fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 5,
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}>
-            <Icons.X size={11} /> Close
-          </button>
-        </div>
-        <div style={{ flex: 1, overflow: 'auto', padding: '18px 22px 22px' }}>{children}</div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Chart Island ─────────────────────────────────────────────────────────────
+// ─── Chart Island with expand ──────────────────────────────────────────────────
 function ChartIsland({ title, subtitle, children, expandContent }) {
   const [expanded, setExpanded] = useState(false)
+  const { dark } = useTheme()
   return (
     <>
-      <div style={{ ...glass(), borderRadius: 14, padding: '14px 16px 12px' }}>
+      <Island style={{ padding: '15px 17px 13px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
           <div>
-            <div style={{ fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontFamily: 'DM Sans, sans-serif', letterSpacing: '0.01em' }}>{title}</div>
-            {subtitle && <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.3)', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>{subtitle}</div>}
+            <div style={{
+              fontSize: 12.5, fontWeight: 600,
+              color: dark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.82)',
+              fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+              letterSpacing: '-0.01em',
+            }}>{title}</div>
+            {subtitle && <div style={{
+              fontSize: 10, marginTop: 2,
+              color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+              fontFamily: "'IBM Plex Mono', monospace",
+            }}>{subtitle}</div>}
           </div>
-          <button onClick={() => setExpanded(true)} style={{
-            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 6, color: 'rgba(255,255,255,0.35)', cursor: 'pointer',
-            padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4,
-            fontSize: 10, fontFamily: 'DM Sans, sans-serif', flexShrink: 0, marginLeft: 8,
-            transition: 'all 0.15s',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.4)'; e.currentTarget.style.color = '#2dd4bf' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}>
-            <Icons.Maximize size={10} /> Expand
-          </button>
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.94 }}
+            onClick={() => setExpanded(true)}
+            style={{
+              background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+              border: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+              borderRadius: 8, color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+              cursor: 'pointer', padding: '5px 9px',
+              display: 'flex', alignItems: 'center', gap: 4, fontSize: 10,
+              fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+              flexShrink: 0, marginLeft: 8,
+            }}
+          >
+            <Icon.Expand s={10} /> Expand
+          </motion.button>
         </div>
         {children}
-      </div>
-      {expanded && (
-        <GraphModal title={title} subtitle={subtitle} onClose={() => setExpanded(false)}>
-          {expandContent}
-        </GraphModal>
-      )}
+      </Island>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setExpanded(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 1000,
+              background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(10px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 28,
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.88, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                ...(dark ? glassDark() : glassLight()),
+                borderRadius: '2rem', width: '100%', maxWidth: 1000,
+                maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+              }}
+            >
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '16px 22px', borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}`,
+              }}>
+                <div>
+                  <div style={{
+                    fontSize: 14, fontWeight: 600,
+                    color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
+                    fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                  }}>{title}</div>
+                  {subtitle && <div style={{
+                    fontSize: 10.5, marginTop: 2,
+                    color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                  }}>{subtitle}</div>}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
+                  onClick={() => setExpanded(false)}
+                  style={{
+                    background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                    border: 'none', borderRadius: 10,
+                    color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)',
+                    cursor: 'pointer', fontSize: 12, padding: '6px 14px',
+                    fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}
+                >
+                  <Icon.X s={11} /> Close
+                </motion.button>
+              </div>
+              <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px 24px' }}>{expandContent}</div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
 
-// ─── Metric Chip ──────────────────────────────────────────────────────────────
-function MetricChip({ label, value, unit, accent }) {
+// ─── Status Pill ──────────────────────────────────────────────────────────────
+function StatusPill({ status }) {
+  const map = {
+    idle:      { label: 'Idle',       color: 'rgba(120,120,128,0.5)', text: '#888' },
+    uploading: { label: 'Uploading',  color: 'rgba(255,159,10,0.15)', text: '#FF9F0A' },
+    analyzing: { label: 'Analyzing', color: 'rgba(10,132,255,0.15)', text: '#0A84FF' },
+    done:      { label: 'Ready',      color: 'rgba(52,199,89,0.15)',  text: '#34C759' },
+    error:     { label: 'Error',      color: 'rgba(255,69,58,0.15)',  text: '#FF453A' },
+    restoring: { label: 'Restoring', color: 'rgba(10,132,255,0.12)', text: '#0A84FF' },
+  }
+  const { label, color, text } = map[status] || map.idle
+  const pulse = ['uploading', 'analyzing', 'restoring'].includes(status)
   return (
     <div style={{
-      ...glass(0.06, 20),
-      borderRadius: 10, padding: '10px 14px', flex: 1, minWidth: 0,
-      transition: 'border-color 0.2s',
+      display: 'flex', alignItems: 'center', gap: 6,
+      background: color, borderRadius: 20, padding: '4px 10px',
     }}>
-      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 5, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'DM Sans, sans-serif' }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: accent || 'rgba(255,255,255,0.9)', fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1 }}>
-        {value}
-        {unit && <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.3)', marginLeft: 3 }}>{unit}</span>}
-      </div>
+      <motion.span
+        animate={pulse ? { opacity: [1, 0.3, 1] } : {}}
+        transition={{ repeat: Infinity, duration: 1.2 }}
+        style={{ width: 6, height: 6, borderRadius: '50%', background: text, display: 'inline-block' }}
+      />
+      <span style={{
+        fontSize: 11, fontWeight: 600, color: text,
+        fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+        letterSpacing: '0.01em',
+      }}>{label}</span>
+    </div>
+  )
+}
+
+// ─── Tab Bar ──────────────────────────────────────────────────────────────────
+function TabBar({ tabs, active, onChange }) {
+  const { dark } = useTheme()
+  return (
+    <div style={{
+      display: 'flex', gap: 3, padding: 4,
+      background: dark ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.07)',
+      borderRadius: 14,
+    }}>
+      {tabs.map(t => (
+        <motion.button
+          key={t.id}
+          whileTap={{ scale: 0.96 }}
+          onClick={() => onChange(t.id)}
+          style={{
+            position: 'relative', background: 'none', border: 'none', cursor: 'pointer',
+            padding: '7px 16px', borderRadius: 11,
+            color: active === t.id
+              ? (dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)')
+              : (dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
+            fontSize: 12.5, fontWeight: 500,
+            fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+            transition: 'color 0.15s',
+          }}
+        >
+          {active === t.id && (
+            <motion.div
+              layoutId="activeTab"
+              style={{
+                position: 'absolute', inset: 0, borderRadius: 11,
+                background: dark ? 'rgba(255,255,255,0.12)' : '#fff',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+              }}
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            />
+          )}
+          <span style={{ position: 'relative', zIndex: 1 }}>{t.label}</span>
+        </motion.button>
+      ))}
     </div>
   )
 }
@@ -472,16 +880,26 @@ function MetricChip({ label, value, unit, accent }) {
 // ─── Alert Log ────────────────────────────────────────────────────────────────
 function AlertLog({ entries }) {
   const ref = useRef(null)
+  const { dark } = useTheme()
   useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight }, [entries])
-  const colorMap = { info: 'rgba(255,255,255,0.45)', ok: '#2dd4bf', warn: '#f59e0b', err: '#f87171' }
+  const colorMap = {
+    info: dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)',
+    ok: '#34C759', warn: '#FF9F0A', err: '#FF453A',
+  }
   return (
-    <div ref={ref} style={{ height: 160, overflowY: 'auto', fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, lineHeight: 2 }}>
+    <div ref={ref} style={{ height: 150, overflowY: 'auto', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, lineHeight: 2 }}>
       {entries.length === 0 && (
-        <div style={{ color: 'rgba(255,255,255,0.2)', padding: '8px 0' }}>// no activity yet</div>
+        <div style={{ color: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', padding: '8px 0' }}>
+          // no activity yet
+        </div>
       )}
       {entries.map((e, i) => (
-        <div key={i} style={{ display: 'flex', gap: 10, borderBottom: '1px solid rgba(255,255,255,0.04)', color: colorMap[e.type] || colorMap.info }}>
-          <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0, fontSize: 9 }}>{e.ts}</span>
+        <div key={i} style={{
+          display: 'flex', gap: 10,
+          borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
+          color: colorMap[e.type] || colorMap.info,
+        }}>
+          <span style={{ opacity: 0.4, flexShrink: 0, fontSize: 9 }}>{e.ts}</span>
           <span style={{ wordBreak: 'break-word', flex: 1 }}>{e.msg}</span>
         </div>
       ))}
@@ -489,179 +907,82 @@ function AlertLog({ entries }) {
   )
 }
 
-// ─── Upload Zone ─────────────────────────────────────────────────────────────
-function UploadZone({ files, onFiles }) {
-  const [dragging, setDragging] = useState(false)
-  const inputRef = useRef(null)
-
-  const validate = (fileList) => {
-    const arr = Array.from(fileList)
-    const valid = arr.filter(f => ALLOWED_TYPES.includes(f.type) || f.name.match(/\.(mp4|avi|mov|mkv)$/i))
-    if (valid.length !== arr.length) alert('Some files skipped — only MP4, AVI, MOV, MKV supported.')
-    const slots = MAX_VIDEOS - files.length
-    if (valid.length > slots) {
-      alert(`Max ${MAX_VIDEOS} videos. Only first ${slots} added.`)
-      return valid.slice(0, slots)
-    }
-    return valid
-  }
-
-  const onDrop = (e) => {
-    e.preventDefault(); setDragging(false)
-    const added = validate(e.dataTransfer.files)
-    if (added.length) onFiles([...files, ...added])
-  }
-
-  const onPick = (e) => {
-    const added = validate(e.target.files)
-    if (added.length) onFiles([...files, ...added])
-    e.target.value = ''
-  }
-
-  return (
-    <div>
-      <div onClick={() => inputRef.current?.click()}
-        onDragOver={e => { e.preventDefault(); setDragging(true) }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        style={{
-          border: `1px dashed ${dragging ? 'rgba(45,212,191,0.6)' : 'rgba(255,255,255,0.12)'}`,
-          borderRadius: 10, padding: '14px 10px', textAlign: 'center', cursor: 'pointer',
-          background: dragging ? 'rgba(45,212,191,0.06)' : 'rgba(255,255,255,0.03)',
-          transition: 'all 0.15s',
-        }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6, opacity: 0.5 }}>
-          <Icons.Upload size={18} color="rgba(45,212,191,0.8)" />
-        </div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>Click or drag videos</div>
-        <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.25)', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>mp4 · avi · mov · mkv — up to {MAX_VIDEOS}</div>
-        <input ref={inputRef} type="file" accept="video/*" multiple hidden onChange={onPick} />
-      </div>
-
-      {files.length > 0 && (
-        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {files.map((f, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              background: 'rgba(255,255,255,0.04)', borderRadius: 7, padding: '5px 9px',
-              border: '1px solid rgba(255,255,255,0.07)', fontSize: 11,
-            }}>
-              <Icons.Film size={10} color="#2dd4bf" />
-              <span style={{ color: 'rgba(255,255,255,0.6)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'DM Sans, sans-serif' }}>{f.name}</span>
-              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 9, flexShrink: 0, fontFamily: 'IBM Plex Mono, monospace' }}>{(f.size / 1e6).toFixed(1)}MB</span>
-              <button onClick={(e) => { e.stopPropagation(); onFiles(files.filter((_, idx) => idx !== i)) }}
-                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: 0, display: 'flex' }}>
-                <Icons.X size={11} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Progress Bar ─────────────────────────────────────────────────────────────
-function ProgressBar({ value, label, color }) {
-  return (
-    <div style={{ marginTop: 8 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 4, fontFamily: 'IBM Plex Mono, monospace' }}>
-        <span>{label}</span><span>{value}%</span>
-      </div>
-      <div style={{ height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${value}%`, background: color || '#2dd4bf', borderRadius: 2, transition: 'width 0.25s ease' }} />
-      </div>
-    </div>
-  )
-}
-
-// ─── Status Badge ─────────────────────────────────────────────────────────────
-function StatusDot({ status }) {
-  const map = {
-    idle:      { label: 'IDLE',      c: 'rgba(255,255,255,0.3)' },
-    uploading: { label: 'UPLOADING', c: '#f59e0b' },
-    analyzing: { label: 'ANALYZING', c: '#2dd4bf' },
-    done:      { label: 'READY',     c: '#2dd4bf' },
-    error:     { label: 'ERROR',     c: '#f87171' },
-    restoring: { label: 'RESTORING', c: '#60a5fa' },
-  }
-  const { label, c } = map[status] || map.idle
-  const pulse = status === 'analyzing' || status === 'uploading' || status === 'restoring'
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{
-        width: 6, height: 6, borderRadius: '50%', background: c, display: 'inline-block', flexShrink: 0,
-        animation: pulse ? 'pulse 1.2s ease-in-out infinite' : 'none',
-      }} />
-      <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', color: c, fontFamily: 'IBM Plex Mono, monospace' }}>{label}</span>
-    </div>
-  )
-}
-
-// ─── Toggle ───────────────────────────────────────────────────────────────────
-function Toggle({ value, onChange, label }) {
-  return (
-    <button onClick={() => onChange(!value)} style={{
-      display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none',
-      cursor: 'pointer', color: value ? '#2dd4bf' : 'rgba(255,255,255,0.4)',
-      fontSize: 11, padding: '4px 0', transition: 'color 0.15s', fontFamily: 'DM Sans, sans-serif',
-    }}>
-      <span style={{
-        width: 28, height: 15, borderRadius: 8,
-        background: value ? 'rgba(45,212,191,0.8)' : 'rgba(255,255,255,0.12)',
-        position: 'relative', display: 'inline-block', transition: 'background 0.2s', flexShrink: 0,
-      }}>
-        <span style={{
-          position: 'absolute', top: 2, left: value ? 15 : 2, width: 11, height: 11,
-          borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-        }} />
-      </span>
-      {label}
-    </button>
-  )
-}
-
-// ─── Threshold Alert Banner ───────────────────────────────────────────────────
-function ThresholdAlertBanner({ alerts, onDismiss, isRestored }) {
-  if (!alerts || alerts.length === 0) return null
-  return (
+// ─── Past Jobs Table ──────────────────────────────────────────────────────────
+function PastJobsTable({ jobs, onRestore }) {
+  const { dark } = useTheme()
+  if (!jobs.length) return (
     <div style={{
-      background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.3)',
-      borderRadius: 12, padding: '12px 16px', marginBottom: 14,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#f87171', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'DM Sans, sans-serif' }}>
-            <Icons.AlertTriangle size={12} color="#f87171" />
-            Lethargic Shrimp Detected — Velocity Below Threshold
-            {isRestored && <span style={{ fontSize: 8.5, background: 'rgba(96,165,250,0.15)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: 3, padding: '1px 6px', fontWeight: 600, letterSpacing: '0.08em', marginLeft: 4, fontFamily: 'IBM Plex Mono, monospace' }}>RESTORED</span>}
-          </div>
-          {alerts.map((a, i) => (
-            <div key={i} style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.55)', fontFamily: 'IBM Plex Mono, monospace', display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-              <span style={{ width: 6, height: 6, borderRadius: 1, background: SERIES_COLORS[a.videoIndex % SERIES_COLORS.length].line, display: 'inline-block', flexShrink: 0 }} />
-              <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>{shortName(a.videoName, 28)}</span>
-              <span style={{ color: '#f87171' }}>{a.pctBelow.toFixed(1)}% below {a.threshold}px/s</span>
-              <span style={{ color: 'rgba(255,255,255,0.25)' }}>avg:{a.avgVelocity.toFixed(1)}</span>
-            </div>
+      color: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+      fontSize: 12, padding: '16px 0', fontFamily: "'IBM Plex Mono', monospace",
+    }}>// no past analyses found</div>
+  )
+  const thStyle = {
+    padding: '8px 10px',
+    borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+    fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+    color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+    fontFamily: "'SF Pro Display', 'Satoshi', system-ui", textAlign: 'left',
+  }
+  const tdStyle = {
+    padding: '9px 10px',
+    borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
+    fontSize: 11.5, color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+    fontFamily: "'IBM Plex Mono', monospace",
+  }
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>{['Job ID', 'Created', 'Model', 'Videos', ''].map(h => <th key={h} style={thStyle}>{h}</th>)}</tr>
+        </thead>
+        <tbody>
+          {jobs.map(j => (
+            <motion.tr key={j.job_id} whileHover={{ background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+              <td style={{ ...tdStyle, color: '#0A84FF' }}>{j.job_id}</td>
+              <td style={tdStyle}>{new Date(j.created_at).toLocaleString()}</td>
+              <td style={tdStyle}>{j.selected_model}</td>
+              <td style={tdStyle}>{j.video_count}</td>
+              <td style={tdStyle}>
+                <motion.button
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                  onClick={() => onRestore(j.job_id)}
+                  style={{
+                    background: 'rgba(10,132,255,0.10)', border: '1px solid rgba(10,132,255,0.25)',
+                    borderRadius: 8, color: '#0A84FF', fontSize: 10.5, padding: '5px 12px',
+                    cursor: 'pointer', fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}
+                >
+                  <Icon.Clock s={10} c="#0A84FF" /> Restore
+                </motion.button>
+              </td>
+            </motion.tr>
           ))}
-        </div>
-        <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: 'rgba(248,113,113,0.6)', cursor: 'pointer', padding: 2, display: 'flex' }}>
-          <Icons.X size={13} />
-        </button>
-      </div>
+        </tbody>
+      </table>
     </div>
   )
 }
 
 // ─── Video Summary Cards ──────────────────────────────────────────────────────
 function VideoSummaryCards({ video, accent }) {
+  const { dark } = useTheme()
   const s = video.summary
   return (
     <div>
-      <div style={{ fontSize: 10, color: accent, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'DM Sans, sans-serif' }}>
+      <div style={{
+        fontSize: 11, fontWeight: 600, color: accent,
+        letterSpacing: '0.04em', marginBottom: 10,
+        fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+        display: 'flex', alignItems: 'center', gap: 8,
+      }}>
         {shortName(video.video_name, 36)}
         {video._used_dummy_data && (
-          <span style={{ fontSize: 8.5, background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 3, padding: '1px 6px', fontFamily: 'IBM Plex Mono, monospace' }}>DUMMY DATA</span>
+          <span style={{
+            fontSize: 9, background: 'rgba(255,159,10,0.12)', color: '#FF9F0A',
+            border: '1px solid rgba(255,159,10,0.3)', borderRadius: 5, padding: '1px 7px',
+            fontFamily: "'IBM Plex Mono', monospace",
+          }}>DUMMY DATA</span>
         )}
       </div>
       <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
@@ -675,98 +996,58 @@ function VideoSummaryCards({ video, accent }) {
   )
 }
 
-// ─── Past Jobs Table ──────────────────────────────────────────────────────────
-function PastJobsTable({ jobs, onRestore }) {
-  if (!jobs.length) return (
-    <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, padding: '12px 0', fontFamily: 'IBM Plex Mono, monospace' }}>// no past analyses found</div>
-  )
-  const th = { padding: '7px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: 9.5, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }
-  const td = { padding: '8px 10px', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 11, color: 'rgba(255,255,255,0.55)', fontFamily: 'IBM Plex Mono, monospace' }
+// ─── Threshold Alert Toast ────────────────────────────────────────────────────
+function ThresholdToast({ alerts, onDismiss, isRestored }) {
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead><tr>{['Job ID', 'Created', 'Model', 'Videos', ''].map(h => <th key={h} style={th}>{h}</th>)}</tr></thead>
-        <tbody>
-          {jobs.map(j => (
-            <tr key={j.job_id}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <td style={{ ...td, color: '#2dd4bf' }}>{j.job_id}</td>
-              <td style={td}>{new Date(j.created_at).toLocaleString()}</td>
-              <td style={td}>{j.selected_model}</td>
-              <td style={td}>{j.video_count}</td>
-              <td style={td}>
-                <button onClick={() => onRestore(j.job_id)} style={{
-                  background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.25)',
-                  borderRadius: 5, color: '#2dd4bf', fontSize: 10, padding: '4px 10px', cursor: 'pointer',
-                  fontFamily: 'IBM Plex Mono, monospace', display: 'flex', alignItems: 'center', gap: 5,
+    <AnimatePresence>
+      {alerts && alerts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -18 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -18 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 22 }}
+          style={{
+            background: 'rgba(255,69,58,0.09)',
+            border: '1px solid rgba(255,69,58,0.3)',
+            borderRadius: 16, padding: '11px 16px', marginBottom: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: 12, fontWeight: 600, color: '#FF453A', marginBottom: 6,
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+              }}>
+                <Icon.Alert s={12} c="#FF453A" />
+                Lethargic Shrimp Detected — Below Velocity Threshold
+                {isRestored && (
+                  <span style={{
+                    fontSize: 8.5, background: 'rgba(10,132,255,0.12)', color: '#0A84FF',
+                    border: '1px solid rgba(10,132,255,0.3)', borderRadius: 4,
+                    padding: '1px 7px', fontFamily: "'IBM Plex Mono', monospace",
+                  }}>RESTORED</span>
+                )}
+              </div>
+              {alerts.map((a, i) => (
+                <div key={i} style={{
+                  fontSize: 11, color: 'rgba(255,69,58,0.8)',
+                  fontFamily: "'IBM Plex Mono', monospace", display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3,
                 }}>
-                  <Icons.History size={9} color="#2dd4bf" /> restore
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-// ─── Tab Bar ──────────────────────────────────────────────────────────────────
-function TabBar({ tabs, active, onChange }) {
-  return (
-    <div style={{ display: 'flex', gap: 2 }}>
-      {tabs.map(t => (
-        <button key={t.id} onClick={() => onChange(t.id)} style={{
-          background: active === t.id ? 'rgba(45,212,191,0.12)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${active === t.id ? 'rgba(45,212,191,0.3)' : 'rgba(255,255,255,0.07)'}`,
-          borderRadius: 8, color: active === t.id ? '#2dd4bf' : 'rgba(255,255,255,0.4)',
-          fontSize: 11, fontWeight: 500, padding: '6px 14px', cursor: 'pointer',
-          transition: 'all 0.15s', fontFamily: 'DM Sans, sans-serif',
-        }}>{t.label}</button>
-      ))}
-    </div>
-  )
-}
-
-// ─── Number Input ─────────────────────────────────────────────────────────────
-function NumInput({ value, onChange, placeholder, disabled }) {
-  return (
-    <input type="number" min="0" step="0.5"
-      value={value || ''}
-      onChange={e => onChange(Math.max(0, parseFloat(e.target.value) || 0))}
-      placeholder={placeholder}
-      disabled={disabled}
-      style={{
-        flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 7, color: 'rgba(255,255,255,0.85)', fontSize: 12.5,
-        padding: '7px 10px', outline: 'none', fontFamily: 'IBM Plex Mono, monospace',
-        transition: 'border-color 0.15s', opacity: disabled ? 0.5 : 1,
-      }}
-      onFocus={e => e.target.style.borderColor = 'rgba(248,113,113,0.5)'}
-      onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-    />
-  )
-}
-
-// ─── Select ───────────────────────────────────────────────────────────────────
-function GlassSelect({ value, onChange, options, disabled }) {
-  return (
-    <select value={value} onChange={e => onChange(e.target.value)} disabled={disabled}
-      style={{
-        width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 8, color: disabled ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.85)',
-        fontSize: 12, padding: '8px 28px 8px 10px', appearance: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
-        outline: 'none', fontFamily: 'DM Sans, sans-serif',
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E")`,
-        backgroundRepeat: 'no-repeat', backgroundPosition: 'calc(100% - 10px) center',
-        transition: 'border-color 0.15s',
-      }}
-      onFocus={e => e.target.style.borderColor = 'rgba(45,212,191,0.4)'}
-      onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-    >
-      {options.map(o => <option key={o.value} value={o.value} style={{ background: '#0a1424' }}>{o.label}</option>)}
-    </select>
+                  <span style={{ width: 6, height: 6, borderRadius: 2, background: SERIES_COLORS[a.videoIndex % SERIES_COLORS.length].line, display: 'inline-block' }} />
+                  <span style={{ fontWeight: 600, color: '#FF453A' }}>{shortName(a.videoName, 28)}</span>
+                  <span>{a.pctBelow.toFixed(1)}% below {a.threshold}px/s · avg {a.avgVelocity.toFixed(1)}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={onDismiss}
+              style={{ background: 'none', border: 'none', color: 'rgba(255,69,58,0.6)', cursor: 'pointer', padding: 2, display: 'flex' }}>
+              <Icon.X s={13} />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -774,7 +1055,7 @@ function GlassSelect({ value, onChange, options, disabled }) {
 // MAIN DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function ShrimpDashboard() {
-  const [dark] = useState(true)
+  const [dark, setDark] = useState(false)
 
   // ── State ───────────────────────────────────────────────────────────────────
   const [models, setModels] = useState([])
@@ -802,7 +1083,7 @@ export default function ShrimpDashboard() {
     setLogEntries(a => [...a.slice(-99), { ts, msg, type }])
   }, [])
 
-  // ── Restore job ─────────────────────────────────────────────────────────────
+  // ── Restore ─────────────────────────────────────────────────────────────────
   const restoreJob = useCallback(async (jobId) => {
     if (!jobId) return
     setStatus('restoring')
@@ -811,10 +1092,8 @@ export default function ShrimpDashboard() {
       const res = await fetch(`${BASE_URL}/results/${jobId}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
-      setResult(data)
-      setIsRestoredResult(true)
-      setThresholdAlerts([])
-      setThresholdAlertDismissed(false)
+      setResult(data); setIsRestoredResult(true)
+      setThresholdAlerts([]); setThresholdAlertDismissed(false)
       setStatus('done')
       log(`Session restored: ${data.videos.length} video(s) from ${jobId}`, 'ok')
     } catch (e) {
@@ -837,17 +1116,14 @@ export default function ShrimpDashboard() {
       } catch (e) {
         log(`Backend unreachable: ${e.message}`, 'err')
         const fallback = [{ id: 'best', label: 'Best Trained Model' }, { id: 'yolov8n', label: 'YOLOv8 Nano' }]
-        setModels(fallback)
-        setSelectedModel(fallback[0].id)
-      } finally {
-        setModelsLoading(false)
-      }
+        setModels(fallback); setSelectedModel(fallback[0].id)
+      } finally { setModelsLoading(false) }
       const lastJobId = sessionStorage.getItem('lastJobId')
       if (lastJobId) await restoreJob(lastJobId)
     })()
   }, [log, restoreJob])
 
-  // ── Fetch past jobs ─────────────────────────────────────────────────────────
+  // ── Past jobs ────────────────────────────────────────────────────────────────
   const fetchPastJobs = useCallback(async () => {
     setPastLoading(true)
     try {
@@ -855,18 +1131,15 @@ export default function ShrimpDashboard() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setPastJobs(data.results || [])
-    } catch (e) {
-      log(`Could not load history: ${e.message}`, 'warn')
-    } finally {
-      setPastLoading(false)
-    }
+    } catch (e) { log(`Could not load history: ${e.message}`, 'warn') }
+    finally { setPastLoading(false) }
   }, [log])
 
   useEffect(() => { fetchPastJobs() }, [fetchPastJobs])
 
   // ── Run analysis ─────────────────────────────────────────────────────────────
   const runAnalysis = useCallback(async () => {
-    if (!files.length) { log('Select at least one video file.', 'warn'); return }
+    if (!files.length) { log('Select at least one video.', 'warn'); return }
     if (!selectedModel) { log('Select a YOLO model.', 'warn'); return }
     if (status === 'uploading' || status === 'analyzing') return
 
@@ -882,7 +1155,7 @@ export default function ShrimpDashboard() {
     files.forEach(f => fd.append('videos', f, f.name))
 
     try {
-      const data = await uploadWithProgress(fd, (pct) => {
+      const data = await uploadWithProgress(fd, pct => {
         setUploadPct(pct)
         if (pct === 100) {
           log('Upload complete — running inference...', 'ok')
@@ -906,9 +1179,7 @@ export default function ShrimpDashboard() {
         if (tAlerts.length > 0) {
           tAlerts.forEach(a => log(`ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% below ${a.threshold}px/s`, 'warn'))
           setActiveTab('analytics')
-        } else {
-          log(`All videos passed threshold (${velocityThreshold}px/s)`, 'ok')
-        }
+        } else { log(`All videos passed threshold (${velocityThreshold}px/s)`, 'ok') }
       }
 
       const dummyCount = data.videos.filter(v => v._used_dummy_data).length
@@ -918,27 +1189,21 @@ export default function ShrimpDashboard() {
       fetchPastJobs()
     } catch (e) {
       if (abortRef.current?._inferIv) clearInterval(abortRef.current._inferIv)
-      if (e.name === 'AbortError') {
-        setStatus('idle'); log('Analysis cancelled.', 'warn')
-      } else {
-        setStatus('error'); setError(e.message); log(`Error: ${e.message}`, 'err')
-      }
+      if (e.name === 'AbortError') { setStatus('idle'); log('Analysis cancelled.', 'warn') }
+      else { setStatus('error'); setError(e.message); log(`Error: ${e.message}`, 'err') }
     }
   }, [files, selectedModel, status, log, fetchPastJobs, velocityThreshold])
 
-  // ── Calculate threshold on current result ────────────────────────────────────
+  // ── Threshold calculation ────────────────────────────────────────────────────
   const calculateThresholdOnCurrentResult = useCallback(() => {
     if (!result || !velocityThreshold || velocityThreshold <= 0) return
     log(`Calculating threshold (${velocityThreshold}px/s) on current result...`, 'info')
     const tAlerts = computeThresholdAlerts(result.videos, velocityThreshold)
-    setThresholdAlerts(tAlerts)
-    setThresholdAlertDismissed(false)
+    setThresholdAlerts(tAlerts); setThresholdAlertDismissed(false)
     if (tAlerts.length > 0) {
       tAlerts.forEach(a => log(`ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% below ${a.threshold}px/s${isRestoredResult ? ' [restored]' : ''}`, 'warn'))
       setActiveTab('analytics')
-    } else {
-      log(`All videos passed threshold (${velocityThreshold}px/s)`, 'ok')
-    }
+    } else { log(`All videos passed threshold (${velocityThreshold}px/s)`, 'ok') }
   }, [result, velocityThreshold, isRestoredResult, log])
 
   const cancelAnalysis = () => {
@@ -947,248 +1212,425 @@ export default function ShrimpDashboard() {
       if (abortRef.current._inferIv) clearInterval(abortRef.current._inferIv)
     }
   }
-
   const downloadCsv = (jobId, videoId) => {
     window.open(`${BASE_URL}/results/${jobId}/${videoId}/csv`, '_blank')
     log(`Downloading CSV for ${videoId}`, 'info')
   }
-
   const handleRestore = useCallback(async (jobId) => {
     sessionStorage.setItem('lastJobId', jobId)
     setThresholdAlerts([]); setThresholdAlertDismissed(false)
-    await restoreJob(jobId)
-    setActiveTab('analytics')
+    await restoreJob(jobId); setActiveTab('analytics')
   }, [restoreJob])
 
   // ── Derived ──────────────────────────────────────────────────────────────────
   const isRunning = status === 'uploading' || status === 'analyzing'
   const hasDummy = result?.videos?.some(v => v._used_dummy_data)
   const showThresholdAlerts = thresholdAlerts.length > 0 && !thresholdAlertDismissed
-  const canCalculateThreshold = !!result && velocityThreshold > 0 && !isRunning
-  const activeVelocityThreshold = velocityThreshold > 0 ? velocityThreshold : 0
+  const canCalcThreshold = !!result && velocityThreshold > 0 && !isRunning
+  const activeVelThreshold = velocityThreshold > 0 ? velocityThreshold : 0
   const legend = result?.videos?.map((v, i) => ({ label: v.video_name, color: SERIES_COLORS[i % SERIES_COLORS.length].line })) || []
 
+  const txt = dark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'
+  const txSub = dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)'
+
   return (
-    <>
+    <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
+      {/* ── Global styles ── */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body, #root { height: 100%; width: 100%; }
-        body { font-family: 'DM Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
-        select option { background: #0a1424; }
+        body {
+          font-family: 'SF Pro Display', 'Satoshi', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          overflow: hidden;
+          background: ${dark ? '#0a0a0f' : '#e8eaf0'};
+        }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .fade-up { animation: fadeUp 0.3s ease both; }
+        ::-webkit-scrollbar-thumb { background: ${dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.14)'}; border-radius: 2px; }
+        select option { background: ${dark ? '#1c1c1e' : '#fff'}; }
         input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
-      {/* ── Root: background image ── */}
+      {/* ── Root ── */}
       <div style={{
         width: '100vw', height: '100vh', overflow: 'hidden',
-        background: 'linear-gradient(135deg, #050d1a 0%, #091525 50%, #060e1c 100%)',
-        backgroundImage: `url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80')`,
-        backgroundSize: 'cover', backgroundPosition: 'center',
         position: 'relative',
       }}>
-        {/* dark overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,13,26,0.82)', backdropFilter: 'blur(1px)' }} />
-
-        {/* subtle grid */}
+        {/* Background video / ambient layer */}
         <div style={{
-          position: 'absolute', inset: 0, opacity: 0.04,
-          backgroundImage: 'linear-gradient(rgba(45,212,191,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(45,212,191,0.6) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }} />
+          position: 'absolute', inset: 0, zIndex: 0,
+          overflow: 'hidden',
+        }}>
+          {/* Ambient gradient replacing video for compatibility */}
+          <div style={{
+            position: 'absolute', inset: 0,
+//             background: dark
+//               ? 'radial-gradient(ellipse at 20% 20%, #0d2137 0%, #090d14 50%, #000 100%)'
+//               : 'radial-gradient(ellipse at 20% 20%, #c8e6fa 0%, #dce7f7 50%, #edf2fb 100%)',
+            backgroundImage: `url('/shrimp_background.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }} />
+          {/* Animated orbs for visual depth */}
+          <div style={{
+            position: 'absolute', top: '8%', left: '12%',
+            width: 480, height: 480, borderRadius: '50%',
+            background: dark
+              ? 'radial-gradient(circle, rgba(10,132,255,0.18) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(10,132,255,0.12) 0%, transparent 70%)',
+            filter: 'blur(40px)',
+            animation: 'orbFloat 12s ease-in-out infinite',
+          }} />
+          <div style={{
+            position: 'absolute', bottom: '10%', right: '8%',
+            width: 560, height: 560, borderRadius: '50%',
+            background: dark
+              ? 'radial-gradient(circle, rgba(52,199,89,0.12) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(52,199,89,0.10) 0%, transparent 70%)',
+            filter: 'blur(48px)',
+            animation: 'orbFloat 16s ease-in-out infinite reverse',
+          }} />
+          <div style={{
+            position: 'absolute', top: '45%', left: '40%',
+            width: 400, height: 400, borderRadius: '50%',
+            background: dark
+              ? 'radial-gradient(circle, rgba(255,159,10,0.08) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(255,159,10,0.07) 0%, transparent 70%)',
+            filter: 'blur(36px)',
+            animation: 'orbFloat 20s ease-in-out infinite',
+            animationDelay: '4s',
+          }} />
+          <style>{`
+            @keyframes orbFloat {
+              0%, 100% { transform: translate(0, 0) scale(1); }
+              33% { transform: translate(30px, -20px) scale(1.04); }
+              66% { transform: translate(-20px, 25px) scale(0.97); }
+            }
+          `}</style>
+        </div>
 
-        {/* ── Layout ── */}
+        {/* ── Layout grid ── */}
         <div style={{
           position: 'relative', zIndex: 1,
           width: '100%', height: '100%',
           display: 'grid',
-          gridTemplateColumns: '260px 1fr',
-          gridTemplateRows: '52px 1fr',
+          gridTemplateRows: '58px 1fr',
+          gridTemplateColumns: '270px 1fr',
           gap: 0,
           padding: 0,
         }}>
 
           {/* ════ HEADER ISLAND ════ */}
-          <div style={{
-            gridColumn: '1 / -1',
-            ...glass(0.1, 50),
-            borderRadius: 0,
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-            borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 20px',
-          }}>
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+            style={{
+              gridColumn: '1 / -1',
+              ...(dark ? glassDark() : glassLight()),
+              borderRadius: 0,
+              borderTop: 'none', borderLeft: 'none', borderRight: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '0 22px',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
-                width: 28, height: 28, borderRadius: 7,
-                background: 'rgba(45,212,191,0.12)', border: '1px solid rgba(45,212,191,0.3)',
+                width: 32, height: 32, borderRadius: 10,
+                background: 'linear-gradient(135deg, #0A84FF 0%, #0055CC 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(10,132,255,0.35)',
               }}>
-                <Icons.Activity size={13} color="#2dd4bf" />
+                <Icon.Waveform s={14} c="#fff" />
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.02em', fontFamily: 'DM Sans, sans-serif' }}>ShrimpTracker</div>
-                <div style={{ fontSize: 8.5, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono, monospace' }}>Activity Detection System</div>
+                <div style={{
+                  fontSize: 14.5, fontWeight: 700, letterSpacing: '-0.025em',
+                  color: dark ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.85)',
+                }}>ShrimpTracker</div>
+                <div style={{
+                  fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: txSub, fontFamily: "'IBM Plex Mono', monospace",
+                }}>Activity Detection System</div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               {isRestoredResult && result && (
-                <span style={{ fontSize: 9, background: 'rgba(96,165,250,0.1)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.25)', borderRadius: 4, padding: '2px 8px', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600, letterSpacing: '0.07em' }}>
+                <span style={{
+                  fontSize: 9.5, background: 'rgba(10,132,255,0.10)', color: '#0A84FF',
+                  border: '1px solid rgba(10,132,255,0.25)', borderRadius: 6,
+                  padding: '3px 9px', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600,
+                }}>
                   RESTORED · {result.job_id}
                 </span>
               )}
-              <StatusDot status={status} />
-              <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)' }} />
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontFamily: 'IBM Plex Mono, monospace' }}>
-                {new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+
+              <StatusPill status={status} />
+
+              <div style={{ width: 1, height: 20, background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+
+              <div style={{ fontSize: 11, color: txSub, fontFamily: "'IBM Plex Mono', monospace" }}>
+                {new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' })}
               </div>
+
+              {/* Dark mode toggle */}
+              <motion.button
+                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }}
+                onClick={() => setDark(d => !d)}
+                style={{
+                  width: 32, height: 32, borderRadius: 10, cursor: 'pointer',
+                  background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+                  border: `1px solid ${dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
+                }}
+              >
+                {dark ? <Icon.Sun s={13} /> : <Icon.Moon s={13} />}
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
 
-          {/* ════ LEFT SIDEBAR ISLAND ════ */}
-          <div style={{
-            gridColumn: '1',
-            gridRow: '2',
-            ...glass(0.07, 50),
-            borderRight: '1px solid rgba(255,255,255,0.07)',
-            borderTop: 'none', borderLeft: 'none', borderBottom: 'none', borderRadius: 0,
-            display: 'flex', flexDirection: 'column',
-            overflowY: 'auto', padding: '18px 14px',
-          }}>
-
-            {/* Model */}
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>YOLO Model</div>
+          {/* ════ LEFT SIDEBAR ════ */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 18, delay: 0.05 }}
+            style={{
+              gridColumn: '1', gridRow: '2',
+              ...(dark ? glassDark() : glassLight()),
+              borderRadius: 0,
+              borderTop: 'none', borderLeft: 'none', borderBottom: 'none',
+              borderRight: `1px solid ${dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}`,
+              display: 'flex', flexDirection: 'column',
+              overflowY: 'auto', padding: '20px 16px',
+              gap: 20,
+            }}
+          >
+            {/* Model selector */}
+            <div>
+              <Label>YOLO Model</Label>
               <GlassSelect
                 value={selectedModel}
                 onChange={setSelectedModel}
-                options={modelsLoading ? [{ value: '', label: 'Loading...' }] : models.map(m => ({ value: m.id, label: m.label }))}
+                options={modelsLoading
+                  ? [{ value: '', label: 'Loading…' }]
+                  : models.map(m => ({ value: m.id, label: m.label }))}
                 disabled={isRunning || modelsLoading}
               />
             </div>
 
             {/* Upload */}
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>Upload Videos</div>
+            <div>
+              <Label>Upload Videos</Label>
               <UploadZone files={files} onFiles={setFiles} />
             </div>
 
-            {/* Lethargic Detection */}
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>Lethargic Detection</div>
-              <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.3)', marginBottom: 8, lineHeight: 1.6, fontFamily: 'DM Sans, sans-serif' }}>
-                Set minimum velocity. New analyses calculate automatically; restored analyses require manual trigger.
+            {/* Lethargic detection */}
+            <div>
+              <Label>Lethargic Detection</Label>
+              <div style={{
+                fontSize: 11.5, color: txSub, marginBottom: 9, lineHeight: 1.55,
+              }}>
+                Flag shrimp with velocity below threshold.
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-                <NumInput value={velocityThreshold} onChange={setVelocityThreshold} placeholder="e.g. 5" disabled={isRunning} />
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', flexShrink: 0, fontFamily: 'IBM Plex Mono, monospace' }}>px/s</span>
+                <GlassInput
+                  value={velocityThreshold}
+                  onChange={setVelocityThreshold}
+                  placeholder="e.g. 5"
+                  disabled={isRunning}
+                />
+                <span style={{ fontSize: 10.5, color: txSub, flexShrink: 0, fontFamily: "'IBM Plex Mono', monospace" }}>px/s</span>
               </div>
 
-              <button onClick={calculateThresholdOnCurrentResult} disabled={!canCalculateThreshold} style={{
-                width: '100%', padding: '8px 0',
-                background: canCalculateThreshold ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.04)',
-                color: canCalculateThreshold ? '#f87171' : 'rgba(255,255,255,0.2)',
-                border: `1px solid ${canCalculateThreshold ? 'rgba(248,113,113,0.3)' : 'rgba(255,255,255,0.07)'}`,
-                borderRadius: 8, fontSize: 10.5, fontWeight: 600, cursor: canCalculateThreshold ? 'pointer' : 'not-allowed',
-                transition: 'all 0.15s', fontFamily: 'DM Sans, sans-serif',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              }}>
-                <Icons.AlertTriangle size={10} color={canCalculateThreshold ? '#f87171' : 'rgba(255,255,255,0.2)'} />
+              <motion.button
+                whileHover={canCalcThreshold ? { scale: 1.02 } : {}}
+                whileTap={canCalcThreshold ? { scale: 0.97 } : {}}
+                onClick={calculateThresholdOnCurrentResult}
+                disabled={!canCalcThreshold}
+                style={{
+                  width: '100%', padding: '9px 0', borderRadius: 12,
+                  background: canCalcThreshold ? 'rgba(255,69,58,0.10)' : (dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                  color: canCalcThreshold ? '#FF453A' : (dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
+                  border: `1px solid ${canCalcThreshold ? 'rgba(255,69,58,0.3)' : (dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')}`,
+                  fontSize: 12, fontWeight: 600, cursor: canCalcThreshold ? 'pointer' : 'not-allowed',
+                  fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <Icon.Alert s={10} c={canCalcThreshold ? '#FF453A' : (dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')} />
                 Calculate Threshold
-              </button>
+              </motion.button>
 
               {velocityThreshold > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
-                  <span style={{ fontSize: 9.5, color: 'rgba(248,113,113,0.7)', fontFamily: 'IBM Plex Mono, monospace' }}>alert &lt; {velocityThreshold}px/s</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                  <span style={{ fontSize: 10, color: 'rgba(255,69,58,0.7)', fontFamily: "'IBM Plex Mono', monospace" }}>
+                    alert &lt; {velocityThreshold}px/s
+                  </span>
                   <button onClick={() => { setVelocityThreshold(0); setThresholdAlerts([]); setThresholdAlertDismissed(false) }}
-                    style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontSize: 10, fontFamily: 'DM Sans, sans-serif' }}>clear</button>
+                    style={{ background: 'none', border: 'none', color: txSub, cursor: 'pointer', fontSize: 11 }}>
+                    clear
+                  </button>
                 </div>
               )}
             </div>
 
-            {/* Display */}
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>Display</div>
-              <Toggle value={smoothing} onChange={setSmoothing} label={`Rolling avg (${SMOOTHING_WINDOW}-frame)`} />
+            {/* Display options */}
+            <div>
+              <Label>Display</Label>
+              <IOSToggle value={smoothing} onChange={setSmoothing} label={`Rolling avg (${SMOOTHING_WINDOW}-frame)`} />
             </div>
 
-            {/* Progress */}
-            {isRunning && (
-              <div style={{ marginBottom: 14 }}>
-                {status === 'uploading' && <ProgressBar value={uploadPct} label="Uploading..." color="#f59e0b" />}
-                {status === 'analyzing' && <ProgressBar value={analyzePct} label="Inference..." color="#2dd4bf" />}
-              </div>
-            )}
+            {/* Progress indicators */}
+            <AnimatePresence>
+              {isRunning && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  style={{
+                    background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                    borderRadius: 14, padding: '12px 14px',
+                    border: `1px solid ${dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}`,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <ProgressRing
+                      value={status === 'uploading' ? uploadPct : analyzePct}
+                      color={status === 'uploading' ? '#FF9F0A' : '#0A84FF'}
+                    />
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: txt }}>
+                        {status === 'uploading' ? 'Uploading…' : 'Analyzing…'}
+                      </div>
+                      <div style={{
+                        fontSize: 10.5, color: txSub, fontFamily: "'IBM Plex Mono', monospace",
+                      }}>
+                        {status === 'uploading' ? uploadPct : analyzePct}%
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Warnings */}
-            {error && (
-              <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, padding: '8px 10px', fontSize: 10.5, color: '#f87171', marginBottom: 12, fontFamily: 'IBM Plex Mono, monospace', wordBreak: 'break-word' }}>
-                {error}
-              </div>
-            )}
-            {hasDummy && (
-              <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '8px 10px', fontSize: 10.5, color: '#f59e0b', marginBottom: 12, fontFamily: 'IBM Plex Mono, monospace' }}>
-                No YOLO model found. Charts show dummy data.
-              </div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  style={{
+                    background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.25)',
+                    borderRadius: 12, padding: '9px 12px', fontSize: 11.5, color: '#FF453A',
+                    fontFamily: "'IBM Plex Mono', monospace", wordBreak: 'break-word',
+                  }}>
+                  {error}
+                </motion.div>
+              )}
+              {hasDummy && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  style={{
+                    background: 'rgba(255,159,10,0.08)', border: '1px solid rgba(255,159,10,0.25)',
+                    borderRadius: 12, padding: '9px 12px', fontSize: 11.5, color: '#FF9F0A',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                  }}>
+                  No YOLO model found. Charts show dummy data.
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Spacer + CTA */}
-            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 7 }}>
-              <button onClick={runAnalysis} disabled={isRunning || !files.length} style={{
-                width: '100%', padding: '11px 0',
-                background: isRunning || !files.length
-                  ? 'rgba(255,255,255,0.05)'
-                  : 'linear-gradient(135deg, rgba(45,212,191,0.85), rgba(20,184,166,0.9))',
-                color: isRunning || !files.length ? 'rgba(255,255,255,0.25)' : '#051c1a',
-                border: `1px solid ${isRunning || !files.length ? 'rgba(255,255,255,0.07)' : 'rgba(45,212,191,0.5)'}`,
-                borderRadius: 10, fontSize: 12, fontWeight: 700,
-                cursor: isRunning || !files.length ? 'not-allowed' : 'pointer',
-                transition: 'all 0.15s', fontFamily: 'DM Sans, sans-serif',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                boxShadow: isRunning || !files.length ? 'none' : '0 4px 20px rgba(45,212,191,0.25)',
-              }}>
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <motion.button
+                whileHover={isRunning || !files.length ? {} : { scale: 1.02, y: -1 }}
+                whileTap={isRunning || !files.length ? {} : { scale: 0.97 }}
+                onClick={runAnalysis}
+                disabled={isRunning || !files.length}
+                style={{
+                  width: '100%', padding: '13px 0', borderRadius: 14,
+                  background: isRunning || !files.length
+                    ? (dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)')
+                    : 'linear-gradient(135deg, #0A84FF 0%, #0055CC 100%)',
+                  color: isRunning || !files.length
+                    ? (dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)')
+                    : '#fff',
+                  border: 'none',
+                  fontSize: 13.5, fontWeight: 700,
+                  cursor: isRunning || !files.length ? 'not-allowed' : 'pointer',
+                  fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: isRunning || !files.length ? 'none' : '0 6px 24px rgba(10,132,255,0.35)',
+                  transition: 'all 0.15s',
+                }}
+              >
                 {isRunning ? (
-                  <><div style={{ width: 11, height: 11, border: '1.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Processing...</>
+                  <>
+                    <div style={{
+                      width: 13, height: 13,
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      borderTopColor: '#fff', borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }} />
+                    Processing…
+                  </>
                 ) : (
-                  <><Icons.Play size={11} color="#051c1a" /> Run Analysis</>
+                  <><Icon.Play s={11} c="#fff" /> Run Analysis</>
                 )}
-              </button>
-              {isRunning && (
-                <button onClick={cancelAnalysis} style={{
-                  width: '100%', padding: '7px 0', background: 'none',
-                  border: '1px solid rgba(248,113,113,0.3)', borderRadius: 8, color: '#f87171',
-                  fontSize: 11, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-                }}>
-                  <Icons.X size={10} color="#f87171" /> Cancel
-                </button>
-              )}
+              </motion.button>
+
+              <AnimatePresence>
+                {isRunning && (
+                  <motion.button
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                    onClick={cancelAnalysis}
+                    style={{
+                      width: '100%', padding: '8px 0', borderRadius: 12, background: 'none',
+                      border: '1px solid rgba(255,69,58,0.35)', color: '#FF453A',
+                      fontSize: 12, cursor: 'pointer',
+                      fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                    }}
+                  >
+                    <Icon.X s={11} c="#FF453A" /> Cancel
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
-          </div>
+          </motion.div>
 
           {/* ════ MAIN CONTENT ════ */}
-          <div style={{
-            gridColumn: '2', gridRow: '2',
-            overflowY: 'auto', padding: '18px 18px 18px 14px',
-            display: 'flex', flexDirection: 'column', gap: 14,
-          }}>
-
-            {/* Tab bar island */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            style={{
+              gridColumn: '2', gridRow: '2',
+              overflowY: 'auto',
+              padding: '20px 20px 20px 16px',
+              display: 'flex', flexDirection: 'column', gap: 14,
+            }}
+          >
+            {/* Tab bar + CSV buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            >
               <TabBar
                 tabs={[
                   { id: 'analytics', label: `Analytics${showThresholdAlerts ? ' ·' : ''}` },
                   { id: 'metrics', label: 'Metrics' },
                   { id: 'history', label: 'History' },
-                  { id: 'log', label: 'System Log' },
+                  { id: 'log', label: 'Log' },
                 ]}
                 active={activeTab}
                 onChange={setActiveTab}
@@ -1196,168 +1638,239 @@ export default function ShrimpDashboard() {
               {result && (
                 <div style={{ display: 'flex', gap: 6 }}>
                   {result.videos.map((v, i) => (
-                    <button key={i} onClick={() => downloadCsv(result.job_id, v.video_id)} style={{
-                      ...glass(0.06, 20), borderRadius: 7, border: '1px solid rgba(255,255,255,0.08)',
-                      color: 'rgba(255,255,255,0.4)', fontSize: 10, padding: '5px 10px', cursor: 'pointer',
-                      fontFamily: 'IBM Plex Mono, monospace', display: 'flex', alignItems: 'center', gap: 5,
-                      transition: 'all 0.15s',
-                    }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.3)'; e.currentTarget.style.color = '#2dd4bf' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}>
-                      <Icons.Download size={9} /> CSV {i + 1}
-                    </button>
+                    <motion.button
+                      key={i}
+                      whileHover={{ scale: 1.05, y: -1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => downloadCsv(result.job_id, v.video_id)}
+                      style={{
+                        ...(dark ? glassDark() : glassLight()),
+                        borderRadius: 10, border: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                        color: txSub, fontSize: 10.5, padding: '6px 12px', cursor: 'pointer',
+                        fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        background: 'none',
+                      }}
+                    >
+                      <Icon.Download s={10} /> CSV {i + 1}
+                    </motion.button>
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
 
-            {/* ── ANALYTICS TAB ── */}
-            {activeTab === 'analytics' && (
-              <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {!result ? (
-                  <div style={{
-                    ...glass(), borderRadius: 16,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    padding: '60px 30px', textAlign: 'center',
-                  }}>
-                    <div style={{ opacity: 0.2, marginBottom: 16 }}><Icons.BarChart size={40} color="white" /></div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Sans, sans-serif', marginBottom: 6 }}>No Analysis Loaded</div>
-                    <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.25)', fontFamily: 'DM Sans, sans-serif' }}>Upload videos and run analysis, or restore a past job from History.</div>
-                  </div>
-                ) : (
-                  <>
-                    {showThresholdAlerts && (
-                      <ThresholdAlertBanner alerts={thresholdAlerts} onDismiss={() => setThresholdAlertDismissed(true)} isRestored={isRestoredResult} />
-                    )}
+            {/* ── Tab Content ── */}
+            <AnimatePresence mode="wait">
 
-                    {/* Legend */}
-                    {legend.length > 1 && (
-                      <div style={{ display: 'flex', gap: 14, fontSize: 10.5, color: 'rgba(255,255,255,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>
-                        {legend.map((l, i) => (
-                          <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <span style={{ width: 18, height: 2, background: l.color, borderRadius: 1, display: 'inline-block' }} />
-                            {shortName(l.label, 24)}
-                          </span>
-                        ))}
+              {/* ANALYTICS */}
+              {activeTab === 'analytics' && (
+                <motion.div
+                  key="analytics"
+                  variants={tabContent} initial="hidden" animate="visible" exit="exit"
+                  style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
+                >
+                  {!result ? (
+                    <Island style={{ padding: '60px 30px', textAlign: 'center' }}>
+                      <motion.div
+                        animate={{ opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ repeat: Infinity, duration: 3 }}
+                        style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, opacity: 0.25 }}
+                      >
+                        <Icon.Chart s={44} c={dark ? '#fff' : '#000'} />
+                      </motion.div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: txt, marginBottom: 6 }}>
+                        No Analysis Loaded
                       </div>
-                    )}
+                      <div style={{ fontSize: 12.5, color: txSub }}>
+                        Upload videos and run analysis, or restore a past session from History.
+                      </div>
+                    </Island>
+                  ) : (
+                    <>
+                      {/* Threshold toast */}
+                      {showThresholdAlerts && (
+                        <ThresholdToast
+                          alerts={thresholdAlerts}
+                          onDismiss={() => setThresholdAlertDismissed(true)}
+                          isRestored={isRestoredResult}
+                        />
+                      )}
 
-                    {/* Charts */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                      <ChartIsland
-                        title="Shrimp Velocity"
-                        subtitle={`avg movement · px/s${smoothing ? ' · smoothed' : ''}${activeVelocityThreshold > 0 ? ` · thr:${activeVelocityThreshold}` : ''}`}
-                        expandContent={<LineChart datasets={result.videos} field="avg_velocity" unit="px/s" smoothing={smoothing} velocityThreshold={activeVelocityThreshold} expanded />}
-                      >
-                        <LineChart datasets={result.videos} field="avg_velocity" unit="px/s" smoothing={smoothing} velocityThreshold={activeVelocityThreshold} expanded={false} />
-                      </ChartIsland>
-
-                      <ChartIsland
-                        title="Clustering Score"
-                        subtitle={`spatial density · %${smoothing ? ' · smoothed' : ''}`}
-                        expandContent={<LineChart datasets={result.videos} field="clustering_percent" unit="%" smoothing={smoothing} velocityThreshold={0} expanded />}
-                      >
-                        <LineChart datasets={result.videos} field="clustering_percent" unit="%" smoothing={smoothing} velocityThreshold={0} expanded={false} />
-                      </ChartIsland>
-                    </div>
-
-                    {/* Delta Metrics (2 video comparison) */}
-                    {result.videos.length === 2 && (
-                      <div style={{ ...glass(), borderRadius: 14, padding: '14px 16px' }}>
-                        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12, fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}>Delta Metrics — V2 vs V1</div>
-                        <div style={{ display: 'flex', gap: 20 }}>
-                          {[
-                            { label: 'Velocity Δ', val: (result.videos[1].summary.avg_velocity - result.videos[0].summary.avg_velocity).toFixed(2), unit: 'px/s' },
-                            { label: 'Clustering Δ', val: (result.videos[1].summary.avg_clustering_percent - result.videos[0].summary.avg_clustering_percent).toFixed(2), unit: '%' },
-                            { label: 'Peak Vel Δ', val: (result.videos[1].summary.max_velocity - result.videos[0].summary.max_velocity).toFixed(2), unit: 'px/s' },
-                          ].map(d => {
-                            const pos = parseFloat(d.val) >= 0
-                            return (
-                              <div key={d.label}>
-                                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, fontFamily: 'DM Sans, sans-serif' }}>{d.label}</div>
-                                <div style={{ fontSize: 22, fontWeight: 700, color: pos ? '#2dd4bf' : '#f87171', fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1 }}>
-                                  {pos ? '+' : ''}{d.val}
-                                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 3, fontWeight: 400 }}>{d.unit}</span>
-                                </div>
-                              </div>
-                            )
-                          })}
+                      {/* Legend */}
+                      {legend.length > 1 && (
+                        <div style={{
+                          display: 'flex', gap: 16, fontSize: 11,
+                          color: txSub, fontFamily: "'IBM Plex Mono', monospace",
+                        }}>
+                          {legend.map((l, i) => (
+                            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ width: 20, height: 2, background: l.color, borderRadius: 1, display: 'inline-block' }} />
+                              {shortName(l.label, 26)}
+                            </span>
+                          ))}
                         </div>
+                      )}
+
+                      {/* Charts grid */}
+                      <motion.div
+                        variants={stagger} initial="hidden" animate="visible"
+                        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}
+                      >
+                        <ChartIsland
+                          title="Shrimp Velocity"
+                          subtitle={`avg movement · px/s${smoothing ? ' · smoothed' : ''}${activeVelThreshold > 0 ? ` · thr:${activeVelThreshold}` : ''}`}
+                          expandContent={
+                            <LineChart datasets={result.videos} field="avg_velocity" unit="px/s"
+                              smoothing={smoothing} velocityThreshold={activeVelThreshold} expanded />
+                          }
+                        >
+                          <LineChart datasets={result.videos} field="avg_velocity" unit="px/s"
+                            smoothing={smoothing} velocityThreshold={activeVelThreshold} expanded={false} />
+                        </ChartIsland>
+
+                        <ChartIsland
+                          title="Clustering Score"
+                          subtitle={`spatial density · %${smoothing ? ' · smoothed' : ''}`}
+                          expandContent={
+                            <LineChart datasets={result.videos} field="clustering_percent" unit="%"
+                              smoothing={smoothing} velocityThreshold={0} expanded />
+                          }
+                        >
+                          <LineChart datasets={result.videos} field="clustering_percent" unit="%"
+                            smoothing={smoothing} velocityThreshold={0} expanded={false} />
+                        </ChartIsland>
+                      </motion.div>
+
+                      {/* Delta metrics (2 video comparison — preserved exactly) */}
+                      {result.videos.length === 2 && (
+                        <Island style={{ padding: '15px 18px' }}>
+                          <Label>Delta Metrics — V2 vs V1</Label>
+                          <div style={{ display: 'flex', gap: 24 }}>
+                            {[
+                              { label: 'Velocity Δ', val: (result.videos[1].summary.avg_velocity - result.videos[0].summary.avg_velocity).toFixed(2), unit: 'px/s' },
+                              { label: 'Clustering Δ', val: (result.videos[1].summary.avg_clustering_percent - result.videos[0].summary.avg_clustering_percent).toFixed(2), unit: '%' },
+                              { label: 'Peak Vel Δ', val: (result.videos[1].summary.max_velocity - result.videos[0].summary.max_velocity).toFixed(2), unit: 'px/s' },
+                            ].map(d => {
+                              const pos = parseFloat(d.val) >= 0
+                              return (
+                                <div key={d.label}>
+                                  <div style={{ fontSize: 9.5, color: txSub, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, fontFamily: "'SF Pro Display', sans-serif" }}>{d.label}</div>
+                                  <div style={{
+                                    fontSize: 26, fontWeight: 700,
+                                    color: pos ? '#34C759' : '#FF453A',
+                                    fontFamily: "'IBM Plex Mono', monospace", lineHeight: 1,
+                                  }}>
+                                    {pos ? '+' : ''}{d.val}
+                                    <span style={{ fontSize: 11, color: txSub, marginLeft: 3, fontWeight: 400 }}>{d.unit}</span>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </Island>
+                      )}
+
+                      {/* Job info */}
+                      <div style={{ fontSize: 10, color: txSub, fontFamily: "'IBM Plex Mono', monospace", display: 'flex', gap: 14 }}>
+                        <span>job: {result.job_id}</span>
+                        <span>model: {result.selected_model}</span>
+                        {isRestoredResult && <span style={{ color: '#0A84FF' }}>↩ restored</span>}
                       </div>
-                    )}
+                    </>
+                  )}
+                </motion.div>
+              )}
 
-                    {/* Job info */}
-                    <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.2)', fontFamily: 'IBM Plex Mono, monospace', display: 'flex', gap: 12, alignItems: 'center' }}>
-                      <span>job: {result.job_id}</span>
-                      <span>model: {result.selected_model}</span>
-                      {isRestoredResult && <span style={{ color: '#60a5fa' }}>↩ restored</span>}
+              {/* METRICS */}
+              {activeTab === 'metrics' && (
+                <motion.div
+                  key="metrics"
+                  variants={tabContent} initial="hidden" animate="visible" exit="exit"
+                  style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
+                >
+                  {!result ? (
+                    <Island style={{ padding: '30px 20px', textAlign: 'center' }}>
+                      <div style={{ color: txSub, fontSize: 12.5, fontFamily: "'IBM Plex Mono', monospace" }}>
+                        // run analysis to see metrics
+                      </div>
+                    </Island>
+                  ) : (
+                    result.videos.map((v, i) => (
+                      <Island key={i} style={{ padding: '16px 18px' }}>
+                        <VideoSummaryCards video={v} accent={SERIES_COLORS[i % SERIES_COLORS.length].line} />
+                      </Island>
+                    ))
+                  )}
+                </motion.div>
+              )}
+
+              {/* HISTORY */}
+              {activeTab === 'history' && (
+                <motion.div
+                  key="history"
+                  variants={tabContent} initial="hidden" animate="visible" exit="exit"
+                >
+                  <Island style={{ padding: '16px 18px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: txt }}>Past Analyses</div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                        onClick={fetchPastJobs}
+                        disabled={pastLoading}
+                        style={{
+                          background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+                          border: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                          borderRadius: 9, color: txSub, fontSize: 11.5,
+                          padding: '6px 13px', cursor: 'pointer',
+                          fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                          display: 'flex', alignItems: 'center', gap: 5,
+                        }}
+                      >
+                        <Icon.Refresh s={11} /> {pastLoading ? 'Loading…' : 'Refresh'}
+                      </motion.button>
                     </div>
-                  </>
-                )}
-              </div>
-            )}
+                    <PastJobsTable jobs={pastJobs} onRestore={handleRestore} />
+                  </Island>
+                </motion.div>
+              )}
 
-            {/* ── METRICS TAB ── */}
-            {activeTab === 'metrics' && (
-              <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {!result ? (
-                  <div style={{ ...glass(), borderRadius: 14, padding: '30px 20px', textAlign: 'center' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, fontFamily: 'IBM Plex Mono, monospace' }}>// run analysis to see metrics</div>
-                  </div>
-                ) : (
-                  result.videos.map((v, i) => (
-                    <div key={i} style={{ ...glass(), borderRadius: 14, padding: '16px' }}>
-                      <VideoSummaryCards video={v} accent={SERIES_COLORS[i % SERIES_COLORS.length].line} />
+              {/* LOG */}
+              {activeTab === 'log' && (
+                <motion.div
+                  key="log"
+                  variants={tabContent} initial="hidden" animate="visible" exit="exit"
+                >
+                  <Island style={{ padding: '14px 18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <Icon.Terminal s={13} c="#0A84FF" />
+                        <span style={{ fontSize: 11, fontWeight: 600, color: txt, letterSpacing: '0.01em' }}>System Log</span>
+                      </div>
+                      {logEntries.length > 0 && (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                          onClick={() => setLogEntries([])}
+                          style={{
+                            background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+                            border: `1px solid ${dark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.09)'}`,
+                            borderRadius: 7, color: txSub, fontSize: 10.5, padding: '4px 10px', cursor: 'pointer',
+                            fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
+                          }}
+                        >
+                          Clear
+                        </motion.button>
+                      )}
                     </div>
-                  ))
-                )}
-              </div>
-            )}
+                    <AlertLog entries={logEntries} />
+                  </Island>
+                </motion.div>
+              )}
 
-            {/* ── HISTORY TAB ── */}
-            {activeTab === 'history' && (
-              <div className="fade-up">
-                <div style={{ ...glass(), borderRadius: 14, padding: '16px 18px', overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'DM Sans, sans-serif' }}>Previous analysis sessions</div>
-                    <button onClick={fetchPastJobs} disabled={pastLoading} style={{
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: 7, color: 'rgba(255,255,255,0.5)', fontSize: 10.5, padding: '5px 12px',
-                      cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                      display: 'flex', alignItems: 'center', gap: 5,
-                    }}>
-                      <Icons.RefreshCw size={10} /> {pastLoading ? 'Loading...' : 'Refresh'}
-                    </button>
-                  </div>
-                  <PastJobsTable jobs={pastJobs} onRestore={handleRestore} />
-                </div>
-              </div>
-            )}
+            </AnimatePresence>
+          </motion.div>
 
-            {/* ── LOG TAB ── */}
-            {activeTab === 'log' && (
-              <div className="fade-up">
-                <div style={{ ...glass(), borderRadius: 14, padding: '14px 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <Icons.Terminal size={12} color="rgba(45,212,191,0.7)" />
-                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}>System Log</span>
-                    </div>
-                    {logEntries.length > 0 && (
-                      <button onClick={() => setLogEntries([])} style={{
-                        background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5,
-                        color: 'rgba(255,255,255,0.3)', fontSize: 10, padding: '3px 9px', cursor: 'pointer',
-                        fontFamily: 'DM Sans, sans-serif',
-                      }}>Clear</button>
-                    )}
-                  </div>
-                  <AlertLog entries={logEntries} />
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
-    </>
+    </ThemeContext.Provider>
   )
 }
