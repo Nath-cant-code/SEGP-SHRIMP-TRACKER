@@ -1,71 +1,48 @@
 /**
- * ShrimpDashboard.jsx — Updated
+ * ShrimpDashboard.jsx — Floating Island Glassmorphism Redesign
  *
- * Changes in this version vs previous:
- * ----------------------------------
- * TASK 1 — ON-DEMAND THRESHOLD CALCULATION FOR ANY LOADED ANALYSIS
- *
- * The "Lethargic Detection" sidebar section now works for ANY loaded result —
- * whether just completed or restored from history — without re-running YOLO.
- *
- * New UI elements:
- *   • A "Calculate Frames Exceeding Threshold" button appears in the sidebar
- *     whenever a result is loaded (new analysis OR restored).
- *   • The button is disabled when no threshold is set or no result is loaded.
- *   • Clicking it runs `computeThresholdAlerts()` over the in-memory timeseries
- *     of the current result and updates `thresholdAlerts` state immediately.
- *   • The existing ThresholdAlertBanner then renders automatically.
- *   • If the result was restored, a small "(restored)" label appears in the
- *     banner so the user knows the metrics are based on historical data.
- *
- * The threshold input still auto-computes on fresh analysis completion (same
- * behaviour as before). On restored analyses the auto-compute is skipped and
- * the user must click the button manually (so as not to produce stale/confusing
- * alerts with a leftover threshold value from a previous session).
- *
- * All other features (expand graphs, dummy-data warning, rolling average,
- * system log, history tab, etc.) are unchanged.
+ * UI rebuilt with the 'Floating Island' aesthetic:
+ * - Each functional area is a standalone glassmorphism island
+ * - High-blur frosted glass panels floating over a background
+ * - IBM Plex Mono for data, Satoshi/DM Sans for labels
+ * - All original logic preserved intact
  */
 
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
 
+// ─── Constants ────────────────────────────────────────────────────────────────
 const BASE_URL = ''
 const MAX_VIDEOS = 3
 const ALLOWED_TYPES = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
 const SMOOTHING_WINDOW = 7
+const SERIES_COLORS = [
+  { line: '#2dd4bf', dash: false },
+  { line: '#f59e0b', dash: true },
+  { line: '#f87171', dash: true },
+]
 
+// ─── Theme ────────────────────────────────────────────────────────────────────
 const ThemeContext = createContext({ dark: true, toggle: () => {} })
 const useTheme = () => useContext(ThemeContext)
 
-const DARK = {
-  '--bg': '#090d16', '--surface': '#0f1623', '--card': '#131c2e',
-  '--border': '#1a2740', '--border-hi': '#243553',
-  '--text-pri': '#e2e8f0', '--text-sec': '#8fa3c0', '--text-muted': '#45607a',
-  '--accent': '#14b8a6', '--accent-dim': '#0d9488', '--accent-faint': 'rgba(20,184,166,0.10)',
-  '--amber': '#f59e0b', '--amber-faint': 'rgba(245,158,11,0.09)',
-  '--coral': '#f87171', '--coral-faint': 'rgba(248,113,113,0.09)',
-  '--blue': '#60a5fa', '--blue-faint': 'rgba(96,165,250,0.09)',
-  '--success': '#34d399', '--warn': '#fbbf24', '--err': '#f87171',
-  '--scrollbar': '#1a2740',
-}
+// Glass panel style generator
+const glass = (opacity = 0.08, blur = 40) => ({
+  background: `rgba(10, 20, 35, ${opacity})`,
+  backdropFilter: `blur(${blur}px)`,
+  WebkitBackdropFilter: `blur(${blur}px)`,
+  border: '1px solid rgba(255,255,255,0.10)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+})
 
-const LIGHT = {
-  '--bg': '#f0f4f9', '--surface': '#ffffff', '--card': '#ffffff',
-  '--border': '#d8e3ef', '--border-hi': '#b8cce0',
-  '--text-pri': '#0f1f35', '--text-sec': '#4a6484', '--text-muted': '#8fa3c0',
-  '--accent': '#0d9488', '--accent-dim': '#0f766e', '--accent-faint': 'rgba(13,148,136,0.08)',
-  '--amber': '#b45309', '--amber-faint': 'rgba(180,83,9,0.07)',
-  '--coral': '#dc2626', '--coral-faint': 'rgba(220,38,38,0.07)',
-  '--blue': '#2563eb', '--blue-faint': 'rgba(37,99,235,0.07)',
-  '--success': '#059669', '--warn': '#d97706', '--err': '#dc2626',
-  '--scrollbar': '#c5d5e8',
-}
+const glassLight = (opacity = 0.55, blur = 40) => ({
+  background: `rgba(240, 248, 255, ${opacity})`,
+  backdropFilter: `blur(${blur}px)`,
+  WebkitBackdropFilter: `blur(${blur}px)`,
+  border: '1px solid rgba(255,255,255,0.6)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8)',
+})
 
-function applyTheme(tokens) {
-  const root = document.documentElement
-  Object.entries(tokens).forEach(([k, v]) => root.style.setProperty(k, v))
-}
-
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function rollingAvg(arr, w) {
   return arr.map((_, i) => {
     const slice = arr.slice(Math.max(0, i - w + 1), i + 1).filter(v => v != null)
@@ -95,620 +72,12 @@ function uploadWithProgress(formData, onProgress, signal) {
       }
     }
     xhr.onerror = () => reject(new Error('Network error — is the backend running on port 8000?'))
-    xhr.ontimeout = () => reject(new Error('Request timed out after 20 minutes'))
+    xhr.ontimeout = () => reject(new Error('Request timed out'))
     xhr.timeout = 1200_000
     if (signal) signal.addEventListener('abort', () => xhr.abort())
     xhr.send(formData)
   })
 }
-
-const SERIES_COLORS = [
-  { line: '#14b8a6', dash: false },
-  { line: '#f59e0b', dash: true  },
-  { line: '#f87171', dash: true  },
-]
-
-// ─── Fullscreen Graph Modal ──────────────────────────────────────────────────
-
-function GraphModal({ title, subtitle, children, onClose }) {
-  useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [onClose])
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        animation: 'modalBackdropIn 0.22s ease both',
-        padding: '24px',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: 'var(--card)', border: '1px solid var(--border-hi)',
-          borderRadius: 14, width: '100%', maxWidth: 1100,
-          maxHeight: '90vh', display: 'flex', flexDirection: 'column',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-          animation: 'modalContentIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both',
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0,
-        }}>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-pri)' }}>{title}</div>
-            {subtitle && <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 7, color: 'var(--text-sec)', cursor: 'pointer',
-              fontSize: 13, padding: '6px 14px', fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', gap: 6,
-              transition: 'border-color 0.15s, color 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--err)'; e.currentTarget.style.color = 'var(--err)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-sec)' }}
-          >
-            ✕ Close
-          </button>
-        </div>
-        <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px 24px' }}>
-          {children}
-        </div>
-        <div style={{ padding: '10px 20px', borderTop: '1px solid var(--border)', fontSize: 10.5, color: 'var(--text-muted)', flexShrink: 0 }}>
-          Press <kbd style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'monospace' }}>Esc</kbd> or click outside to close
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Line Chart ──────────────────────────────────────────────────────────────
-
-function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expanded }) {
-  const { dark } = useTheme()
-  const svgRef = useRef(null)
-  const [hover, setHover] = useState(null)
-
-  const W = expanded ? 900 : 560
-  const H = expanded ? 320 : 190
-  const PAD = { t: 14, r: 12, b: 34, l: 50 }
-  const IW = W - PAD.l - PAD.r
-  const IH = H - PAD.t - PAD.b
-
-  const showThreshold = field === 'avg_velocity' && velocityThreshold > 0
-
-  const processed = datasets.map((ds, di) => {
-    const raw = ds.timeseries.map(p => p[field])
-    const vals = smoothing ? rollingAvg(raw, SMOOTHING_WINDOW) : raw
-    return { ...ds, vals, color: SERIES_COLORS[di % SERIES_COLORS.length] }
-  })
-
-  const allVals = processed.flatMap(p => p.vals).filter(v => v != null)
-  const allTimes = processed.flatMap(p => p.timeseries.map(x => x.time_sec))
-
-  if (!allVals.length || !allTimes.length) {
-    return (
-      <div style={{ height: H, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-        No data
-      </div>
-    )
-  }
-
-  const minV = Math.min(...allVals, showThreshold ? velocityThreshold : Infinity)
-  const maxV = Math.max(...allVals, showThreshold ? velocityThreshold : -Infinity)
-  const minT = Math.min(...allTimes), maxT = Math.max(...allTimes)
-  const rangeV = maxV - minV || 1, rangeT = maxT - minT || 1
-
-  const tx = t => PAD.l + ((t - minT) / rangeT) * IW
-  const ty = v => PAD.t + (1 - (v - minV) / rangeV) * IH
-
-  const buildPath = (ds) =>
-    ds.timeseries.map((p, i) => {
-      const v = ds.vals[i]
-      if (v == null) return null
-      const first = i === 0 || ds.vals.slice(0, i).every(x => x == null)
-      return `${first ? 'M' : 'L'}${tx(p.time_sec).toFixed(1)},${ty(v).toFixed(1)}`
-    }).filter(Boolean).join(' ')
-
-  const Y_TICKS = 5, X_TICKS = expanded ? 8 : 5
-  const gridVals = Array.from({ length: Y_TICKS + 1 }, (_, i) => minV + (rangeV * i / Y_TICKS))
-  const gridTimes = Array.from({ length: X_TICKS + 1 }, (_, i) => minT + (rangeT * i / X_TICKS))
-  const textFill = dark ? '#45607a' : '#8fa3c0'
-  const gridStroke = dark ? '#1a2740' : '#e2eaf4'
-
-  const onMouseMove = useCallback((e) => {
-    if (!svgRef.current) return
-    const rect = svgRef.current.getBoundingClientRect()
-    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left - PAD.l) / IW))
-    const tVal = minT + ratio * rangeT
-    const hoverData = processed.map(ds => {
-      const idx = ds.timeseries.reduce((best, p, i) =>
-        Math.abs(p.time_sec - tVal) < Math.abs(ds.timeseries[best].time_sec - tVal) ? i : best, 0)
-      return {
-        label: ds.video_name,
-        val: ds.vals[idx],
-        time: ds.timeseries[idx].time_sec,
-        x: tx(ds.timeseries[idx].time_sec),
-        y: ty(ds.vals[idx] ?? 0),
-        color: ds.color.line,
-        belowThreshold: showThreshold && ds.vals[idx] != null && ds.vals[idx] < velocityThreshold,
-      }
-    })
-    setHover(hoverData)
-  }, [processed, minT, rangeT, IW, PAD.l, showThreshold, velocityThreshold])
-
-  const thresholdY = showThreshold ? ty(velocityThreshold) : null
-
-  return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
-        style={{ width: '100%', display: 'block', cursor: 'crosshair' }}
-        onMouseMove={onMouseMove} onMouseLeave={() => setHover(null)}>
-        <defs>
-          {processed.map((ds, di) => (
-            <linearGradient key={di} id={`grad-${field}-${di}-${expanded ? 'exp' : 'sm'}`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor={ds.color.line} stopOpacity={ds.color.dash ? 0.08 : 0.15} />
-              <stop offset="100%" stopColor={ds.color.line} stopOpacity="0" />
-            </linearGradient>
-          ))}
-        </defs>
-
-        {gridVals.map((v, i) => (
-          <g key={i}>
-            <line x1={PAD.l} y1={ty(v)} x2={W - PAD.r} y2={ty(v)} stroke={gridStroke} strokeWidth="0.6" />
-            <text x={PAD.l - 6} y={ty(v) + 4} textAnchor="end" fill={textFill} fontSize="10" fontFamily="monospace">
-              {v.toFixed(0)}
-            </text>
-          </g>
-        ))}
-        {gridTimes.map((t, i) => (
-          <text key={i} x={tx(t)} y={H - PAD.b + 13} textAnchor="middle" fill={textFill} fontSize="10" fontFamily="monospace">
-            {t.toFixed(1)}s
-          </text>
-        ))}
-        <text x={-H / 2} y={15} transform="rotate(-90)" textAnchor="middle" fill={textFill} fontSize="10" fontFamily="monospace">
-          {unit}
-        </text>
-
-        {showThreshold && thresholdY != null && (
-          <g>
-            <line
-              x1={PAD.l} y1={thresholdY} x2={W - PAD.r} y2={thresholdY}
-              stroke="#f87171" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.8"
-            />
-            <rect x={W - PAD.r - 72} y={thresholdY - 14} width={70} height={14} rx={3}
-              fill="rgba(248,113,113,0.15)" stroke="#f87171" strokeWidth="0.5" />
-            <text x={W - PAD.r - 37} y={thresholdY - 3} textAnchor="middle"
-              fill="#f87171" fontSize="9" fontFamily="monospace" fontWeight="600">
-              threshold {velocityThreshold}
-            </text>
-            <rect
-              x={PAD.l} y={thresholdY} width={IW} height={Math.max(0, PAD.t + IH - thresholdY)}
-              fill="rgba(248,113,113,0.04)"
-            />
-          </g>
-        )}
-
-        {processed.map((ds, di) => {
-          const path = buildPath(ds)
-          const lastPt = ds.timeseries[ds.timeseries.length - 1]
-          const firstPt = ds.timeseries[0]
-          return (
-            <g key={di}>
-              <path d={`${path} L${tx(lastPt.time_sec)},${PAD.t + IH} L${tx(firstPt.time_sec)},${PAD.t + IH} Z`}
-                fill={`url(#grad-${field}-${di}-${expanded ? 'exp' : 'sm'})`} />
-              <path d={path} fill="none" stroke={ds.color.line} strokeWidth="1.8"
-                strokeDasharray={ds.color.dash ? '6 3' : undefined}
-                strokeLinejoin="round" strokeLinecap="round" />
-              {showThreshold && ds.timeseries.map((p, i) => {
-                const v = ds.vals[i]
-                if (v == null || v >= velocityThreshold) return null
-                return (
-                  <circle key={i} cx={tx(p.time_sec)} cy={ty(v)} r={expanded ? 3 : 2}
-                    fill="#f87171" opacity="0.5" />
-                )
-              })}
-            </g>
-          )
-        })}
-
-        {hover && (
-          <>
-            <line x1={hover[0].x} y1={PAD.t} x2={hover[0].x} y2={PAD.t + IH}
-              stroke={textFill} strokeWidth="0.8" strokeDasharray="3 2" />
-            {hover.map((h, i) => h.val != null && (
-              <circle key={i} cx={h.x} cy={h.y} r={5}
-                fill={h.belowThreshold ? '#f87171' : h.color}
-                stroke={dark ? '#090d16' : '#ffffff'} strokeWidth="1.5" />
-            ))}
-          </>
-        )}
-      </svg>
-
-      {hover && (
-        <div style={{
-          position: 'absolute', top: 6, right: 8,
-          background: 'var(--surface)', border: '1px solid var(--border-hi)',
-          borderRadius: 8, padding: '8px 12px', fontSize: 11.5, lineHeight: 1.8,
-          pointerEvents: 'none', fontFamily: 'monospace', color: 'var(--text-sec)',
-          minWidth: 180, boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-        }}>
-          <div style={{ color: 'var(--text-muted)', marginBottom: 3, fontSize: 10 }}>
-            t = {hover[0]?.time.toFixed(2)}s
-          </div>
-          {hover.map((h, i) => h.val != null && (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 2, background: h.color, display: 'inline-block', flexShrink: 0 }} />
-              <span style={{ color: h.belowThreshold ? 'var(--err)' : 'var(--text-pri)', fontWeight: 500 }}>
-                {h.val.toFixed(2)}
-              </span>
-              <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>{unit}</span>
-              {h.belowThreshold && <span style={{ color: 'var(--err)', fontSize: 9, marginLeft: 2 }}>⚠ low</span>}
-              <span style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 'auto', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {shortName(h.label, 14)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Chart Card with Expand Button ───────────────────────────────────────────
-
-function ChartCard({ title, subtitle, children, expandContent }) {
-  const [expanded, setExpanded] = useState(false)
-  return (
-    <>
-      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 16px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-pri)' }}>{title}</div>
-            {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
-          </div>
-          <button
-            onClick={() => setExpanded(true)}
-            title="Expand chart"
-            style={{
-              background: 'none', border: '1px solid var(--border)', borderRadius: 6,
-              color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11,
-              padding: '4px 9px', fontFamily: 'inherit', flexShrink: 0, marginLeft: 8,
-              transition: 'border-color 0.15s, color 0.15s',
-              display: 'flex', alignItems: 'center', gap: 4,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-          >
-            ⤢ Expand
-          </button>
-        </div>
-        {children}
-      </div>
-      {expanded && (
-        <GraphModal title={title} subtitle={subtitle} onClose={() => setExpanded(false)}>
-          {expandContent}
-        </GraphModal>
-      )}
-    </>
-  )
-}
-
-// ─── Threshold Alert Banner ───────────────────────────────────────────────────
-
-function ThresholdAlertBanner({ alerts, onDismiss, isRestored }) {
-  if (!alerts || alerts.length === 0) return null
-  return (
-    <div style={{
-      background: 'rgba(248,113,113,0.08)', border: '1px solid var(--err)',
-      borderRadius: 10, padding: '14px 18px',
-      animation: 'fadeUp 0.4s ease both',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--err)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 7 }}>
-            <span style={{ fontSize: 16 }}>⚠</span>
-            Lethargic Shrimp Detected — Velocity Below Threshold
-            {isRestored && (
-              <span style={{
-                fontSize: 9, background: 'var(--blue-faint)', color: 'var(--blue)',
-                border: '1px solid var(--blue)', borderRadius: 4, padding: '1px 6px',
-                fontWeight: 600, letterSpacing: '0.08em', marginLeft: 4,
-              }}>
-                RESTORED ANALYSIS
-              </span>
-            )}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {alerts.map((a, i) => (
-              <div key={i} style={{ fontSize: 12, color: 'var(--text-sec)', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: SERIES_COLORS[a.videoIndex % SERIES_COLORS.length].line, display: 'inline-block', flexShrink: 0 }} />
-                <span style={{ color: 'var(--text-pri)', fontWeight: 500 }}>{shortName(a.videoName, 30)}</span>
-                <span style={{ color: 'var(--text-muted)' }}>—</span>
-                <span style={{ color: 'var(--err)' }}>{a.pctBelow.toFixed(1)}% of frames</span>
-                <span style={{ color: 'var(--text-muted)' }}>below {a.threshold} px/s</span>
-                <span style={{ color: 'var(--text-muted)' }}>·</span>
-                <span style={{ color: 'var(--text-muted)' }}>avg {a.avgVelocity.toFixed(2)} px/s</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8 }}>
-            Red dots on the velocity chart indicate frames below the threshold.
-            {isRestored ? ' These results are calculated from previously saved timeseries data.' : ' Check water quality, oxygen levels, or feeding schedule.'}
-          </div>
-        </div>
-        <button
-          onClick={onDismiss}
-          style={{ background: 'none', border: 'none', color: 'var(--err)', cursor: 'pointer', fontSize: 16, padding: '0 4px', lineHeight: 1, flexShrink: 0 }}
-          title="Dismiss"
-        >×</button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Other sub-components ─────────────────────────────────────────────────────
-
-function MetricCard({ label, value, unit, accent }) {
-  return (
-    <div style={{
-      background: 'var(--card)', border: '1px solid var(--border)',
-      borderRadius: 10, padding: '14px 16px', flex: 1, minWidth: 0,
-      transition: 'border-color 0.2s',
-    }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-    >
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ fontSize: 21, fontWeight: 600, color: accent || 'var(--text-pri)', letterSpacing: '-0.02em', fontFamily: 'monospace', lineHeight: 1 }}>
-        {value}
-        {unit && <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 4 }}>{unit}</span>}
-      </div>
-    </div>
-  )
-}
-
-function AlertLog({ entries }) {
-  const ref = useRef(null)
-  useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight }, [entries])
-  const colorMap = { info: 'var(--text-sec)', ok: 'var(--success)', warn: 'var(--warn)', err: 'var(--err)' }
-  return (
-    <div ref={ref} style={{ height: 180, overflowY: 'auto', fontFamily: 'monospace', fontSize: 11.5, lineHeight: 1.9 }}>
-      {entries.length === 0 && (
-        <div style={{ color: 'var(--text-muted)', padding: '8px 0' }}>No activity yet — upload videos and run analysis to begin.</div>
-      )}
-      {entries.map((e, i) => (
-        <div key={i} style={{ display: 'flex', gap: 10, padding: '2px 0', borderBottom: '1px solid var(--border)', color: colorMap[e.type] || 'var(--text-sec)' }}>
-          <span style={{ color: 'var(--text-muted)', flexShrink: 0, fontSize: 10 }}>{e.ts}</span>
-          <span style={{ wordBreak: 'break-word' }}>{e.msg}</span>
-          {e.code && <span style={{ marginLeft: 'auto', flexShrink: 0, color: 'var(--text-muted)', fontSize: 10 }}>[{e.code}]</span>}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function UploadZone({ files, onFiles }) {
-  const [dragging, setDragging] = useState(false)
-  const inputRef = useRef(null)
-  const validate = (fileList) => {
-    const arr = Array.from(fileList)
-    const valid = arr.filter(f => ALLOWED_TYPES.includes(f.type) || f.name.match(/\.(mp4|avi|mov|mkv)$/i))
-    if (valid.length !== arr.length) alert('Some files were skipped — only MP4, AVI, MOV, MKV are supported.')
-    const slots = MAX_VIDEOS - files.length
-    if (valid.length > slots) {
-      alert(`Maximum ${MAX_VIDEOS} videos allowed. Only the first ${slots} will be added.`)
-      return valid.slice(0, slots)
-    }
-    return valid
-  }
-  const onDrop = (e) => {
-    e.preventDefault(); setDragging(false)
-    const added = validate(e.dataTransfer.files)
-    if (added.length) onFiles([...files, ...added])
-  }
-  const onPick = (e) => {
-    const added = validate(e.target.files)
-    if (added.length) onFiles([...files, ...added])
-    e.target.value = ''
-  }
-  return (
-    <div>
-      <div onClick={() => inputRef.current?.click()}
-        onDragOver={e => { e.preventDefault(); setDragging(true) }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        style={{
-          border: `1.5px dashed ${dragging ? 'var(--accent)' : 'var(--border)'}`,
-          borderRadius: 8, padding: '16px 12px', textAlign: 'center', cursor: 'pointer',
-          background: dragging ? 'var(--accent-faint)' : 'transparent',
-          transition: 'all 0.15s',
-        }}>
-        <div style={{ fontSize: 22, marginBottom: 6 }}>📂</div>
-        <div style={{ fontSize: 12, color: 'var(--text-sec)', fontWeight: 500 }}>Click or drag videos here</div>
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>MP4 · AVI · MOV · MKV — up to {MAX_VIDEOS} files</div>
-        <input ref={inputRef} type="file" accept="video/*" multiple hidden onChange={onPick} />
-      </div>
-      {files.length > 0 && (
-        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {files.map((f, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', borderRadius: 6, padding: '6px 10px', border: '1px solid var(--border)', fontSize: 12 }}>
-              <span style={{ color: 'var(--accent)', fontFamily: 'monospace', fontSize: 10 }}>V{i + 1}</span>
-              <span style={{ color: 'var(--text-sec)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: 10, flexShrink: 0 }}>{(f.size / 1e6).toFixed(1)}MB</span>
-              <button onClick={(e) => { e.stopPropagation(); onFiles(files.filter((_, idx) => idx !== i)) }}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ProgressBar({ value, label, color }) {
-  return (
-    <div style={{ marginTop: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>
-        <span>{label}</span>
-        <span style={{ fontFamily: 'monospace' }}>{value}%</span>
-      </div>
-      <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${value}%`, background: color || 'var(--accent)', borderRadius: 3, transition: 'width 0.25s ease' }} />
-      </div>
-    </div>
-  )
-}
-
-function VideoSummaryCards({ video, accent }) {
-  const s = video.summary
-  const isDummy = video._used_dummy_data
-  return (
-    <div>
-      <div style={{ fontSize: 11, color: accent, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-        {video.video_name}
-        {isDummy && (
-          <span style={{ fontSize: 9, background: 'var(--amber-faint)', color: 'var(--amber)', border: '1px solid var(--amber)', borderRadius: 4, padding: '1px 6px', fontWeight: 600, letterSpacing: '0.08em' }}>
-            ⚠ DUMMY DATA — no model available
-          </span>
-        )}
-      </div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <MetricCard label="Avg Velocity" value={s.avg_velocity.toFixed(1)} unit="px/s" accent={accent} />
-        <MetricCard label="Peak Velocity" value={s.max_velocity.toFixed(1)} unit="px/s" />
-        <MetricCard label="Avg Clustering" value={s.avg_clustering_percent.toFixed(1)} unit="%" />
-        <MetricCard label="Frames" value={s.frames_processed} />
-        <MetricCard label="Est. Shrimp" value={s.shrimp_count_estimate} />
-      </div>
-    </div>
-  )
-}
-
-function Sel({ value, onChange, options, disabled, style }) {
-  return (
-    <select value={value} onChange={e => onChange(e.target.value)} disabled={disabled}
-      style={{
-        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6,
-        color: disabled ? 'var(--text-muted)' : 'var(--text-pri)', fontSize: 13,
-        padding: '7px 28px 7px 10px', appearance: 'none',
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238fa3c0'/%3E%3C/svg%3E")`,
-        backgroundRepeat: 'no-repeat', backgroundPosition: 'calc(100% - 10px) center',
-        cursor: disabled ? 'not-allowed' : 'pointer', outline: 'none',
-        transition: 'border-color 0.15s',
-        ...style,
-      }}
-      onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-      onBlur={e => e.target.style.borderColor = 'var(--border)'}
-    >
-      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-    </select>
-  )
-}
-
-function Toggle({ value, onChange, label }) {
-  return (
-    <button onClick={() => onChange(!value)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', color: value ? 'var(--accent)' : 'var(--text-muted)', fontSize: 12.5, padding: '5px 0', transition: 'color 0.15s' }}>
-      <span style={{ width: 32, height: 17, borderRadius: 9, background: value ? 'var(--accent)' : 'var(--border)', position: 'relative', display: 'inline-block', transition: 'background 0.2s', flexShrink: 0 }}>
-        <span style={{ position: 'absolute', top: 2, left: value ? 17 : 2, width: 13, height: 13, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
-      </span>
-      {label}
-    </button>
-  )
-}
-
-function SideSection({ label, children }) {
-  return (
-    <div style={{ marginBottom: 22 }}>
-      <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>{label}</div>
-      {children}
-    </div>
-  )
-}
-
-function TabBar({ tabs, active, onChange }) {
-  return (
-    <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
-      {tabs.map(t => (
-        <button key={t.id} onClick={() => onChange(t.id)} style={{
-          background: 'none', border: 'none',
-          borderBottom: active === t.id ? '2px solid var(--accent)' : '2px solid transparent',
-          color: active === t.id ? 'var(--accent)' : 'var(--text-muted)',
-          fontSize: 12.5, fontWeight: 500, padding: '8px 14px', cursor: 'pointer',
-          marginBottom: -1, transition: 'color 0.15s', fontFamily: 'inherit',
-        }}>{t.label}</button>
-      ))}
-    </div>
-  )
-}
-
-function PastJobsTable({ jobs, onRestore }) {
-  if (!jobs.length) return (
-    <div style={{ color: 'var(--text-muted)', fontSize: 13, padding: '16px 0' }}>
-      No past analyses found. Run your first analysis above.
-    </div>
-  )
-  const cellSty = { padding: '10px 12px', borderBottom: '1px solid var(--border)', fontSize: 12.5, color: 'var(--text-sec)' }
-  const hdSty = { ...cellSty, color: 'var(--text-muted)', fontSize: 10.5, letterSpacing: '0.07em', textTransform: 'uppercase', fontWeight: 600 }
-  return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>{['Job ID', 'Created', 'Model', 'Videos', ''].map(h => <th key={h} style={hdSty}>{h}</th>)}</tr>
-        </thead>
-        <tbody>
-          {jobs.map(j => (
-            <tr key={j.job_id}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--surface)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <td style={{ ...cellSty, fontFamily: 'monospace', color: 'var(--accent)', fontSize: 11 }}>{j.job_id}</td>
-              <td style={cellSty}>{new Date(j.created_at).toLocaleString()}</td>
-              <td style={cellSty}>{j.selected_model}</td>
-              <td style={cellSty}>{j.video_count}</td>
-              <td style={cellSty}>
-                <button onClick={() => onRestore(j.job_id)} style={{
-                  background: 'none', border: '1px solid var(--border)', borderRadius: 5,
-                  color: 'var(--accent)', fontSize: 11, padding: '4px 10px', cursor: 'pointer',
-                  fontFamily: 'inherit', transition: 'border-color 0.15s',
-                }}>↩ Restore</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-function StatusBadge({ status }) {
-  const map = {
-    idle:      { label: 'IDLE',      bg: 'rgba(69,96,122,0.25)', c: 'var(--text-muted)' },
-    uploading: { label: 'UPLOADING', bg: 'var(--amber-faint)',    c: 'var(--amber)' },
-    analyzing: { label: 'ANALYZING', bg: 'var(--accent-faint)',   c: 'var(--accent)' },
-    done:      { label: 'READY',     bg: 'rgba(52,211,153,0.12)', c: 'var(--success)' },
-    error:     { label: 'ERROR',     bg: 'var(--coral-faint)',    c: 'var(--err)' },
-    restoring: { label: 'RESTORING', bg: 'var(--blue-faint)',     c: 'var(--blue)' },
-  }
-  const { label, bg, c } = map[status] || map.idle
-  return (
-    <span style={{ background: bg, color: c, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', padding: '3px 10px', borderRadius: 4, fontFamily: 'monospace', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-      {(status === 'analyzing' || status === 'restoring') && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: c, animation: 'shrimpPulse 1.1s ease-in-out infinite' }} />}
-      {label}
-    </span>
-  )
-}
-
-// ─── Threshold velocity helpers ───────────────────────────────────────────────
 
 function computeThresholdAlerts(videos, threshold) {
   if (!threshold || threshold <= 0) return []
@@ -729,69 +98,733 @@ function computeThresholdAlerts(videos, threshold) {
   return alerts
 }
 
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+const Icons = {
+  Activity: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  ),
+  Upload: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  ),
+  Play: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none">
+      <polygon points="5 3 19 12 5 21 5 3" />
+    </svg>
+  ),
+  X: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
+  Download: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  ),
+  History: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 1 0 .49-3.51" />
+    </svg>
+  ),
+  Terminal: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
+    </svg>
+  ),
+  AlertTriangle: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  Check: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  Maximize: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+    </svg>
+  ),
+  Sun: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  ),
+  Moon: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  ),
+  Film: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+      <line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" />
+      <line x1="2" y1="12" x2="22" y2="12" /><line x1="2" y1="7" x2="7" y2="7" />
+      <line x1="2" y1="17" x2="7" y2="17" /><line x1="17" y1="17" x2="22" y2="17" />
+      <line x1="17" y1="7" x2="22" y2="7" />
+    </svg>
+  ),
+  Cpu: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <rect x="9" y="9" width="6" height="6" />
+      <line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" />
+      <line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" />
+      <line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" />
+      <line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" />
+    </svg>
+  ),
+  BarChart: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" /><line x1="2" y1="20" x2="22" y2="20" />
+    </svg>
+  ),
+  RefreshCw: ({ size = 14, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
+  ),
+}
+
+// ─── Line Chart ───────────────────────────────────────────────────────────────
+function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expanded }) {
+  const svgRef = useRef(null)
+  const [hover, setHover] = useState(null)
+
+  const W = expanded ? 880 : 520
+  const H = expanded ? 300 : 170
+  const PAD = { t: 12, r: 14, b: 32, l: 46 }
+  const IW = W - PAD.l - PAD.r
+  const IH = H - PAD.t - PAD.b
+  const showThreshold = field === 'avg_velocity' && velocityThreshold > 0
+
+  const processed = datasets.map((ds, di) => {
+    const raw = ds.timeseries.map(p => p[field])
+    const vals = smoothing ? rollingAvg(raw, SMOOTHING_WINDOW) : raw
+    return { ...ds, vals, color: SERIES_COLORS[di % SERIES_COLORS.length] }
+  })
+
+  const allVals = processed.flatMap(p => p.vals).filter(v => v != null)
+  const allTimes = processed.flatMap(p => p.timeseries.map(x => x.time_sec))
+
+  if (!allVals.length || !allTimes.length) {
+    return (
+      <div style={{ height: H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, fontFamily: 'IBM Plex Mono, monospace' }}>no data</span>
+      </div>
+    )
+  }
+
+  const minV = Math.min(...allVals, showThreshold ? velocityThreshold : Infinity)
+  const maxV = Math.max(...allVals, showThreshold ? velocityThreshold : -Infinity)
+  const minT = Math.min(...allTimes), maxT = Math.max(...allTimes)
+  const rangeV = maxV - minV || 1, rangeT = maxT - minT || 1
+
+  const tx = t => PAD.l + ((t - minT) / rangeT) * IW
+  const ty = v => PAD.t + (1 - (v - minV) / rangeV) * IH
+
+  const buildPath = (ds) =>
+    ds.timeseries.map((p, i) => {
+      const v = ds.vals[i]
+      if (v == null) return null
+      const first = i === 0 || ds.vals.slice(0, i).every(x => x == null)
+      return `${first ? 'M' : 'L'}${tx(p.time_sec).toFixed(1)},${ty(v).toFixed(1)}`
+    }).filter(Boolean).join(' ')
+
+  const Y_TICKS = 4, X_TICKS = expanded ? 7 : 4
+  const gridVals = Array.from({ length: Y_TICKS + 1 }, (_, i) => minV + (rangeV * i / Y_TICKS))
+  const gridTimes = Array.from({ length: X_TICKS + 1 }, (_, i) => minT + (rangeT * i / X_TICKS))
+  const dim = 'rgba(255,255,255,0.15)'
+  const gridLine = 'rgba(255,255,255,0.05)'
+  const thresholdY = showThreshold ? ty(velocityThreshold) : null
+
+  const onMouseMove = useCallback((e) => {
+    if (!svgRef.current) return
+    const rect = svgRef.current.getBoundingClientRect()
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left - PAD.l) / IW))
+    const tVal = minT + ratio * rangeT
+    const hoverData = processed.map(ds => {
+      const idx = ds.timeseries.reduce((best, p, i) =>
+        Math.abs(p.time_sec - tVal) < Math.abs(ds.timeseries[best].time_sec - tVal) ? i : best, 0)
+      return {
+        label: ds.video_name,
+        val: ds.vals[idx],
+        time: ds.timeseries[idx].time_sec,
+        x: tx(ds.timeseries[idx].time_sec),
+        y: ty(ds.vals[idx] ?? 0),
+        color: ds.color.line,
+        belowThreshold: showThreshold && ds.vals[idx] != null && ds.vals[idx] < velocityThreshold,
+      }
+    })
+    setHover(hoverData)
+  }, [processed, minT, rangeT, IW])
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
+        style={{ width: '100%', display: 'block', cursor: 'crosshair' }}
+        onMouseMove={onMouseMove} onMouseLeave={() => setHover(null)}>
+        <defs>
+          {processed.map((ds, di) => (
+            <linearGradient key={di} id={`g-${field}-${di}-${expanded ? 'e' : 's'}`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor={ds.color.line} stopOpacity="0.18" />
+              <stop offset="100%" stopColor={ds.color.line} stopOpacity="0" />
+            </linearGradient>
+          ))}
+        </defs>
+
+        {gridVals.map((v, i) => (
+          <g key={i}>
+            <line x1={PAD.l} y1={ty(v)} x2={W - PAD.r} y2={ty(v)} stroke={gridLine} strokeWidth="0.8" />
+            <text x={PAD.l - 5} y={ty(v) + 3.5} textAnchor="end" fill={dim} fontSize="9" fontFamily="IBM Plex Mono, monospace">{v.toFixed(0)}</text>
+          </g>
+        ))}
+        {gridTimes.map((t, i) => (
+          <text key={i} x={tx(t)} y={H - PAD.b + 12} textAnchor="middle" fill={dim} fontSize="9" fontFamily="IBM Plex Mono, monospace">{t.toFixed(1)}s</text>
+        ))}
+        <text x={-H / 2} y={13} transform="rotate(-90)" textAnchor="middle" fill={dim} fontSize="9" fontFamily="IBM Plex Mono, monospace">{unit}</text>
+
+        {showThreshold && thresholdY != null && (
+          <g>
+            <line x1={PAD.l} y1={thresholdY} x2={W - PAD.r} y2={thresholdY}
+              stroke="#f87171" strokeWidth="1.2" strokeDasharray="4 3" opacity="0.7" />
+            <rect x={W - PAD.r - 62} y={thresholdY - 12} width={60} height={12} rx={2}
+              fill="rgba(248,113,113,0.12)" />
+            <text x={W - PAD.r - 32} y={thresholdY - 3} textAnchor="middle"
+              fill="#f87171" fontSize="8" fontFamily="IBM Plex Mono, monospace">thr:{velocityThreshold}</text>
+            <rect x={PAD.l} y={thresholdY} width={IW} height={Math.max(0, PAD.t + IH - thresholdY)}
+              fill="rgba(248,113,113,0.03)" />
+          </g>
+        )}
+
+        {processed.map((ds, di) => {
+          const path = buildPath(ds)
+          const lastPt = ds.timeseries[ds.timeseries.length - 1]
+          const firstPt = ds.timeseries[0]
+          return (
+            <g key={di}>
+              <path d={`${path} L${tx(lastPt.time_sec)},${PAD.t + IH} L${tx(firstPt.time_sec)},${PAD.t + IH} Z`}
+                fill={`url(#g-${field}-${di}-${expanded ? 'e' : 's'})`} />
+              <path d={path} fill="none" stroke={ds.color.line} strokeWidth="1.6"
+                strokeDasharray={ds.color.dash ? '5 3' : undefined}
+                strokeLinejoin="round" strokeLinecap="round" />
+              {showThreshold && ds.timeseries.map((p, i) => {
+                const v = ds.vals[i]
+                if (v == null || v >= velocityThreshold) return null
+                return <circle key={i} cx={tx(p.time_sec)} cy={ty(v)} r={expanded ? 2.5 : 1.8}
+                  fill="#f87171" opacity="0.6" />
+              })}
+            </g>
+          )
+        })}
+
+        {hover && (
+          <>
+            <line x1={hover[0].x} y1={PAD.t} x2={hover[0].x} y2={PAD.t + IH}
+              stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" strokeDasharray="3 2" />
+            {hover.map((h, i) => h.val != null && (
+              <circle key={i} cx={h.x} cy={h.y} r={4}
+                fill={h.belowThreshold ? '#f87171' : h.color}
+                stroke="rgba(10,20,35,0.8)" strokeWidth="1.5" />
+            ))}
+          </>
+        )}
+      </svg>
+
+      {hover && (
+        <div style={{
+          position: 'absolute', top: 6, right: 6,
+          ...glass(0.85, 20),
+          borderRadius: 8, padding: '8px 12px', fontSize: 11,
+          lineHeight: 1.9, pointerEvents: 'none',
+          fontFamily: 'IBM Plex Mono, monospace',
+          color: 'rgba(255,255,255,0.7)',
+          minWidth: 160,
+        }}>
+          <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, marginBottom: 3 }}>
+            t = {hover[0]?.time.toFixed(2)}s
+          </div>
+          {hover.map((h, i) => h.val != null && (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 7, height: 7, borderRadius: 2, background: h.color, display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ color: h.belowThreshold ? '#f87171' : 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+                {h.val.toFixed(2)}
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>{unit}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Graph Modal ──────────────────────────────────────────────────────────────
+function GraphModal({ title, subtitle, children, onClose }) {
+  useEffect(() => {
+    const h = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', h)
+    return () => document.removeEventListener('keydown', h)
+  }, [onClose])
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        ...glass(0.12, 60),
+        borderRadius: 16, width: '100%', maxWidth: 1060,
+        maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0,
+        }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.9)', fontFamily: 'DM Sans, sans-serif' }}>{title}</div>
+            {subtitle && <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.35)', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>{subtitle}</div>}
+          </div>
+          <button onClick={onClose} style={{
+            ...glass(0.1, 20), borderRadius: 8, color: 'rgba(255,255,255,0.5)',
+            cursor: 'pointer', fontSize: 12, padding: '5px 12px',
+            fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 5,
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            <Icons.X size={11} /> Close
+          </button>
+        </div>
+        <div style={{ flex: 1, overflow: 'auto', padding: '18px 22px 22px' }}>{children}</div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Chart Island ─────────────────────────────────────────────────────────────
+function ChartIsland({ title, subtitle, children, expandContent }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <>
+      <div style={{ ...glass(), borderRadius: 14, padding: '14px 16px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontFamily: 'DM Sans, sans-serif', letterSpacing: '0.01em' }}>{title}</div>
+            {subtitle && <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.3)', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>{subtitle}</div>}
+          </div>
+          <button onClick={() => setExpanded(true)} style={{
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 6, color: 'rgba(255,255,255,0.35)', cursor: 'pointer',
+            padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4,
+            fontSize: 10, fontFamily: 'DM Sans, sans-serif', flexShrink: 0, marginLeft: 8,
+            transition: 'all 0.15s',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.4)'; e.currentTarget.style.color = '#2dd4bf' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}>
+            <Icons.Maximize size={10} /> Expand
+          </button>
+        </div>
+        {children}
+      </div>
+      {expanded && (
+        <GraphModal title={title} subtitle={subtitle} onClose={() => setExpanded(false)}>
+          {expandContent}
+        </GraphModal>
+      )}
+    </>
+  )
+}
+
+// ─── Metric Chip ──────────────────────────────────────────────────────────────
+function MetricChip({ label, value, unit, accent }) {
+  return (
+    <div style={{
+      ...glass(0.06, 20),
+      borderRadius: 10, padding: '10px 14px', flex: 1, minWidth: 0,
+      transition: 'border-color 0.2s',
+    }}>
+      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 5, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'DM Sans, sans-serif' }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: accent || 'rgba(255,255,255,0.9)', fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1 }}>
+        {value}
+        {unit && <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.3)', marginLeft: 3 }}>{unit}</span>}
+      </div>
+    </div>
+  )
+}
+
+// ─── Alert Log ────────────────────────────────────────────────────────────────
+function AlertLog({ entries }) {
+  const ref = useRef(null)
+  useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight }, [entries])
+  const colorMap = { info: 'rgba(255,255,255,0.45)', ok: '#2dd4bf', warn: '#f59e0b', err: '#f87171' }
+  return (
+    <div ref={ref} style={{ height: 160, overflowY: 'auto', fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, lineHeight: 2 }}>
+      {entries.length === 0 && (
+        <div style={{ color: 'rgba(255,255,255,0.2)', padding: '8px 0' }}>// no activity yet</div>
+      )}
+      {entries.map((e, i) => (
+        <div key={i} style={{ display: 'flex', gap: 10, borderBottom: '1px solid rgba(255,255,255,0.04)', color: colorMap[e.type] || colorMap.info }}>
+          <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0, fontSize: 9 }}>{e.ts}</span>
+          <span style={{ wordBreak: 'break-word', flex: 1 }}>{e.msg}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Upload Zone ─────────────────────────────────────────────────────────────
+function UploadZone({ files, onFiles }) {
+  const [dragging, setDragging] = useState(false)
+  const inputRef = useRef(null)
+
+  const validate = (fileList) => {
+    const arr = Array.from(fileList)
+    const valid = arr.filter(f => ALLOWED_TYPES.includes(f.type) || f.name.match(/\.(mp4|avi|mov|mkv)$/i))
+    if (valid.length !== arr.length) alert('Some files skipped — only MP4, AVI, MOV, MKV supported.')
+    const slots = MAX_VIDEOS - files.length
+    if (valid.length > slots) {
+      alert(`Max ${MAX_VIDEOS} videos. Only first ${slots} added.`)
+      return valid.slice(0, slots)
+    }
+    return valid
+  }
+
+  const onDrop = (e) => {
+    e.preventDefault(); setDragging(false)
+    const added = validate(e.dataTransfer.files)
+    if (added.length) onFiles([...files, ...added])
+  }
+
+  const onPick = (e) => {
+    const added = validate(e.target.files)
+    if (added.length) onFiles([...files, ...added])
+    e.target.value = ''
+  }
+
+  return (
+    <div>
+      <div onClick={() => inputRef.current?.click()}
+        onDragOver={e => { e.preventDefault(); setDragging(true) }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        style={{
+          border: `1px dashed ${dragging ? 'rgba(45,212,191,0.6)' : 'rgba(255,255,255,0.12)'}`,
+          borderRadius: 10, padding: '14px 10px', textAlign: 'center', cursor: 'pointer',
+          background: dragging ? 'rgba(45,212,191,0.06)' : 'rgba(255,255,255,0.03)',
+          transition: 'all 0.15s',
+        }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6, opacity: 0.5 }}>
+          <Icons.Upload size={18} color="rgba(45,212,191,0.8)" />
+        </div>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>Click or drag videos</div>
+        <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.25)', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>mp4 · avi · mov · mkv — up to {MAX_VIDEOS}</div>
+        <input ref={inputRef} type="file" accept="video/*" multiple hidden onChange={onPick} />
+      </div>
+
+      {files.length > 0 && (
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {files.map((f, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: 'rgba(255,255,255,0.04)', borderRadius: 7, padding: '5px 9px',
+              border: '1px solid rgba(255,255,255,0.07)', fontSize: 11,
+            }}>
+              <Icons.Film size={10} color="#2dd4bf" />
+              <span style={{ color: 'rgba(255,255,255,0.6)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'DM Sans, sans-serif' }}>{f.name}</span>
+              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 9, flexShrink: 0, fontFamily: 'IBM Plex Mono, monospace' }}>{(f.size / 1e6).toFixed(1)}MB</span>
+              <button onClick={(e) => { e.stopPropagation(); onFiles(files.filter((_, idx) => idx !== i)) }}
+                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: 0, display: 'flex' }}>
+                <Icons.X size={11} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Progress Bar ─────────────────────────────────────────────────────────────
+function ProgressBar({ value, label, color }) {
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 4, fontFamily: 'IBM Plex Mono, monospace' }}>
+        <span>{label}</span><span>{value}%</span>
+      </div>
+      <div style={{ height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${value}%`, background: color || '#2dd4bf', borderRadius: 2, transition: 'width 0.25s ease' }} />
+      </div>
+    </div>
+  )
+}
+
+// ─── Status Badge ─────────────────────────────────────────────────────────────
+function StatusDot({ status }) {
+  const map = {
+    idle:      { label: 'IDLE',      c: 'rgba(255,255,255,0.3)' },
+    uploading: { label: 'UPLOADING', c: '#f59e0b' },
+    analyzing: { label: 'ANALYZING', c: '#2dd4bf' },
+    done:      { label: 'READY',     c: '#2dd4bf' },
+    error:     { label: 'ERROR',     c: '#f87171' },
+    restoring: { label: 'RESTORING', c: '#60a5fa' },
+  }
+  const { label, c } = map[status] || map.idle
+  const pulse = status === 'analyzing' || status === 'uploading' || status === 'restoring'
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{
+        width: 6, height: 6, borderRadius: '50%', background: c, display: 'inline-block', flexShrink: 0,
+        animation: pulse ? 'pulse 1.2s ease-in-out infinite' : 'none',
+      }} />
+      <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', color: c, fontFamily: 'IBM Plex Mono, monospace' }}>{label}</span>
+    </div>
+  )
+}
+
+// ─── Toggle ───────────────────────────────────────────────────────────────────
+function Toggle({ value, onChange, label }) {
+  return (
+    <button onClick={() => onChange(!value)} style={{
+      display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none',
+      cursor: 'pointer', color: value ? '#2dd4bf' : 'rgba(255,255,255,0.4)',
+      fontSize: 11, padding: '4px 0', transition: 'color 0.15s', fontFamily: 'DM Sans, sans-serif',
+    }}>
+      <span style={{
+        width: 28, height: 15, borderRadius: 8,
+        background: value ? 'rgba(45,212,191,0.8)' : 'rgba(255,255,255,0.12)',
+        position: 'relative', display: 'inline-block', transition: 'background 0.2s', flexShrink: 0,
+      }}>
+        <span style={{
+          position: 'absolute', top: 2, left: value ? 15 : 2, width: 11, height: 11,
+          borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+        }} />
+      </span>
+      {label}
+    </button>
+  )
+}
+
+// ─── Threshold Alert Banner ───────────────────────────────────────────────────
+function ThresholdAlertBanner({ alerts, onDismiss, isRestored }) {
+  if (!alerts || alerts.length === 0) return null
+  return (
+    <div style={{
+      background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.3)',
+      borderRadius: 12, padding: '12px 16px', marginBottom: 14,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#f87171', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'DM Sans, sans-serif' }}>
+            <Icons.AlertTriangle size={12} color="#f87171" />
+            Lethargic Shrimp Detected — Velocity Below Threshold
+            {isRestored && <span style={{ fontSize: 8.5, background: 'rgba(96,165,250,0.15)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: 3, padding: '1px 6px', fontWeight: 600, letterSpacing: '0.08em', marginLeft: 4, fontFamily: 'IBM Plex Mono, monospace' }}>RESTORED</span>}
+          </div>
+          {alerts.map((a, i) => (
+            <div key={i} style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.55)', fontFamily: 'IBM Plex Mono, monospace', display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 1, background: SERIES_COLORS[a.videoIndex % SERIES_COLORS.length].line, display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>{shortName(a.videoName, 28)}</span>
+              <span style={{ color: '#f87171' }}>{a.pctBelow.toFixed(1)}% below {a.threshold}px/s</span>
+              <span style={{ color: 'rgba(255,255,255,0.25)' }}>avg:{a.avgVelocity.toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: 'rgba(248,113,113,0.6)', cursor: 'pointer', padding: 2, display: 'flex' }}>
+          <Icons.X size={13} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Video Summary Cards ──────────────────────────────────────────────────────
+function VideoSummaryCards({ video, accent }) {
+  const s = video.summary
+  return (
+    <div>
+      <div style={{ fontSize: 10, color: accent, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'DM Sans, sans-serif' }}>
+        {shortName(video.video_name, 36)}
+        {video._used_dummy_data && (
+          <span style={{ fontSize: 8.5, background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 3, padding: '1px 6px', fontFamily: 'IBM Plex Mono, monospace' }}>DUMMY DATA</span>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+        <MetricChip label="Avg Velocity" value={s.avg_velocity.toFixed(1)} unit="px/s" accent={accent} />
+        <MetricChip label="Peak Velocity" value={s.max_velocity.toFixed(1)} unit="px/s" />
+        <MetricChip label="Avg Clustering" value={s.avg_clustering_percent.toFixed(1)} unit="%" />
+        <MetricChip label="Frames" value={s.frames_processed} />
+        <MetricChip label="Est. Shrimp" value={s.shrimp_count_estimate} />
+      </div>
+    </div>
+  )
+}
+
+// ─── Past Jobs Table ──────────────────────────────────────────────────────────
+function PastJobsTable({ jobs, onRestore }) {
+  if (!jobs.length) return (
+    <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, padding: '12px 0', fontFamily: 'IBM Plex Mono, monospace' }}>// no past analyses found</div>
+  )
+  const th = { padding: '7px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: 9.5, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }
+  const td = { padding: '8px 10px', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 11, color: 'rgba(255,255,255,0.55)', fontFamily: 'IBM Plex Mono, monospace' }
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead><tr>{['Job ID', 'Created', 'Model', 'Videos', ''].map(h => <th key={h} style={th}>{h}</th>)}</tr></thead>
+        <tbody>
+          {jobs.map(j => (
+            <tr key={j.job_id}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              <td style={{ ...td, color: '#2dd4bf' }}>{j.job_id}</td>
+              <td style={td}>{new Date(j.created_at).toLocaleString()}</td>
+              <td style={td}>{j.selected_model}</td>
+              <td style={td}>{j.video_count}</td>
+              <td style={td}>
+                <button onClick={() => onRestore(j.job_id)} style={{
+                  background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.25)',
+                  borderRadius: 5, color: '#2dd4bf', fontSize: 10, padding: '4px 10px', cursor: 'pointer',
+                  fontFamily: 'IBM Plex Mono, monospace', display: 'flex', alignItems: 'center', gap: 5,
+                }}>
+                  <Icons.History size={9} color="#2dd4bf" /> restore
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ─── Tab Bar ──────────────────────────────────────────────────────────────────
+function TabBar({ tabs, active, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 2 }}>
+      {tabs.map(t => (
+        <button key={t.id} onClick={() => onChange(t.id)} style={{
+          background: active === t.id ? 'rgba(45,212,191,0.12)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${active === t.id ? 'rgba(45,212,191,0.3)' : 'rgba(255,255,255,0.07)'}`,
+          borderRadius: 8, color: active === t.id ? '#2dd4bf' : 'rgba(255,255,255,0.4)',
+          fontSize: 11, fontWeight: 500, padding: '6px 14px', cursor: 'pointer',
+          transition: 'all 0.15s', fontFamily: 'DM Sans, sans-serif',
+        }}>{t.label}</button>
+      ))}
+    </div>
+  )
+}
+
+// ─── Number Input ─────────────────────────────────────────────────────────────
+function NumInput({ value, onChange, placeholder, disabled }) {
+  return (
+    <input type="number" min="0" step="0.5"
+      value={value || ''}
+      onChange={e => onChange(Math.max(0, parseFloat(e.target.value) || 0))}
+      placeholder={placeholder}
+      disabled={disabled}
+      style={{
+        flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 7, color: 'rgba(255,255,255,0.85)', fontSize: 12.5,
+        padding: '7px 10px', outline: 'none', fontFamily: 'IBM Plex Mono, monospace',
+        transition: 'border-color 0.15s', opacity: disabled ? 0.5 : 1,
+      }}
+      onFocus={e => e.target.style.borderColor = 'rgba(248,113,113,0.5)'}
+      onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+    />
+  )
+}
+
+// ─── Select ───────────────────────────────────────────────────────────────────
+function GlassSelect({ value, onChange, options, disabled }) {
+  return (
+    <select value={value} onChange={e => onChange(e.target.value)} disabled={disabled}
+      style={{
+        width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 8, color: disabled ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.85)',
+        fontSize: 12, padding: '8px 28px 8px 10px', appearance: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+        outline: 'none', fontFamily: 'DM Sans, sans-serif',
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'no-repeat', backgroundPosition: 'calc(100% - 10px) center',
+        transition: 'border-color 0.15s',
+      }}
+      onFocus={e => e.target.style.borderColor = 'rgba(45,212,191,0.4)'}
+      onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+    >
+      {options.map(o => <option key={o.value} value={o.value} style={{ background: '#0a1424' }}>{o.label}</option>)}
+    </select>
+  )
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function ShrimpDashboard() {
-  const [dark, setDark] = useState(true)
-  useEffect(() => { applyTheme(dark ? DARK : LIGHT) }, [dark])
+  const [dark] = useState(true)
 
+  // ── State ───────────────────────────────────────────────────────────────────
   const [models, setModels] = useState([])
   const [modelsLoading, setModelsLoading] = useState(true)
   const [selectedModel, setSelectedModel] = useState('')
-
   const [files, setFiles] = useState([])
   const [uploadPct, setUploadPct] = useState(0)
   const [analyzePct, setAnalyzePct] = useState(0)
   const [status, setStatus] = useState('idle')
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
-
-  // Track whether the current result came from a restore (vs fresh analysis)
   const [isRestoredResult, setIsRestoredResult] = useState(false)
-
   const [pastJobs, setPastJobs] = useState([])
   const [pastLoading, setPastLoading] = useState(false)
-
   const [smoothing, setSmoothing] = useState(false)
-  const [activeTab, setActiveTab] = useState('graphs')
-  const [alerts, setAlerts] = useState([])
-
-  // Threshold velocity state
+  const [activeTab, setActiveTab] = useState('analytics')
   const [velocityThreshold, setVelocityThreshold] = useState(0)
   const [thresholdAlerts, setThresholdAlerts] = useState([])
   const [thresholdAlertDismissed, setThresholdAlertDismissed] = useState(false)
-
+  const [logEntries, setLogEntries] = useState([])
   const abortRef = useRef(null)
 
-  const log = useCallback((msg, type = 'info', code) => {
+  const log = useCallback((msg, type = 'info') => {
     const ts = new Date().toLocaleTimeString('en-GB', { hour12: false })
-    setAlerts(a => [...a.slice(-99), { ts, msg, type, code }])
+    setLogEntries(a => [...a.slice(-99), { ts, msg, type }])
   }, [])
 
+  // ── Restore job ─────────────────────────────────────────────────────────────
   const restoreJob = useCallback(async (jobId) => {
     if (!jobId) return
     setStatus('restoring')
-    log(`Restoring previous session: ${jobId}`, 'info')
+    log(`Restoring session: ${jobId}`, 'info')
     try {
       const res = await fetch(`${BASE_URL}/results/${jobId}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setResult(data)
-      setIsRestoredResult(true)   // ← Mark as restored
-      // Clear any previous threshold alerts when loading a new result
+      setIsRestoredResult(true)
       setThresholdAlerts([])
       setThresholdAlertDismissed(false)
       setStatus('done')
-      log(`Session restored: ${data.videos.length} video(s) from job ${jobId}`, 'ok')
-      log(`To check velocity threshold on this analysis, set a threshold and click "Calculate Frames Exceeding Threshold".`, 'info')
+      log(`Session restored: ${data.videos.length} video(s) from ${jobId}`, 'ok')
     } catch (e) {
       setStatus('idle')
-      log(`Could not restore session: ${e.message}`, 'warn')
+      log(`Could not restore: ${e.message}`, 'warn')
       sessionStorage.removeItem('lastJobId')
     }
   }, [log])
 
+  // ── Init ────────────────────────────────────────────────────────────────────
   useEffect(() => {
     ;(async () => {
       try {
@@ -800,26 +833,21 @@ export default function ShrimpDashboard() {
         const data = await res.json()
         setModels(data.models || [])
         if (data.models?.length) setSelectedModel(data.models[0].id)
-        log(`Loaded ${data.models.length} model(s) from server`, 'ok', 200)
+        log(`Loaded ${data.models.length} model(s)`, 'ok')
       } catch (e) {
-        log(`Could not reach backend: ${e.message}. Is it running on port 8000?`, 'err')
-        const fallback = [
-          { id: 'best', label: 'Best Trained Model' },
-          { id: 'yolov8n', label: 'YOLOv8 Nano' },
-        ]
+        log(`Backend unreachable: ${e.message}`, 'err')
+        const fallback = [{ id: 'best', label: 'Best Trained Model' }, { id: 'yolov8n', label: 'YOLOv8 Nano' }]
         setModels(fallback)
         setSelectedModel(fallback[0].id)
       } finally {
         setModelsLoading(false)
       }
-
       const lastJobId = sessionStorage.getItem('lastJobId')
-      if (lastJobId) {
-        await restoreJob(lastJobId)
-      }
+      if (lastJobId) await restoreJob(lastJobId)
     })()
   }, [log, restoreJob])
 
+  // ── Fetch past jobs ─────────────────────────────────────────────────────────
   const fetchPastJobs = useCallback(async () => {
     setPastLoading(true)
     try {
@@ -827,7 +855,6 @@ export default function ShrimpDashboard() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setPastJobs(data.results || [])
-      log(`Fetched ${data.results.length} past job(s)`, 'info', 200)
     } catch (e) {
       log(`Could not load history: ${e.message}`, 'warn')
     } finally {
@@ -837,34 +864,28 @@ export default function ShrimpDashboard() {
 
   useEffect(() => { fetchPastJobs() }, [fetchPastJobs])
 
+  // ── Run analysis ─────────────────────────────────────────────────────────────
   const runAnalysis = useCallback(async () => {
-    if (!files.length) { log('Please select at least one video file.', 'warn'); return }
-    if (!selectedModel) { log('Please select a YOLO model.', 'warn'); return }
+    if (!files.length) { log('Select at least one video file.', 'warn'); return }
+    if (!selectedModel) { log('Select a YOLO model.', 'warn'); return }
     if (status === 'uploading' || status === 'analyzing') return
 
     setError(''); setResult(null); setUploadPct(0); setAnalyzePct(0)
-    setThresholdAlerts([]); setThresholdAlertDismissed(false)
-    setIsRestoredResult(false)   // ← Fresh analysis
+    setThresholdAlerts([]); setThresholdAlertDismissed(false); setIsRestoredResult(false)
     setStatus('uploading')
-    log(`Starting analysis: model=${selectedModel}, videos=${files.map(f => f.name).join(', ')}`, 'info')
-    if (velocityThreshold > 0) {
-      log(`Velocity threshold set to ${velocityThreshold} px/s — lethargic shrimp detection enabled`, 'info')
-    }
+    log(`Analysis started: model=${selectedModel}, videos=${files.map(f => f.name).join(', ')}`, 'info')
 
     const ctrl = new AbortController()
     abortRef.current = ctrl
-
     const fd = new FormData()
     fd.append('model_id', selectedModel)
     files.forEach(f => fd.append('videos', f, f.name))
 
     try {
-      log('Uploading video(s) to server…', 'info')
-
       const data = await uploadWithProgress(fd, (pct) => {
         setUploadPct(pct)
         if (pct === 100) {
-          log('Upload complete — running YOLO inference…', 'ok')
+          log('Upload complete — running inference...', 'ok')
           setStatus('analyzing')
           let ap = 0
           const iv = setInterval(() => {
@@ -876,70 +897,47 @@ export default function ShrimpDashboard() {
       }, ctrl.signal)
 
       if (abortRef.current?._inferIv) clearInterval(abortRef.current._inferIv)
-      setAnalyzePct(100)
-      setStatus('done')
-      setResult(data)
+      setAnalyzePct(100); setStatus('done'); setResult(data)
       sessionStorage.setItem('lastJobId', data.job_id)
 
-      // Auto-compute threshold alerts only on fresh analyses
       if (velocityThreshold > 0) {
         const tAlerts = computeThresholdAlerts(data.videos, velocityThreshold)
         setThresholdAlerts(tAlerts)
         if (tAlerts.length > 0) {
-          tAlerts.forEach(a => {
-            log(`⚠ LETHARGIC ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% of frames below ${a.threshold} px/s`, 'warn')
-          })
-          setActiveTab('graphs')
+          tAlerts.forEach(a => log(`ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% below ${a.threshold}px/s`, 'warn'))
+          setActiveTab('analytics')
         } else {
-          log(`✓ All videos passed velocity threshold (${velocityThreshold} px/s)`, 'ok')
+          log(`All videos passed threshold (${velocityThreshold}px/s)`, 'ok')
         }
       }
 
       const dummyCount = data.videos.filter(v => v._used_dummy_data).length
-      if (dummyCount > 0) {
-        log(`⚠ ${dummyCount} video(s) used dummy data — no YOLO model found at backend/models/.`, 'warn')
-      }
-
-      log(`Analysis complete. Job ID: ${data.job_id}`, 'ok', 200)
-      data.videos.forEach(v => {
-        log(`  → ${v.video_name}: avg vel=${v.summary.avg_velocity} px/s, avg cluster=${v.summary.avg_clustering_percent}%`, 'info')
-      })
+      if (dummyCount > 0) log(`${dummyCount} video(s) used dummy data — no model found`, 'warn')
+      log(`Analysis complete. Job: ${data.job_id}`, 'ok')
+      data.videos.forEach(v => log(`  ${v.video_name}: vel=${v.summary.avg_velocity}px/s clust=${v.summary.avg_clustering_percent}%`, 'info'))
       fetchPastJobs()
     } catch (e) {
       if (abortRef.current?._inferIv) clearInterval(abortRef.current._inferIv)
       if (e.name === 'AbortError') {
         setStatus('idle'); log('Analysis cancelled.', 'warn')
       } else {
-        setStatus('error'); setError(e.message)
-        log(`Error: ${e.message}`, 'err')
+        setStatus('error'); setError(e.message); log(`Error: ${e.message}`, 'err')
       }
     }
   }, [files, selectedModel, status, log, fetchPastJobs, velocityThreshold])
 
-  /**
-   * calculateThresholdOnCurrentResult
-   *
-   * This is the NEW function for Task 1.
-   * It re-runs the threshold calculation over the in-memory timeseries of
-   * whatever analysis is currently loaded (fresh or restored) WITHOUT
-   * contacting the backend or re-running YOLO.
-   * Called when the user clicks "Calculate Frames Exceeding Threshold".
-   */
+  // ── Calculate threshold on current result ────────────────────────────────────
   const calculateThresholdOnCurrentResult = useCallback(() => {
     if (!result || !velocityThreshold || velocityThreshold <= 0) return
-
-    log(`Calculating threshold metrics on current result (threshold: ${velocityThreshold} px/s)…`, 'info')
+    log(`Calculating threshold (${velocityThreshold}px/s) on current result...`, 'info')
     const tAlerts = computeThresholdAlerts(result.videos, velocityThreshold)
     setThresholdAlerts(tAlerts)
     setThresholdAlertDismissed(false)
-
     if (tAlerts.length > 0) {
-      tAlerts.forEach(a => {
-        log(`⚠ LETHARGIC ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% of frames below ${a.threshold} px/s${isRestoredResult ? ' [restored data]' : ''}`, 'warn')
-      })
-      setActiveTab('graphs')
+      tAlerts.forEach(a => log(`ALERT: ${a.videoName} — ${a.pctBelow.toFixed(1)}% below ${a.threshold}px/s${isRestoredResult ? ' [restored]' : ''}`, 'warn'))
+      setActiveTab('analytics')
     } else {
-      log(`✓ All videos in ${isRestoredResult ? 'restored' : 'current'} analysis passed threshold (${velocityThreshold} px/s)`, 'ok')
+      log(`All videos passed threshold (${velocityThreshold}px/s)`, 'ok')
     }
   }, [result, velocityThreshold, isRestoredResult, log])
 
@@ -952,404 +950,414 @@ export default function ShrimpDashboard() {
 
   const downloadCsv = (jobId, videoId) => {
     window.open(`${BASE_URL}/results/${jobId}/${videoId}/csv`, '_blank')
-    log(`Downloading CSV for ${videoId} (job ${jobId})`, 'info')
+    log(`Downloading CSV for ${videoId}`, 'info')
   }
 
   const handleRestore = useCallback(async (jobId) => {
     sessionStorage.setItem('lastJobId', jobId)
     setThresholdAlerts([]); setThresholdAlertDismissed(false)
     await restoreJob(jobId)
-    setActiveTab('graphs')
+    setActiveTab('analytics')
   }, [restoreJob])
 
-  const legend = result?.videos?.map((v, i) => ({
-    label: v.video_name,
-    color: SERIES_COLORS[i % SERIES_COLORS.length].line,
-    dash: SERIES_COLORS[i % SERIES_COLORS.length].dash,
-  })) || []
-
+  // ── Derived ──────────────────────────────────────────────────────────────────
   const isRunning = status === 'uploading' || status === 'analyzing'
   const hasDummy = result?.videos?.some(v => v._used_dummy_data)
   const showThresholdAlerts = thresholdAlerts.length > 0 && !thresholdAlertDismissed
-  const activeVelocityThreshold = velocityThreshold > 0 ? velocityThreshold : 0
-
-  // The "calculate" button should be available whenever there's a loaded result
-  // and a threshold is set — regardless of whether it was restored or fresh.
   const canCalculateThreshold = !!result && velocityThreshold > 0 && !isRunning
+  const activeVelocityThreshold = velocityThreshold > 0 ? velocityThreshold : 0
+  const legend = result?.videos?.map((v, i) => ({ label: v.video_name, color: SERIES_COLORS[i % SERIES_COLORS.length].line })) || []
 
   return (
-    <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
+    <>
       <style>{`
-        *, *::before, *::after { box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text-pri); font-family: system-ui, sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-        select option { background: var(--surface); }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body, #root { height: 100%; width: 100%; }
+        body { font-family: 'DM Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+        select option { background: #0a1424; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
-        @keyframes shrimpPulse { 0%,100%{opacity:1}50%{opacity:0.3} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-        @keyframes modalBackdropIn { from{opacity:0} to{opacity:1} }
-        @keyframes modalContentIn { from{opacity:0;transform:scale(0.93) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
-        .fade-up { animation: fadeUp 0.35s ease both; }
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 0.4; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .fade-up { animation: fadeUp 0.3s ease both; }
+        input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
       `}</style>
 
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      {/* ── Root: background image ── */}
+      <div style={{
+        width: '100vw', height: '100vh', overflow: 'hidden',
+        background: 'linear-gradient(135deg, #050d1a 0%, #091525 50%, #060e1c 100%)',
+        backgroundImage: `url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80')`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        position: 'relative',
+      }}>
+        {/* dark overlay */}
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,13,26,0.82)', backdropFilter: 'blur(1px)' }} />
 
-        {/* Header */}
-        <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 54, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 7, background: 'var(--accent-faint)', border: '1px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🦐</div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, letterSpacing: '-0.01em' }}>ShrimpTracker</div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Activity Detection System</div>
+        {/* subtle grid */}
+        <div style={{
+          position: 'absolute', inset: 0, opacity: 0.04,
+          backgroundImage: 'linear-gradient(rgba(45,212,191,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(45,212,191,0.6) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+        }} />
+
+        {/* ── Layout ── */}
+        <div style={{
+          position: 'relative', zIndex: 1,
+          width: '100%', height: '100%',
+          display: 'grid',
+          gridTemplateColumns: '260px 1fr',
+          gridTemplateRows: '52px 1fr',
+          gap: 0,
+          padding: 0,
+        }}>
+
+          {/* ════ HEADER ISLAND ════ */}
+          <div style={{
+            gridColumn: '1 / -1',
+            ...glass(0.1, 50),
+            borderRadius: 0,
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderTop: 'none', borderLeft: 'none', borderRight: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '0 20px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 7,
+                background: 'rgba(45,212,191,0.12)', border: '1px solid rgba(45,212,191,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Icons.Activity size={13} color="#2dd4bf" />
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.02em', fontFamily: 'DM Sans, sans-serif' }}>ShrimpTracker</div>
+                <div style={{ fontSize: 8.5, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: 'IBM Plex Mono, monospace' }}>Activity Detection System</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              {isRestoredResult && result && (
+                <span style={{ fontSize: 9, background: 'rgba(96,165,250,0.1)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.25)', borderRadius: 4, padding: '2px 8px', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600, letterSpacing: '0.07em' }}>
+                  RESTORED · {result.job_id}
+                </span>
+              )}
+              <StatusDot status={status} />
+              <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)' }} />
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontFamily: 'IBM Plex Mono, monospace' }}>
+                {new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+              </div>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {isRestoredResult && result && (
-              <span style={{ fontSize: 10, background: 'var(--blue-faint)', color: 'var(--blue)', border: '1px solid var(--blue)', borderRadius: 4, padding: '2px 8px', fontWeight: 600, letterSpacing: '0.07em', fontFamily: 'monospace' }}>
-                ↩ RESTORED · {result.job_id}
-              </span>
-            )}
-            <StatusBadge status={status} />
-            <button onClick={() => setDark(d => !d)} title="Toggle theme" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-sec)', cursor: 'pointer', fontSize: 14, padding: '5px 9px', lineHeight: 1, transition: 'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-              {dark ? '☀' : '◐'}
-            </button>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-              {new Date().toLocaleDateString('en-MY', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
-            </div>
-          </div>
-        </header>
 
-        <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+          {/* ════ LEFT SIDEBAR ISLAND ════ */}
+          <div style={{
+            gridColumn: '1',
+            gridRow: '2',
+            ...glass(0.07, 50),
+            borderRight: '1px solid rgba(255,255,255,0.07)',
+            borderTop: 'none', borderLeft: 'none', borderBottom: 'none', borderRadius: 0,
+            display: 'flex', flexDirection: 'column',
+            overflowY: 'auto', padding: '18px 14px',
+          }}>
 
-          {/* Sidebar */}
-          <aside style={{ width: 268, flexShrink: 0, background: 'var(--surface)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '20px 16px' }}>
-
-            <SideSection label="YOLO Model">
-              <Sel value={selectedModel} onChange={setSelectedModel}
-                options={modelsLoading
-                  ? [{ value: '', label: 'Loading…' }]
-                  : models.map(m => ({ value: m.id, label: m.label }))}
+            {/* Model */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>YOLO Model</div>
+              <GlassSelect
+                value={selectedModel}
+                onChange={setSelectedModel}
+                options={modelsLoading ? [{ value: '', label: 'Loading...' }] : models.map(m => ({ value: m.id, label: m.label }))}
                 disabled={isRunning || modelsLoading}
-                style={{ width: '100%' }} />
-            </SideSection>
+              />
+            </div>
 
-            <SideSection label="Upload Videos (1–3)">
+            {/* Upload */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>Upload Videos</div>
               <UploadZone files={files} onFiles={setFiles} />
-            </SideSection>
+            </div>
 
-            {/* ── Threshold velocity — works on both fresh & restored analyses ── */}
-            <SideSection label="Lethargic Detection">
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, lineHeight: 1.5 }}>
-                Set a minimum velocity threshold. For a <strong>new analysis</strong>, threshold alerts calculate automatically. For a <strong>restored analysis</strong>, click the button below.
+            {/* Lethargic Detection */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>Lethargic Detection</div>
+              <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.3)', marginBottom: 8, lineHeight: 1.6, fontFamily: 'DM Sans, sans-serif' }}>
+                Set minimum velocity. New analyses calculate automatically; restored analyses require manual trigger.
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={velocityThreshold || ''}
-                  onChange={e => setVelocityThreshold(Math.max(0, parseFloat(e.target.value) || 0))}
-                  placeholder="e.g. 5"
-                  disabled={isRunning}
-                  style={{
-                    flex: 1, background: 'var(--surface)', border: '1px solid var(--border)',
-                    borderRadius: 6, color: 'var(--text-pri)', fontSize: 13,
-                    padding: '7px 10px', outline: 'none', fontFamily: 'monospace',
-                    transition: 'border-color 0.15s',
-                    opacity: isRunning ? 0.5 : 1,
-                  }}
-                  onFocus={e => e.target.style.borderColor = 'var(--err)'}
-                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                />
-                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>px/s</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                <NumInput value={velocityThreshold} onChange={setVelocityThreshold} placeholder="e.g. 5" disabled={isRunning} />
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', flexShrink: 0, fontFamily: 'IBM Plex Mono, monospace' }}>px/s</span>
               </div>
 
-              {/* ── NEW: Calculate button for on-demand threshold computation ── */}
-              <button
-                onClick={calculateThresholdOnCurrentResult}
-                disabled={!canCalculateThreshold}
-                title={
-                  !result ? 'Load an analysis first' :
-                  velocityThreshold <= 0 ? 'Enter a threshold value first' :
-                  'Calculate threshold metrics on the loaded analysis'
-                }
-                style={{
-                  width: '100%', padding: '9px 0',
-                  background: canCalculateThreshold ? 'rgba(248,113,113,0.12)' : 'var(--border)',
-                  color: canCalculateThreshold ? 'var(--err)' : 'var(--text-muted)',
-                  border: `1px solid ${canCalculateThreshold ? 'var(--err)' : 'var(--border)'}`,
-                  borderRadius: 7, fontSize: 11.5, fontWeight: 600,
-                  cursor: canCalculateThreshold ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.15s', fontFamily: 'inherit',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}
-                onMouseEnter={e => {
-                  if (canCalculateThreshold) {
-                    e.currentTarget.style.background = 'rgba(248,113,113,0.2)'
-                    e.currentTarget.style.borderColor = 'var(--err)'
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (canCalculateThreshold) {
-                    e.currentTarget.style.background = 'rgba(248,113,113,0.12)'
-                  }
-                }}
-              >
-                <span style={{ fontSize: 13 }}>⚠</span>
-                Calculate Frames Exceeding Threshold
+              <button onClick={calculateThresholdOnCurrentResult} disabled={!canCalculateThreshold} style={{
+                width: '100%', padding: '8px 0',
+                background: canCalculateThreshold ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.04)',
+                color: canCalculateThreshold ? '#f87171' : 'rgba(255,255,255,0.2)',
+                border: `1px solid ${canCalculateThreshold ? 'rgba(248,113,113,0.3)' : 'rgba(255,255,255,0.07)'}`,
+                borderRadius: 8, fontSize: 10.5, fontWeight: 600, cursor: canCalculateThreshold ? 'pointer' : 'not-allowed',
+                transition: 'all 0.15s', fontFamily: 'DM Sans, sans-serif',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <Icons.AlertTriangle size={10} color={canCalculateThreshold ? '#f87171' : 'rgba(255,255,255,0.2)'} />
+                Calculate Threshold
               </button>
 
               {velocityThreshold > 0 && (
-                <div style={{ fontSize: 10, color: 'var(--err)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span>⚠</span> Alert if velocity &lt; {velocityThreshold} px/s
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                  <span style={{ fontSize: 9.5, color: 'rgba(248,113,113,0.7)', fontFamily: 'IBM Plex Mono, monospace' }}>alert &lt; {velocityThreshold}px/s</span>
                   <button onClick={() => { setVelocityThreshold(0); setThresholdAlerts([]); setThresholdAlertDismissed(false) }}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11, marginLeft: 'auto', padding: 0 }}>clear</button>
+                    style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontSize: 10, fontFamily: 'DM Sans, sans-serif' }}>clear</button>
                 </div>
               )}
+            </div>
 
-              {!result && velocityThreshold > 0 && (
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 5, fontStyle: 'italic' }}>
-                  Load or run an analysis to enable calculation.
-                </div>
-              )}
-            </SideSection>
+            {/* Display */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>Display</div>
+              <Toggle value={smoothing} onChange={setSmoothing} label={`Rolling avg (${SMOOTHING_WINDOW}-frame)`} />
+            </div>
 
-            <SideSection label="Display">
-              <Toggle value={smoothing} onChange={setSmoothing} label={`Rolling average (${SMOOTHING_WINDOW}-frame)`} />
-            </SideSection>
-
+            {/* Progress */}
             {isRunning && (
-              <div style={{ marginBottom: 16 }}>
-                {status === 'uploading' && <ProgressBar value={uploadPct} label="Uploading…" color="var(--amber)" />}
-                {status === 'analyzing' && <ProgressBar value={analyzePct} label="Inference in progress…" color="var(--accent)" />}
+              <div style={{ marginBottom: 14 }}>
+                {status === 'uploading' && <ProgressBar value={uploadPct} label="Uploading..." color="#f59e0b" />}
+                {status === 'analyzing' && <ProgressBar value={analyzePct} label="Inference..." color="#2dd4bf" />}
               </div>
             )}
 
+            {/* Warnings */}
             {error && (
-              <div style={{ background: 'var(--coral-faint)', border: '1px solid var(--err)', borderRadius: 6, padding: '8px 10px', fontSize: 11.5, color: 'var(--err)', marginBottom: 14, wordBreak: 'break-word' }}>
-                ⚠ {error}
+              <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, padding: '8px 10px', fontSize: 10.5, color: '#f87171', marginBottom: 12, fontFamily: 'IBM Plex Mono, monospace', wordBreak: 'break-word' }}>
+                {error}
               </div>
             )}
-
             {hasDummy && (
-              <div style={{ background: 'var(--amber-faint)', border: '1px solid var(--amber)', borderRadius: 6, padding: '8px 10px', fontSize: 11, color: 'var(--amber)', marginBottom: 14 }}>
-                <strong>No YOLO model found.</strong> Charts show generated dummy data.
-                Place a <code>.pt</code> file in <code>backend/models/</code> and uncomment
-                <code>ultralytics</code> in <code>requirements.txt</code>, then re-run.
+              <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '8px 10px', fontSize: 10.5, color: '#f59e0b', marginBottom: 12, fontFamily: 'IBM Plex Mono, monospace' }}>
+                No YOLO model found. Charts show dummy data.
               </div>
             )}
 
-            <div style={{ marginTop: 'auto', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Spacer + CTA */}
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 7 }}>
               <button onClick={runAnalysis} disabled={isRunning || !files.length} style={{
-                width: '100%', padding: '12px 0',
-                background: isRunning || !files.length ? 'var(--border)' : 'var(--accent)',
-                color: isRunning || !files.length ? 'var(--text-muted)' : '#051c1a',
-                border: 'none', borderRadius: 8, fontSize: 13.5, fontWeight: 600,
+                width: '100%', padding: '11px 0',
+                background: isRunning || !files.length
+                  ? 'rgba(255,255,255,0.05)'
+                  : 'linear-gradient(135deg, rgba(45,212,191,0.85), rgba(20,184,166,0.9))',
+                color: isRunning || !files.length ? 'rgba(255,255,255,0.25)' : '#051c1a',
+                border: `1px solid ${isRunning || !files.length ? 'rgba(255,255,255,0.07)' : 'rgba(45,212,191,0.5)'}`,
+                borderRadius: 10, fontSize: 12, fontWeight: 700,
                 cursor: isRunning || !files.length ? 'not-allowed' : 'pointer',
-                transition: 'background 0.15s, transform 0.1s', fontFamily: 'inherit',
-              }}
-                onMouseEnter={e => { if (!isRunning && files.length) e.currentTarget.style.transform = 'scale(1.01)' }}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                {isRunning ? '⏳  Processing…' : '▶  Run Analysis'}
+                transition: 'all 0.15s', fontFamily: 'DM Sans, sans-serif',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                boxShadow: isRunning || !files.length ? 'none' : '0 4px 20px rgba(45,212,191,0.25)',
+              }}>
+                {isRunning ? (
+                  <><div style={{ width: 11, height: 11, border: '1.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Processing...</>
+                ) : (
+                  <><Icons.Play size={11} color="#051c1a" /> Run Analysis</>
+                )}
               </button>
               {isRunning && (
-                <button onClick={cancelAnalysis} style={{ width: '100%', padding: '7px 0', background: 'none', border: '1px solid var(--err)', borderRadius: 6, color: 'var(--err)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  ✕ Cancel
+                <button onClick={cancelAnalysis} style={{
+                  width: '100%', padding: '7px 0', background: 'none',
+                  border: '1px solid rgba(248,113,113,0.3)', borderRadius: 8, color: '#f87171',
+                  fontSize: 11, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                }}>
+                  <Icons.X size={10} color="#f87171" /> Cancel
                 </button>
               )}
             </div>
-          </aside>
+          </div>
 
-          {/* Main content */}
-          <main style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0 }}>
+          {/* ════ MAIN CONTENT ════ */}
+          <div style={{
+            gridColumn: '2', gridRow: '2',
+            overflowY: 'auto', padding: '18px 18px 18px 14px',
+            display: 'flex', flexDirection: 'column', gap: 14,
+          }}>
 
-            <TabBar
-              tabs={[
-                { id: 'graphs',  label: `Analytics${showThresholdAlerts ? ' ⚠' : ''}` },
-                { id: 'metrics', label: 'Summary Metrics' },
-                { id: 'history', label: 'History' },
-                { id: 'log',     label: 'System Log' },
-              ]}
-              active={activeTab}
-              onChange={setActiveTab}
-            />
+            {/* Tab bar island */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <TabBar
+                tabs={[
+                  { id: 'analytics', label: `Analytics${showThresholdAlerts ? ' ·' : ''}` },
+                  { id: 'metrics', label: 'Metrics' },
+                  { id: 'history', label: 'History' },
+                  { id: 'log', label: 'System Log' },
+                ]}
+                active={activeTab}
+                onChange={setActiveTab}
+              />
+              {result && (
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {result.videos.map((v, i) => (
+                    <button key={i} onClick={() => downloadCsv(result.job_id, v.video_id)} style={{
+                      ...glass(0.06, 20), borderRadius: 7, border: '1px solid rgba(255,255,255,0.08)',
+                      color: 'rgba(255,255,255,0.4)', fontSize: 10, padding: '5px 10px', cursor: 'pointer',
+                      fontFamily: 'IBM Plex Mono, monospace', display: 'flex', alignItems: 'center', gap: 5,
+                      transition: 'all 0.15s',
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.3)'; e.currentTarget.style.color = '#2dd4bf' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}>
+                      <Icons.Download size={9} /> CSV {i + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-            {/* Analytics Tab */}
-            {activeTab === 'graphs' && (
-              <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* ── ANALYTICS TAB ── */}
+            {activeTab === 'analytics' && (
+              <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {!result ? (
-                  <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: 14 }}>
-                    <div style={{ fontSize: 36, marginBottom: 12 }}>📊</div>
-                    <div>Upload videos and run analysis to see charts here.</div>
-                    <div style={{ fontSize: 12, marginTop: 8 }}>Or restore a past job from the <strong>History</strong> tab.</div>
+                  <div style={{
+                    ...glass(), borderRadius: 16,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    padding: '60px 30px', textAlign: 'center',
+                  }}>
+                    <div style={{ opacity: 0.2, marginBottom: 16 }}><Icons.BarChart size={40} color="white" /></div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Sans, sans-serif', marginBottom: 6 }}>No Analysis Loaded</div>
+                    <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.25)', fontFamily: 'DM Sans, sans-serif' }}>Upload videos and run analysis, or restore a past job from History.</div>
                   </div>
                 ) : (
                   <>
-                    {/* Threshold alert banner — now includes isRestored flag */}
                     {showThresholdAlerts && (
-                      <ThresholdAlertBanner
-                        alerts={thresholdAlerts}
-                        onDismiss={() => setThresholdAlertDismissed(true)}
-                        isRestored={isRestoredResult}
-                      />
+                      <ThresholdAlertBanner alerts={thresholdAlerts} onDismiss={() => setThresholdAlertDismissed(true)} isRestored={isRestoredResult} />
                     )}
 
+                    {/* Legend */}
                     {legend.length > 1 && (
-                      <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-sec)' }}>
+                      <div style={{ display: 'flex', gap: 14, fontSize: 10.5, color: 'rgba(255,255,255,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>
                         {legend.map((l, i) => (
-                          <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ width: 22, height: 3, background: l.color, borderRadius: 2, display: 'inline-block' }} />
-                            {shortName(l.label, 28)}
+                          <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ width: 18, height: 2, background: l.color, borderRadius: 1, display: 'inline-block' }} />
+                            {shortName(l.label, 24)}
                           </span>
                         ))}
                       </div>
                     )}
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                      <ChartCard
-                        title="Shrimp Velocity Over Time"
-                        subtitle={`Average movement speed (px/s)${smoothing ? ' — smoothed' : ''}${activeVelocityThreshold > 0 ? ` · threshold ${activeVelocityThreshold} px/s` : ''}`}
-                        expandContent={
-                          <LineChart
-                            datasets={result.videos}
-                            field="avg_velocity"
-                            unit="px/s"
-                            smoothing={smoothing}
-                            velocityThreshold={activeVelocityThreshold}
-                            expanded={true}
-                          />
-                        }
+                    {/* Charts */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <ChartIsland
+                        title="Shrimp Velocity"
+                        subtitle={`avg movement · px/s${smoothing ? ' · smoothed' : ''}${activeVelocityThreshold > 0 ? ` · thr:${activeVelocityThreshold}` : ''}`}
+                        expandContent={<LineChart datasets={result.videos} field="avg_velocity" unit="px/s" smoothing={smoothing} velocityThreshold={activeVelocityThreshold} expanded />}
                       >
-                        <LineChart
-                          datasets={result.videos}
-                          field="avg_velocity"
-                          unit="px/s"
-                          smoothing={smoothing}
-                          velocityThreshold={activeVelocityThreshold}
-                          expanded={false}
-                        />
-                      </ChartCard>
+                        <LineChart datasets={result.videos} field="avg_velocity" unit="px/s" smoothing={smoothing} velocityThreshold={activeVelocityThreshold} expanded={false} />
+                      </ChartIsland>
 
-                      <ChartCard
-                        title="Shrimp Clustering Over Time"
-                        subtitle={`Spatial clustering score (%)${smoothing ? ' — smoothed' : ''}`}
-                        expandContent={
-                          <LineChart
-                            datasets={result.videos}
-                            field="clustering_percent"
-                            unit="%"
-                            smoothing={smoothing}
-                            velocityThreshold={0}
-                            expanded={true}
-                          />
-                        }
+                      <ChartIsland
+                        title="Clustering Score"
+                        subtitle={`spatial density · %${smoothing ? ' · smoothed' : ''}`}
+                        expandContent={<LineChart datasets={result.videos} field="clustering_percent" unit="%" smoothing={smoothing} velocityThreshold={0} expanded />}
                       >
-                        <LineChart
-                          datasets={result.videos}
-                          field="clustering_percent"
-                          unit="%"
-                          smoothing={smoothing}
-                          velocityThreshold={0}
-                          expanded={false}
-                        />
-                      </ChartCard>
+                        <LineChart datasets={result.videos} field="clustering_percent" unit="%" smoothing={smoothing} velocityThreshold={0} expanded={false} />
+                      </ChartIsland>
                     </div>
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {result.videos.map((v, i) => (
-                        <button key={i} onClick={() => downloadCsv(result.job_id, v.video_id)} style={{
-                          background: 'none', border: '1px solid var(--border)', borderRadius: 6,
-                          color: 'var(--text-sec)', fontSize: 12, padding: '7px 14px', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit',
-                          transition: 'border-color 0.15s, color 0.15s',
-                        }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-sec)' }}>
-                          ⬇ CSV — {shortName(v.video_name, 20)}
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                      Job: {result.job_id} · Model: {result.selected_model}
-                      {isRestoredResult && <span style={{ color: 'var(--blue)', marginLeft: 8 }}>↩ restored</span>}
+                    {/* Delta Metrics (2 video comparison) */}
+                    {result.videos.length === 2 && (
+                      <div style={{ ...glass(), borderRadius: 14, padding: '14px 16px' }}>
+                        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12, fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}>Delta Metrics — V2 vs V1</div>
+                        <div style={{ display: 'flex', gap: 20 }}>
+                          {[
+                            { label: 'Velocity Δ', val: (result.videos[1].summary.avg_velocity - result.videos[0].summary.avg_velocity).toFixed(2), unit: 'px/s' },
+                            { label: 'Clustering Δ', val: (result.videos[1].summary.avg_clustering_percent - result.videos[0].summary.avg_clustering_percent).toFixed(2), unit: '%' },
+                            { label: 'Peak Vel Δ', val: (result.videos[1].summary.max_velocity - result.videos[0].summary.max_velocity).toFixed(2), unit: 'px/s' },
+                          ].map(d => {
+                            const pos = parseFloat(d.val) >= 0
+                            return (
+                              <div key={d.label}>
+                                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, fontFamily: 'DM Sans, sans-serif' }}>{d.label}</div>
+                                <div style={{ fontSize: 22, fontWeight: 700, color: pos ? '#2dd4bf' : '#f87171', fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1 }}>
+                                  {pos ? '+' : ''}{d.val}
+                                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 3, fontWeight: 400 }}>{d.unit}</span>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Job info */}
+                    <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.2)', fontFamily: 'IBM Plex Mono, monospace', display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <span>job: {result.job_id}</span>
+                      <span>model: {result.selected_model}</span>
+                      {isRestoredResult && <span style={{ color: '#60a5fa' }}>↩ restored</span>}
                     </div>
                   </>
                 )}
               </div>
             )}
 
-            {/* Summary Metrics Tab */}
+            {/* ── METRICS TAB ── */}
             {activeTab === 'metrics' && (
-              <div className="fade-up">
+              <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {!result ? (
-                  <div style={{ color: 'var(--text-muted)', fontSize: 13, padding: '24px 0' }}>Run analysis to populate metrics.</div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    {result.videos.map((v, i) => (
-                      <VideoSummaryCards key={i} video={v} accent={SERIES_COLORS[i % SERIES_COLORS.length].line} />
-                    ))}
-                    {result.videos.length === 2 && (
-                      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 18px' }}>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 10, letterSpacing: '0.07em', textTransform: 'uppercase', fontWeight: 600 }}>Comparison delta (video 2 − video 1)</div>
-                        <div style={{ display: 'flex', gap: 28 }}>
-                          {[
-                            { label: 'Velocity Δ', val: (result.videos[1].summary.avg_velocity - result.videos[0].summary.avg_velocity).toFixed(2), unit: 'px/s' },
-                            { label: 'Clustering Δ', val: (result.videos[1].summary.avg_clustering_percent - result.videos[0].summary.avg_clustering_percent).toFixed(2), unit: '%' },
-                            { label: 'Peak Vel. Δ', val: (result.videos[1].summary.max_velocity - result.videos[0].summary.max_velocity).toFixed(2), unit: 'px/s' },
-                          ].map(d => (
-                            <div key={d.label}>
-                              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{d.label}</div>
-                              <div style={{ fontSize: 20, fontWeight: 600, color: parseFloat(d.val) >= 0 ? 'var(--success)' : 'var(--err)', fontFamily: 'monospace' }}>
-                                {parseFloat(d.val) >= 0 ? '+' : ''}{d.val}
-                                <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 3 }}>{d.unit}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div style={{ ...glass(), borderRadius: 14, padding: '30px 20px', textAlign: 'center' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, fontFamily: 'IBM Plex Mono, monospace' }}>// run analysis to see metrics</div>
                   </div>
+                ) : (
+                  result.videos.map((v, i) => (
+                    <div key={i} style={{ ...glass(), borderRadius: 14, padding: '16px' }}>
+                      <VideoSummaryCards video={v} accent={SERIES_COLORS[i % SERIES_COLORS.length].line} />
+                    </div>
+                  ))
                 )}
               </div>
             )}
 
-            {/* History Tab */}
+            {/* ── HISTORY TAB ── */}
             {activeTab === 'history' && (
               <div className="fade-up">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <div style={{ fontSize: 13, color: 'var(--text-sec)' }}>Previous analysis jobs saved in the database.</div>
-                  <button onClick={fetchPastJobs} disabled={pastLoading} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-sec)', fontSize: 12, padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                    {pastLoading ? 'Loading…' : '↺ Refresh'}
-                  </button>
-                </div>
-                <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ ...glass(), borderRadius: 14, padding: '16px 18px', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'DM Sans, sans-serif' }}>Previous analysis sessions</div>
+                    <button onClick={fetchPastJobs} disabled={pastLoading} style={{
+                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 7, color: 'rgba(255,255,255,0.5)', fontSize: 10.5, padding: '5px 12px',
+                      cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                      display: 'flex', alignItems: 'center', gap: 5,
+                    }}>
+                      <Icons.RefreshCw size={10} /> {pastLoading ? 'Loading...' : 'Refresh'}
+                    </button>
+                  </div>
                   <PastJobsTable jobs={pastJobs} onRestore={handleRestore} />
                 </div>
               </div>
             )}
 
-            {/* Log Tab */}
+            {/* ── LOG TAB ── */}
             {activeTab === 'log' && (
               <div className="fade-up">
-                <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', fontWeight: 600 }}>System & Backend Log</div>
-                    {alerts.length > 0 && (
-                      <button onClick={() => setAlerts([])} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 5, color: 'var(--text-muted)', fontSize: 11, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>Clear</button>
+                <div style={{ ...glass(), borderRadius: 14, padding: '14px 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <Icons.Terminal size={12} color="rgba(45,212,191,0.7)" />
+                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}>System Log</span>
+                    </div>
+                    {logEntries.length > 0 && (
+                      <button onClick={() => setLogEntries([])} style={{
+                        background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5,
+                        color: 'rgba(255,255,255,0.3)', fontSize: 10, padding: '3px 9px', cursor: 'pointer',
+                        fontFamily: 'DM Sans, sans-serif',
+                      }}>Clear</button>
                     )}
                   </div>
-                  <AlertLog entries={alerts} />
+                  <AlertLog entries={logEntries} />
                 </div>
               </div>
             )}
-
-          </main>
+          </div>
         </div>
       </div>
-    </ThemeContext.Provider>
+    </>
   )
 }
