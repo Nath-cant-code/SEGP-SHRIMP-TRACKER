@@ -1270,7 +1270,9 @@ export default function ShrimpDashboard() {
 //             background: dark
 //               ? 'radial-gradient(ellipse at 20% 20%, #0d2137 0%, #090d14 50%, #000 100%)'
 //               : 'radial-gradient(ellipse at 20% 20%, #c8e6fa 0%, #dce7f7 50%, #edf2fb 100%)',
-            backgroundImage: `url('/shrimp_background.png')`,
+//             backgroundImage: `url('/shrimp_background.png')`,
+            backgroundImage: `url('/shrimp_background2.png')`,
+//             backgroundImage: `url('/shrimp_white_background.png')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
