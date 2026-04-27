@@ -299,20 +299,23 @@ function GlassSelect({ value, onChange, options, disabled }) {
       value={value} onChange={e => onChange(e.target.value)} disabled={disabled}
       style={{
         width: '100%',
-        background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
+        background: dark ? '#1c1c1e' : 'rgba(0,0,0,0.04)',
         border: `1px solid ${dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
         borderRadius: 12,
         color: dark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)',
         fontSize: 13,
         padding: '10px 32px 10px 12px',
         appearance: 'none',
+        WebkitAppearance: 'none',
+        MozAppearance: 'none',
+        colorScheme: dark ? 'dark' : 'light',
         cursor: disabled ? 'not-allowed' : 'pointer',
         outline: 'none',
         fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='${dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}'/%3E%3C/svg%3E")`,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'calc(100% - 10px) center',
-        transition: 'border-color 0.15s',
+        transition: 'background 0.2s, border-color 0.15s',
         opacity: disabled ? 0.5 : 1,
       }}
     >
@@ -618,21 +621,6 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
         <text x={-H / 2} y={14} transform="rotate(-90)" textAnchor="middle" fill={dim} fontSize="9"
           fontFamily="'IBM Plex Mono', monospace">{unit}</text>
 
-        {showThreshold && thresholdY != null && (
-          <>
-            <line x1={PAD.l} y1={thresholdY} x2={W - PAD.r} y2={thresholdY}
-              stroke="#FF453A" strokeWidth="1" strokeDasharray="4 3" opacity="0.7" />
-            <rect x={W - PAD.r - 64} y={thresholdY - 13} width={62} height={13} rx={3}
-              fill="rgba(255,69,58,0.12)" />
-            <text x={W - PAD.r - 33} y={thresholdY - 3} textAnchor="middle"
-              fill="#FF453A" fontSize="8" fontFamily="'IBM Plex Mono', monospace">
-              thr:{velocityThreshold}
-            </text>
-            <rect x={PAD.l} y={thresholdY} width={IW} height={Math.max(0, PAD.t + IH - thresholdY)}
-              fill="rgba(255,69,58,0.03)" />
-          </>
-        )}
-
         {processed.map((ds, di) => {
           const path = buildPath(ds)
           const lastPt = ds.timeseries[ds.timeseries.length - 1]
@@ -647,6 +635,21 @@ function LineChart({ datasets, field, unit, smoothing, velocityThreshold, expand
             </g>
           )
         })}
+
+        {showThreshold && thresholdY != null && (
+          <>
+            <line x1={PAD.l} y1={thresholdY} x2={W - PAD.r} y2={thresholdY}
+              stroke="#FF453A" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.9" />
+            <rect x={W - PAD.r - 64} y={thresholdY - 13} width={62} height={13} rx={3}
+              fill="rgba(255,69,58,0.12)" />
+            <text x={W - PAD.r - 33} y={thresholdY - 3} textAnchor="middle"
+              fill="#FF453A" fontSize="8" fontFamily="'IBM Plex Mono', monospace">
+              thr:{velocityThreshold}
+            </text>
+            <rect x={PAD.l} y={thresholdY} width={IW} height={Math.max(0, PAD.t + IH - thresholdY)}
+              fill="rgba(255,69,58,0.03)" />
+          </>
+        )}
 
         {hover && (
           <>
@@ -971,12 +974,25 @@ function VideoSummaryCards({ video, accent }) {
   return (
     <div>
       <div style={{
-        fontSize: 11, fontWeight: 600, color: accent,
+        fontSize: 11, fontWeight: 600,
         letterSpacing: '0.04em', marginBottom: 10,
         fontFamily: "'SF Pro Display', 'Satoshi', system-ui",
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
-        {shortName(video.video_name, 36)}
+        {/* Colour-coded video swatch */}
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: `${accent}18`,
+          border: `1.5px solid ${accent}55`,
+          borderRadius: 8, padding: '3px 9px 3px 6px',
+          color: accent,
+        }}>
+          <span style={{
+            width: 9, height: 9, borderRadius: 3,
+            background: accent, display: 'inline-block', flexShrink: 0,
+          }} />
+          <span style={{ fontSize: 11 }}>{shortName(video.video_name, 36)}</span>
+        </span>
         {video._used_dummy_data && (
           <span style={{
             fontSize: 9, background: 'rgba(255,159,10,0.12)', color: '#FF9F0A',
@@ -986,7 +1002,7 @@ function VideoSummaryCards({ video, accent }) {
         )}
       </div>
       <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
-        <MetricChip label="Avg Velocity" value={s.avg_velocity.toFixed(1)} unit="px/s" accent={accent} />
+        <MetricChip label="Avg Velocity" value={s.avg_velocity.toFixed(1)} unit="px/s" />
         <MetricChip label="Peak Velocity" value={s.max_velocity.toFixed(1)} unit="px/s" />
         <MetricChip label="Avg Clustering" value={s.avg_clustering_percent.toFixed(1)} unit="%" />
         <MetricChip label="Frames" value={s.frames_processed} />
