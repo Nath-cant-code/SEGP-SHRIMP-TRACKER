@@ -55,8 +55,14 @@ SEGP-SHRIMP-TRACKER/
 ### Terminal 1 — Backend
 ```bash
 cd backend
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-uvicorn app.main:app --reload --port 8000
+
+# macOS / Linux:
+source .venv/bin/activate
+
+# Windows:
+.venv\Scripts\activate
+
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 Verify it works: open http://127.0.0.1:8000/docs
@@ -77,9 +83,21 @@ Open the app: http://localhost:5173
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+# macOS / Linux:
+source .venv/bin/activate
+
+# Windows:
+.venv\Scripts\activate
+
 pip install -r requirements.txt
+
+# macOS / Linux:
 cp .env.example .env
+
+# Windows:
+copy .env.example .env
+
 # No edits needed for local development
 python -m uvicorn app.main:app --reload --port 8000
 ```
