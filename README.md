@@ -1,11 +1,14 @@
-# SEGP Shrimp Tracker
+# COMP2019 SOFTWARE ENGINEERING GROUP PROJECT
+## SHRIMP ACTIVITY DETECTION FROM IMAGES
+### AKA ShrimpTracker
 
 AI-powered shrimp activity monitoring system.
 Detects and measures **velocity** and **clustering percentage** from aquaculture pond videos.
 
+*Please run dependency installments and upload video samples, there is no stored data in the uploaded zip files
 ---
 
-## Recommended project structure
+## Project structure
 
 ```
 SEGP-SHRIMP-TRACKER/
