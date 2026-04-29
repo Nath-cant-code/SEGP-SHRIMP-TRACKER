@@ -53,13 +53,21 @@ SEGP-SHRIMP-TRACKER/
 ## Setup order (do this every time you start working)
 
 ### Terminal 1 — Backend
+- macOS / Linux:
 ```bash
 cd backend
 
-# macOS / Linux:
 source .venv/bin/activate
 
-# Windows:
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+##
+
+- Windows:
+```bash
+cd backend
+
 .venv\Scripts\activate
 
 python -m uvicorn app.main:app --reload --port 8000
@@ -67,9 +75,12 @@ python -m uvicorn app.main:app --reload --port 8000
 
 Verify it works: open http://127.0.0.1:8000/docs
 
+##
+
 ### Terminal 2 — Frontend
 ```bash
 cd frontend-new
+
 npm run dev
 ```
 
@@ -79,46 +90,50 @@ Open the app: http://localhost:5173
 
 ## First-time setup
 
-### Backend
+### Terminal 1 — Backend
+- macOS / Linux:
 ```bash
 cd backend
 python -m venv .venv
 
-# macOS / Linux:
 source .venv/bin/activate
 
-# Windows:
+pip install -r requirements.txt
+
+cp .env.example .env
+
+# No edits needed for local development
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+##
+
+- Windows:
+```bash
+cd backend
+python -m venv .venv
+
 .venv\Scripts\activate
 
 pip install -r requirements.txt
 
-# macOS / Linux:
-cp .env.example .env
-
-# Windows:
 copy .env.example .env
 
 # No edits needed for local development
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend
+##
+
+### Terminal 2 — Frontend
 ```bash
 cd frontend-new
+
 npm install
+
 npm run dev
 ```
 
 ---
-
-## Connecting real YOLO inference
-
-The backend currently returns **dummy data** so the UI works before the ML
-pipeline is integrated. To use real detections:
-
-1. Open `backend/app/routes/analyze.py`
-2. Find `generate_dummy_timeseries()`
-3. Replace it with a call to the real pipeline in `shrimp-ai/analysis/analysis.py`
-4. Keep the response shape identical — the frontend depends on it
 
 The agreed API contract is in `shared/api-contract.md`.
