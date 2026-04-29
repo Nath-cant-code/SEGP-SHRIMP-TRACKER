@@ -1126,12 +1126,14 @@ export default function ShrimpDashboard() {
         const res = await fetch(`${BASE_URL}/models`)
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
-        setModels(data.models || [])
-        if (data.models?.length) setSelectedModel(data.models[0].id)
-        log(`Loaded ${data.models.length} model(s)`, 'ok')
+        const filtered = (data.models || []).filter(m => m.id === 'best')
+        const available = filtered.length ? filtered : [{ id: 'best', label: 'Best Model' }]
+        setModels(available)
+        setSelectedModel(available[0].id)
+        log(`Loaded model: ${available[0].label}`, 'ok')
       } catch (e) {
         log(`Backend unreachable: ${e.message}`, 'err')
-        const fallback = [{ id: 'best', label: 'Best Trained Model' }, { id: 'yolov8n', label: 'YOLOv8 Nano' }]
+        const fallback = [{ id: 'best', label: 'Best Model' }]
         setModels(fallback); setSelectedModel(fallback[0].id)
       } finally { setModelsLoading(false) }
       const lastJobId = sessionStorage.getItem('lastJobId')
@@ -1436,8 +1438,20 @@ export default function ShrimpDashboard() {
                 options={modelsLoading
                   ? [{ value: '', label: 'Loading…' }]
                   : models.map(m => ({ value: m.id, label: m.label }))}
-                disabled={isRunning || modelsLoading}
+                disabled={isRunning || modelsLoading || models.length <= 1}
               />
+              <div style={{
+                marginTop: 6, fontSize: 10,
+                color: dark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.28)',
+                fontFamily: "'IBM Plex Mono', monospace",
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}>
+                <span style={{
+                  width: 5, height: 5, borderRadius: '50%',
+                  background: '#34C759', display: 'inline-block', flexShrink: 0,
+                }} />
+                More models coming soon
+              </div>
             </div>
 
             {/* Upload */}
